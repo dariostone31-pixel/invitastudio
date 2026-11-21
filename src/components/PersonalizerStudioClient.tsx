@@ -284,21 +284,57 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           {activeTab === "estilo" && (
             <div className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
               <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                  Plantilla Base (42 Modelos)
+                <label className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                    Plantilla Base ({INVITATION_SKINS.length} Modelos)
+                  </span>
+                  <span className="text-[11px] font-medium normal-case text-stone-500">
+                    {selectedSkin.name}
+                  </span>
                 </label>
-                <select
-                  value={skinId}
-                  onChange={(e) => handleSkinChange(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-                >
-                  {INVITATION_SKINS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {CATEGORY_LABELS[s.category]} — {s.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid max-h-64 grid-cols-2 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-3">
+                  {INVITATION_SKINS.map((s) => {
+                    const active = skinId === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleSkinChange(s.id)}
+                        className={`group flex flex-col overflow-hidden rounded-2xl border text-left transition-all ${
+                          active
+                            ? "border-[#6B1E30] ring-2 ring-[#6B1E30]/30"
+                            : "border-stone-200 hover:border-stone-400"
+                        }`}
+                      >
+                        <div className="relative h-20 w-full overflow-hidden bg-stone-100">
+                          <img
+                            src={s.heroImage}
+                            alt={s.name}
+                            loading="lazy"
+                            className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                              s.imageFilter ?? ""
+                            }`}
+                          />
+                          <span
+                            className="absolute bottom-1 left-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shadow-sm"
+                            style={{
+                              backgroundColor: s.palette.surface,
+                              color: s.palette.text,
+                            }}
+                          >
+                            {CATEGORY_LABELS[s.category]}
+                          </span>
+                        </div>
+                        <div className="bg-white p-2">
+                          <p className="truncate text-[11px] font-semibold text-stone-900">
+                            {s.name}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>

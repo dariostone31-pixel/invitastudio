@@ -9,6 +9,7 @@ import {
   EventCategory,
 } from "@/templates/catalog";
 import { Eye, Sparkles, ArrowRight } from "lucide-react";
+import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 
 const CATEGORIES: ("all" | EventCategory)[] = [
   "all",
@@ -19,16 +20,6 @@ const CATEGORIES: ("all" | EventCategory)[] = [
   "nina",
   "bautismo",
 ];
-
-const CATEGORY_ICONS: Record<"all" | EventCategory, string> = {
-  all: "✨",
-  boda: "💍",
-  xv: "👑",
-  hombre: "🥂",
-  nino: "🚀",
-  nina: "🌸",
-  bautismo: "🕊️",
-};
 
 const FONT_MAP = {
   cormorant: "font-display-cormorant",
@@ -78,14 +69,14 @@ export function CatalogShowcase() {
               key={cat}
               type="button"
               onClick={() => setSelectedCat(cat)}
-              className={`font-ui-jost rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+              className={`font-ui-jost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                 active
                   ? "bg-[#6B1E30] text-white shadow-md"
                   : "border border-[#2A121B]/15 bg-[#FFFBFA] text-[#2A121B] hover:border-[#6B1E30]/60"
               }`}
             >
-              <span className="mr-1.5">{CATEGORY_ICONS[cat]}</span>
-              {cat === "all" ? "Todos" : CATEGORY_LABELS[cat]}{" "}
+              <AnimatedCategoryIcon category={cat} className="h-3.5 w-3.5" />
+              <span>{cat === "all" ? "Todos" : CATEGORY_LABELS[cat]}</span>
               <span className={active ? "text-[#E7AFC0]" : "text-[#7A5A62]"}>({count})</span>
             </button>
           );

@@ -77,10 +77,37 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://invitastudio.vercel.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : "https://invitastudio-vert.vercel.app")
+  ),
   title: "InvitaStudio — Invitaciones Digitales Interactivas",
   description:
     "Invitaciones web interactivas con sobre animado, música integrada, mapas y confirmación de asistencia en tiempo real para Bodas, XV Años, Hombres, Niños y Niñas.",
+  openGraph: {
+    title: "InvitaStudio — Invitaciones Digitales de Autor",
+    description:
+      "42 diseños interactivos con sobre animado, música, mapa en 1 toque y panel RSVP para WhatsApp en menos de 24 hs.",
+    url: "/",
+    siteName: "InvitaStudio",
+    images: [
+      {
+        url: "/images/templates/boda-jardin-botanico.webp",
+        alt: "InvitaStudio — Invitaciones Digitales Interactivas",
+      },
+    ],
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "InvitaStudio — Invitaciones Digitales de Autor",
+    description:
+      "Invitaciones interactivas con sobre animado, música y RSVP inteligente en menos de 24 hs.",
+    images: ["/images/templates/boda-jardin-botanico.webp"],
+  },
 };
 
 export default function RootLayout({

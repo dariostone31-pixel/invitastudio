@@ -56,27 +56,27 @@ export function EnvelopeGate({
 
   const guestPill = guestName ? (
     <div
-      className="mt-4 inline-flex flex-col items-center rounded-2xl border px-5 py-2.5 text-center shadow-sm"
+      className="mt-3.5 inline-flex flex-col items-center rounded-2xl border px-5 py-2.5 text-center shadow-sm"
       style={{
         backgroundColor: palette.isDark
-          ? "rgba(255,255,255,0.06)"
-          : "rgba(255,255,255,0.88)",
-        borderColor: palette.border,
+          ? "rgba(255,255,255,0.08)"
+          : "rgba(255,255,255,0.94)",
+        borderColor: palette.accent,
       }}
     >
       <span
-        className="text-[10px] font-semibold uppercase tracking-[0.22em]"
-        style={{ color: palette.textMuted }}
+        className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+        style={{ color: palette.accent }}
       >
-        Invitación Especial Para
+        Invitación Especial
       </span>
       <span className="mt-0.5 text-base font-semibold" style={{ color: palette.text }}>
-        {guestName}
+        {`¡Hola, ${guestName}!`}
       </span>
       {(passes || table) && (
         <div
           className="mt-1 flex items-center gap-2 text-xs font-medium"
-          style={{ color: palette.accent }}
+          style={{ color: palette.textMuted }}
         >
           {passes ? (
             <span>
@@ -285,14 +285,14 @@ export function EnvelopeGate({
                 {sample.dateDisplay}
               </p>
               {guestName && (
-                <div className="mt-4 rounded-2xl border border-white/25 bg-black/45 px-5 py-2.5 backdrop-blur-md">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/75">
-                    Reservado para
+                <div className="mt-4 rounded-2xl border border-white/30 bg-black/50 px-5 py-2.5 backdrop-blur-md">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-amber-200">
+                    Invitación Especial
                   </p>
-                  <p className="text-base font-semibold text-white">{guestName}</p>
+                  <p className="text-base font-semibold text-white">{`¡Hola, ${guestName}!`}</p>
                   {passes && (
-                    <p className="text-xs text-amber-200">
-                      {passes} {passes === 1 ? "lugar" : "lugares"}
+                    <p className="text-xs text-white/90">
+                      {passes} {passes === 1 ? "lugar reservado" : "lugares reservados"}
                       {table ? ` · Mesa ${table}` : ""}
                     </p>
                   )}

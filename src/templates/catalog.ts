@@ -286,6 +286,59 @@ const HOMBRE_SAMPLE: SampleEventData = {
   audioUrl: "/audio/lounge-warm.wav",
 };
 
+const HOMBRE_18_SAMPLE: SampleEventData = {
+  eyebrow: "MY 18TH NIGHT · ROOFTOP PARTY",
+  title: "Mateo · 18",
+  monogram: "M · 18",
+  badgeText: "18 AÑOS VIP",
+  dateISO: "2027-03-13T22:00:00-03:00",
+  dateDisplay: "Sábado 13 de Marzo de 2027",
+  timeDisplay: "22:00 hs",
+  quote:
+    "Dieciocho años se festejan a lo grande: terraza abierta, tragos sin alcohol & barra libre, buena música y toda la banda junta.",
+  locations: [
+    {
+      label: "Rooftop & Terraza",
+      venue: "Skyline Terrazas Eventos",
+      address: "Av. Belgrano 1240",
+      city: "San Salvador de Jujuy",
+      time: "22:00 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=San+Salvador+de+Jujuy",
+    },
+  ],
+  schedule: [
+    { time: "22:00", title: "Recepción & Barra de Tragos", detail: "Previas con finger food en la terraza" },
+    { time: "23:15", title: "Cena Informal & Burgers", detail: "Islas calientes y opción Sin TACC" },
+    { time: "00:00", title: "Brindis de los 18", detail: "Torta, bengalas y foto grupal" },
+    { time: "00:30", title: "DJ Set & Cachengue", detail: "Electrónica, reggaetón y hits hasta las 05 hs" },
+  ],
+  dressCode: {
+    label: "Urbano Noche / Elegante Sport",
+    notes: "Zapatillas limpias o look nocturno relajado. Evitar camisetas deportivas.",
+    swatches: [
+      { name: "Negro", hex: "#111318" },
+      { name: "Ámbar", hex: "#F59E0B" },
+      { name: "Grafito", hex: "#3F3F46" },
+    ],
+  },
+  gifts: {
+    title: "Regalo / Vaquita",
+    intro:
+      "Tu presencia en la fiesta es lo mejor. Si querés sumarte a la vaquita para el viaje de egresados / compu:",
+    holder: "Mateo Figueroa",
+    bank: "Mercado Pago",
+    alias: "MATEO.18.ROOFTOP",
+    cbu: "0000003100081818181818",
+  },
+  rsvpDeadline: "Confirmá antes del 5 de Marzo para incluirte en la lista VIP de ingreso",
+  gallery: [
+    "/images/templates/hombre-18-rooftop.webp",
+    "/images/templates/hombre-editorial-mono.webp",
+  ],
+  audioTitle: "Rooftop Beat — Instrumental",
+  audioUrl: "/audio/lounge-warm.wav",
+};
+
 const NINO_SAMPLE: SampleEventData = {
   eyebrow: "¡Aventurero en Camino!",
   title: "Bautista cumple 5",
@@ -479,8 +532,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estilo periódico vintage con foto editorial",
     category: "boda",
     layoutId: "diario-editorial",
-    heroImage: "/images/gallery/boda-1.webp",
-    imageFilter: "grayscale contrast-110",
+    heroImage: "/images/templates/boda-gran-noticia.webp",
     fontDisplay: "playfair",
     palette: {
       bg: "#F3EFE6",
@@ -505,7 +557,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada cinematográfica cálida de campo",
     category: "boda",
     layoutId: "fullscreen-hero",
-    heroImage: "/images/gallery/boda-1.webp",
+    heroImage: "/images/templates/boda-boho-pampas.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#F8F1EA",
@@ -526,7 +578,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Elegancia nocturna en negro carbón y dorado",
     category: "boda",
     layoutId: "neon-dark",
-    heroImage: "/images/gallery/boda-2.webp",
+    heroImage: "/images/templates/boda-noche-gala.webp",
     fontDisplay: "cinzel",
     palette: {
       bg: "#101116",
@@ -568,8 +620,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Azul francés y papel texturado ideal ceremonias de día",
     category: "boda",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/boda-sobre-marfil.webp",
-    imageFilter: "hue-rotate-[185deg] saturate-90",
+    heroImage: "/images/templates/boda-acuarela-azul.webp",
     fontDisplay: "pinyon",
     palette: {
       bg: "#F4F7FA",
@@ -590,7 +641,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Minimalismo costero cálido para bodas al aire libre",
     category: "boda",
     layoutId: "fullscreen-hero",
-    heroImage: "/images/gallery/boda-1.webp",
+    heroImage: "/images/templates/boda-playa-brisa.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#F9F8F4",
@@ -611,7 +662,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estilo pase de abordar para casamientos en quinta o viaje",
     category: "boda",
     layoutId: "ticket-vip",
-    heroImage: "/images/gallery/boda-2.webp",
+    heroImage: "/images/templates/boda-boarding-pass.webp",
     fontDisplay: "playfair",
     palette: {
       bg: "#F7F4EF",
@@ -660,7 +711,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Oscuro vibrante con destellos magenta y violeta",
     category: "xv",
     layoutId: "neon-dark",
-    heroImage: "/images/gallery/xv-1.webp",
+    heroImage: "/images/templates/xv-neon-boliche.webp",
     fontDisplay: "oswald",
     palette: {
       bg: "#090714",
@@ -681,7 +732,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ticket perforado estilo recital o Lollapalooza",
     category: "xv",
     layoutId: "ticket-vip",
-    heroImage: "/images/gallery/xv-1.webp",
+    heroImage: "/images/templates/xv-festival-pass.webp",
     fontDisplay: "oswald",
     palette: {
       bg: "#16121E",
@@ -703,11 +754,10 @@ export const INVITATION_SKINS: InvitationSkin[] = [
   {
     id: "xv-mariposa-sobre",
     name: "Sobre Rosa Imperial",
-    subtitle: "Sobre clásico con sello de lacre y marco floral",
+    subtitle: "Sobre clásico con sello de lacre y mariposa dorada",
     category: "xv",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/boda-sobre-marfil.webp",
-    imageFilter: "hue-rotate-[-18deg] saturate-110",
+    heroImage: "/images/templates/xv-mariposa-sobre.webp",
     fontDisplay: "script",
     palette: {
       bg: "#FAF3F6",
@@ -749,7 +799,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Verde esmeralda intenso con acentos oro para gala nocturna",
     category: "xv",
     layoutId: "fullscreen-hero",
-    heroImage: "/images/templates/xv-gala-rosa.webp",
+    heroImage: "/images/templates/xv-esmeralda-real.webp",
     fontDisplay: "cinzel",
     palette: {
       bg: "#0D1F1B",
@@ -770,8 +820,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada monocromática con tipografía de alta costura",
     category: "xv",
     layoutId: "diario-editorial",
-    heroImage: "/images/templates/xv-gala-rosa.webp",
-    imageFilter: "grayscale contrast-110",
+    heroImage: "/images/templates/xv-editorial-vogue.webp",
     fontDisplay: "playfair",
     palette: {
       bg: "#F8F6F4",
@@ -796,7 +845,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Acuarela etérea en tonos celeste, lavanda y marfil",
     category: "xv",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/boda-jardin-botanico.webp",
+    heroImage: "/images/templates/xv-cielo-acuarela.webp",
     fontDisplay: "script",
     palette: {
       bg: "#F3F6FA",
@@ -833,13 +882,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#263859",
       isDark: true,
     },
-    sample: {
-      ...HOMBRE_SAMPLE,
-      eyebrow: "MY 18TH NIGHT · ROOFTOP PARTY",
-      title: "Mateo · 18",
-      monogram: "M · 18",
-      badgeText: "18 AÑOS VIP",
-    },
+    sample: HOMBRE_18_SAMPLE,
   },
   {
     id: "hombre-18-street",
@@ -847,7 +890,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ticket perforado arquitectónico en negro, plata y grafito",
     category: "hombre",
     layoutId: "ticket-vip",
-    heroImage: "/images/templates/hombre-editorial-mono.webp",
+    heroImage: "/images/templates/hombre-18-street.webp",
     fontDisplay: "oswald",
     palette: {
       bg: "#121316",
@@ -861,11 +904,16 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       isDark: true,
     },
     sample: {
-      ...HOMBRE_SAMPLE,
+      ...HOMBRE_18_SAMPLE,
       eyebrow: "OPEN BAR · 18 EDITION",
       title: "Lucas #18",
       monogram: "18",
       badgeText: "PASS #18",
+      gifts: {
+        ...HOMBRE_18_SAMPLE.gifts,
+        holder: "Lucas Pérez",
+        alias: "LUCAS.18.VIP",
+      },
     },
   },
   {
@@ -948,7 +996,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tapa estilo revista clásica para 50, 60 años o recibidas",
     category: "hombre",
     layoutId: "diario-editorial",
-    heroImage: "/images/templates/hombre-editorial-mono.webp",
+    heroImage: "/images/templates/hombre-caballero-diario.webp",
     fontDisplay: "playfair",
     palette: {
       bg: "#EFECE6",
@@ -974,7 +1022,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Oscuro eléctrico con luces cian para 18, 25 o 30 años",
     category: "hombre",
     layoutId: "neon-dark",
-    heroImage: "/images/templates/nino-gamer-street.webp",
+    heroImage: "/images/templates/hombre-gaming-cyber.webp",
     fontDisplay: "oswald",
     palette: {
       bg: "#0B111E",
@@ -1076,7 +1124,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Entrada de estadio celeste y blanca con edad del cumpleañero",
     category: "nino",
     layoutId: "ticket-vip",
-    heroImage: "/images/templates/hombre-futbol-clasico.webp",
+    heroImage: "/images/templates/nino-campeones-ticket.webp",
     fontDisplay: "fredoka",
     palette: {
       bg: "#EEF7FF",
@@ -1128,7 +1176,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre minimalista en lino crema y verde salvia",
     category: "nino",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/nino-dino-aventura.webp",
+    heroImage: "/images/templates/nino-safari-sobre.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#FAF7F2",
@@ -1153,7 +1201,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tarjeta urbana moderna para chicos de 7 a 12 años",
     category: "nino",
     layoutId: "ticket-vip",
-    heroImage: "/images/templates/nino-gamer-street.webp",
+    heroImage: "/images/templates/nino-super-comic.webp",
     fontDisplay: "oswald",
     palette: {
       bg: "#F1F5F9",
@@ -1228,7 +1276,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Onda concierto/disco para nenas de 8 a 12 años",
     category: "nina",
     layoutId: "neon-dark",
-    heroImage: "/images/templates/xv-mariposa-neon.webp",
+    heroImage: "/images/templates/nina-pop-star.webp",
     fontDisplay: "fredoka",
     palette: {
       bg: "#1D102B",
@@ -1254,7 +1302,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Pase VIP rosado con detalles de fiesta entre amigas",
     category: "nina",
     layoutId: "ticket-vip",
-    heroImage: "/images/templates/nina-reino-pastel.webp",
+    heroImage: "/images/templates/nina-pijama-ticket.webp",
     fontDisplay: "fredoka",
     palette: {
       bg: "#FFF1F5",
@@ -1280,7 +1328,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre romántico pastel con sello dorado",
     category: "nina",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/nina-reino-pastel.webp",
+    heroImage: "/images/templates/nina-hadas-sobre.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#FAF5FF",
@@ -1301,7 +1349,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tonos durazno, rosa viejo y lavanda súper delicados",
     category: "nina",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/nina-sirena-coral.webp",
+    heroImage: "/images/templates/nina-arcoiris-boho.webp",
     fontDisplay: "fredoka",
     palette: {
       bg: "#FDF7F2",
@@ -1376,7 +1424,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Apertura ilustrada súper dulce para Baby Shower o Bautismo",
     category: "bautismo",
     layoutId: "infantil-animado",
-    heroImage: "/images/templates/bebe-lino-natural.webp",
+    heroImage: "/images/templates/bebe-nubes-celeste.webp",
     fontDisplay: "fredoka",
     palette: {
       bg: "#F3F8FC",
@@ -1402,7 +1450,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Rosa talco y papel algodón para bautismo o 1er año de nena",
     category: "bautismo",
     layoutId: "editorial-sobre",
-    heroImage: "/images/templates/bebe-ositos-nubes.webp",
+    heroImage: "/images/templates/bebe-florcitas-rosa.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#FDF7F8",
@@ -1427,7 +1475,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada luminosa para Primera Comunión o Confirmación",
     category: "bautismo",
     layoutId: "fullscreen-hero",
-    heroImage: "/images/templates/boda-jardin-botanico.webp",
+    heroImage: "/images/templates/comunion-oliva-hero.webp",
     fontDisplay: "cormorant",
     palette: {
       bg: "#F6F8F4",
@@ -1453,7 +1501,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estilo periódico familiar para anunciar el bautismo o año",
     category: "bautismo",
     layoutId: "diario-editorial",
-    heroImage: "/images/templates/bebe-lino-natural.webp",
+    heroImage: "/images/templates/bebe-edicion-nacimiento.webp",
     fontDisplay: "playfair",
     palette: {
       bg: "#F7F3EC",

@@ -30,6 +30,7 @@ import { RsvpModal } from "./RsvpModal";
 import { RevealSection } from "./RevealSection";
 import { AmbientParticles } from "./AmbientParticles";
 import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
+import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 
 export interface PublicWish {
   id: string;
@@ -311,7 +312,7 @@ export function InvitationRenderer({
               {/* Framed glass editorial overlay */}
               <div className="absolute inset-0 flex items-center justify-center px-6">
                 <div className="w-full max-w-[350px] rounded-2xl border border-white/60 bg-black/35 px-5 py-7 text-center text-white shadow-xl backdrop-blur-[4px]">
-                  <p className="font-ui-jost text-on-image text-[10px] font-semibold uppercase tracking-[0.3em] text-white/95">
+                  <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
                     {sample.eyebrow}
                   </p>
                   <h1
@@ -320,13 +321,13 @@ export function InvitationRenderer({
                     {eventTitle}
                   </h1>
                   <div className="mt-5 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
-                    <span className="font-ui-jost text-on-image text-[10px] uppercase tracking-[0.2em] text-white/95">
+                    <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
                       {dateDisplay.split(" ")[0]}
                     </span>
                     <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
                       {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
                     </span>
-                    <span className="font-ui-jost text-on-image text-[10px] uppercase tracking-[0.2em] text-white/95">
+                    <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
                       {timeDisplay}
                     </span>
                   </div>
@@ -553,8 +554,10 @@ export function InvitationRenderer({
                   borderColor: palette.border,
                 }}
               >
-                <Sparkles className="animate-icon-beat mx-auto h-5 w-5" style={{ color: palette.accent }} />
-                <h2 className={`mt-2 text-3xl font-semibold ${sectionHeadingFont}`}>
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border" style={{ borderColor: palette.border, color: palette.accent }}>
+                  <AnimatedCategoryIcon category={skin.category} className="h-5 w-5" />
+                </div>
+                <h2 className={`mt-2.5 text-3xl font-semibold ${sectionHeadingFont}`}>
                   {sample.storyTitle || "Nuestra Historia"}
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed" style={{ color: palette.textMuted }}>
@@ -1021,7 +1024,7 @@ export function InvitationRenderer({
                           ? eventTitle
                           : "Noche Soñada"}
                       </p>
-                      <p className="font-ui-jost text-[9px] uppercase tracking-[0.2em] opacity-90">
+                      <p className="font-ui-jost text-[11px] uppercase tracking-[0.18em] opacity-95">
                         {skin.category === "boda"
                           ? i === 0
                             ? "Novia"
@@ -1091,19 +1094,22 @@ export function InvitationRenderer({
             </section>
           </RevealSection>
 
-          {/* ================= FOOTER VIRAL DISCRETO ================= */}
+          {/* ================= FOOTER VIRAL VISIBLE ================= */}
           <footer className="mt-12 border-t pt-6 text-center" style={{ borderColor: palette.border }}>
-            <p className="font-ui-jost text-xs" style={{ color: palette.textMuted }}>
-              Hecho con{" "}
-              <Link
-                href="/?utm_source=invitacion&utm_medium=footer"
-                className="font-semibold underline underline-offset-2"
-                style={{ color: palette.accent }}
-              >
-                InvitaStudio
-              </Link>{" "}
-              — Tu evento, en un link
-            </p>
+            <Link
+              href="/?utm_source=invitacion&utm_medium=footer"
+              className="font-ui-jost inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm transition-transform hover:scale-[1.02]"
+              style={{
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                color: palette.text,
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" style={{ color: palette.accent }} />
+              <span>
+                Creado con <strong style={{ color: palette.accent }}>InvitaStudio</strong> · Creá la tuya
+              </span>
+            </Link>
           </footer>
         </div>
       </main>

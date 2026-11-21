@@ -33,8 +33,11 @@ export async function POST(req: Request) {
     const originHeader = req.headers.get("origin");
     const baseUrl = (
       process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : null) ||
       originHeader ||
-      "https://invitastudio.vercel.app"
+      "https://invitastudio-vert.vercel.app"
     ).replace(/\/$/, "");
 
     const client = new MercadoPagoConfig({ accessToken });

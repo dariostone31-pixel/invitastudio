@@ -138,13 +138,13 @@ export default function HomePage() {
       />
 
       {/* ================= HEADER BLUR EDITORIAL ================= */}
-      <header className="sticky top-0 z-40 border-b border-[#2A121B]/12 bg-[#FFFBFA]/85 backdrop-blur-lg">
+      <header className="sticky top-0 z-40 border-b border-[#2A121B]/12 bg-[#FFFBFA]/90 backdrop-blur-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <Link href="/" className="flex items-center gap-1">
+          <Link href="/" className="flex items-center gap-0.5">
             <span className="font-display-cormorant text-[28px] font-semibold italic tracking-tight text-[#6B1E30]">
               Invita
             </span>
-            <span className="font-display-cormorant text-[28px] font-semibold italic tracking-tight text-[#C4718C]">
+            <span className="font-display-cormorant text-[28px] font-semibold italic tracking-tight text-[#B78A4E]">
               Studio
             </span>
           </Link>
@@ -153,11 +153,11 @@ export default function HomePage() {
             <a href="#modelos" className="transition-colors hover:text-[#6B1E30]">
               Modelos (42)
             </a>
+            <a href="#como-funciona" className="transition-colors hover:text-[#6B1E30]">
+              Cómo funciona
+            </a>
             <Link href="/personalizar/demo-boda" className="transition-colors hover:text-[#6B1E30]">
               Personalizador
-            </Link>
-            <Link href="/panel/demo-boda" className="transition-colors hover:text-[#6B1E30]">
-              Panel Demo
             </Link>
             <a href="#precios" className="transition-colors hover:text-[#6B1E30]">
               Precios ARS
@@ -173,6 +173,28 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+
+        {/* Mobile quick-anchor strip */}
+        <nav
+          aria-label="Navegación rápida móvil"
+          className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-[#2A121B]/8 bg-[#FBF1EE]/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B1E30] md:hidden"
+        >
+          <a href="#modelos" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            Modelos (42)
+          </a>
+          <a href="#como-funciona" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            Cómo funciona
+          </a>
+          <a href="#precios" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            Precios
+          </a>
+          <Link href="/personalizar/demo-boda" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            Personalizador
+          </Link>
+          <a href="#faq" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            FAQ
+          </a>
+        </nav>
       </header>
 
       {/* ================= HERO EDITORIAL ================= */}
@@ -193,15 +215,11 @@ export default function HomePage() {
             </span>
 
             <h1 className="animate-rise-2 font-display-cormorant mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-[#2A121B] sm:text-7xl">
-              Tu evento empieza desde el{" "}
-              <span className="gold-underline italic text-[#6B1E30]">
-                primer clic.
-              </span>
+              Tu evento empieza desde el<span className="gold-underline ml-[0.22em] italic text-[#6B1E30]">primer clic.</span>
             </h1>
 
             <p className="animate-rise-2 mt-5 max-w-xl text-base leading-relaxed text-[#7A5A62] sm:text-lg">
-              Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de estudio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en{" "}
-              <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
+              Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de estudio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
             </p>
 
             <div className="animate-rise-3 mt-7 flex flex-wrap items-center gap-3.5">
@@ -212,13 +230,13 @@ export default function HomePage() {
                 Explorar 42 Modelos en Vivo
                 <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
               </a>
-              <Link
-                href="/panel/demo-boda"
+              <a
+                href="#como-funciona"
                 className="inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-colors hover:border-[#6B1E30] hover:bg-white"
               >
-                <BarChart3 className="h-4 w-4 text-[#B78A4E]" strokeWidth={1.5} />
-                Probar Panel Organizador
-              </Link>
+                <Smartphone className="h-4 w-4 text-[#B78A4E]" strokeWidth={1.5} />
+                Ver cómo funciona
+              </a>
             </div>
 
             <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[#2A121B]/12 pt-6 text-xs text-[#7A5A62]">
@@ -280,7 +298,7 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Compromiso & Garantías Verificables */}
+          {/* Compromiso & Garantías Verificables + Demo Panel */}
           <div className="mt-8 grid grid-cols-1 gap-4 rounded-[20px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
             {GUARANTEES.map((g) => (
               <div key={g.title} className="flex items-start gap-3">
@@ -292,11 +310,27 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-[#6B1E30]" strokeWidth={1.5} />
+              <div className="text-xs">
+                <strong className="text-[#2A121B]">¿Querés ver cómo organizás tus invitados?</strong>
+                <span className="block text-[#7A5A62]">Probá en vivo el panel con pases por familia, alergias y descarga Excel.</span>
+              </div>
+            </div>
+            <Link
+              href="/panel/demo-boda"
+              className="rounded-full border border-[#6B1E30]/35 px-4 py-2 text-xs font-semibold text-[#6B1E30] transition-colors hover:bg-[#FBF1EE]"
+            >
+              Probar Panel Demo
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ================= CÓMO FUNCIONA EN 4 PASOS ================= */}
-      <section className="border-b border-[#2A121B]/12 bg-[#FBF1EE] py-16">
+      <section id="como-funciona" className="border-b border-[#2A121B]/12 bg-[#FBF1EE] py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center">
             <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.28em] text-[#6B1E30]">

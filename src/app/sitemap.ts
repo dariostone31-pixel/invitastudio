@@ -2,10 +2,12 @@ import type { MetadataRoute } from "next";
 import { INVITATION_SKINS } from "@/templates/catalog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://invitastudio.vercel.app").replace(
-    /\/$/,
-    ""
-  );
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "https://invitastudio-vert.vercel.app")
+  ).replace(/\/$/, "");
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [

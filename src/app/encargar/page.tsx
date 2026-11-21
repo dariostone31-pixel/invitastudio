@@ -645,8 +645,11 @@ export default function EncargarPage() {
 
         <Suspense
           fallback={
-            <div className="py-12 text-center text-sm text-stone-500">
-              Cargando formulario...
+            <div className="space-y-6" aria-busy="true" aria-label="Cargando formulario">
+              <div className="h-40 animate-pulse rounded-3xl border border-stone-200 bg-white/80 p-6" />
+              <div className="h-36 animate-pulse rounded-3xl border border-stone-200 bg-white/80 p-6" />
+              <div className="h-64 animate-pulse rounded-3xl border border-stone-200 bg-white/80 p-6" />
+              <div className="h-44 animate-pulse rounded-3xl border border-stone-200 bg-white/80 p-6" />
             </div>
           }
         >

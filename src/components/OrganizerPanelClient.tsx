@@ -91,6 +91,15 @@ export function OrganizerPanelClient({
     } para vos:\n${fullPersonalizedUrl}`
   );
 
+  const whatsappReminderText = encodeURIComponent(
+    `¡Hola ${guestName}! Te recordamos con mucha alegría que falta poquito para ${event.eventTitle} (${event.dateDisplay} · ${event.timeDisplay} en ${event.venue}). Si todavía no pudiste confirmar asistencia o tenés algún menú especial (Sin TACC / vegetariano), podés hacerlo en 10 segundos desde tu pase:\n${fullPersonalizedUrl}`
+  );
+
+  const responseRate =
+    initialRsvps.length > 0
+      ? Math.round((stats.confirmedGroups / initialRsvps.length) * 100)
+      : 0;
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900">
       {/* Header */}
@@ -145,31 +154,31 @@ export function OrganizerPanelClient({
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-        {/* KPI Cards */}
+        {/* 4-Card RSVP Funnel KPIs */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-stone-500">
-              Total Personas Confirmadas
+              1 · Personas Confirmadas
               <Users className="h-4 w-4 text-emerald-600" />
             </div>
             <p className="mt-2 text-3xl font-bold text-stone-900">{stats.totalPeople}</p>
             <p className="mt-1 text-[11px] text-stone-500">
-              En {stats.confirmedGroups} grupo(s) / familias
+              {stats.confirmedGroups} de {initialRsvps.length} respuestas ({responseRate}% positivas)
             </p>
           </div>
 
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-stone-500">
-              Respuestas Positivas
+              2 · Familias que Asisten
               <CheckCircle2 className="h-4 w-4 text-amber-600" />
             </div>
             <p className="mt-2 text-3xl font-bold text-stone-900">{stats.confirmedGroups}</p>
-            <p className="mt-1 text-[11px] text-stone-500">Listos para el salón</p>
+            <p className="mt-1 text-[11px] text-stone-500">Listas para asignar mesas</p>
           </div>
 
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-stone-500">
-              No Asisten
+              3 · No Asisten
               <XCircle className="h-4 w-4 text-stone-400" />
             </div>
             <p className="mt-2 text-3xl font-bold text-stone-900">{stats.declinedGroups}</p>
@@ -178,11 +187,13 @@ export function OrganizerPanelClient({
 
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-stone-500">
-              Menús Especiales
+              4 · Menús Especiales & DJ
               <Utensils className="h-4 w-4 text-rose-600" />
             </div>
             <p className="mt-2 text-3xl font-bold text-stone-900">{stats.dietaryCount}</p>
-            <p className="mt-1 text-[11px] text-stone-500">Sin TACC, vegano, alergias</p>
+            <p className="mt-1 text-[11px] text-stone-500">
+              Alergias/Sin TACC · {stats.songs.length} temas DJ
+            </p>
           </div>
         </section>
 
@@ -269,6 +280,15 @@ export function OrganizerPanelClient({
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 Enviar por WhatsApp
+              </a>
+              <a
+                href={`https://wa.me/?text=${whatsappReminderText}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Recordatorio
               </a>
             </div>
           </div>

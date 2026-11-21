@@ -4,8 +4,18 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { INVITATION_SKINS } from "@/templates/catalog";
 import { Play, MapPin, CheckCircle2, Sparkles } from "lucide-react";
+import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 
 const FEATURED = INVITATION_SKINS.filter((s) => s.featured);
+
+const CATEGORY_SHORT_LABELS: Record<string, string> = {
+  boda: "Boda",
+  xv: "XV Años",
+  hombre: "18 / Hombres",
+  nino: "Niño",
+  nina: "Niña",
+  bautismo: "Bautismo",
+};
 
 const HERO_FONT_MAP = {
   cormorant: "font-display-cormorant",
@@ -32,18 +42,14 @@ export function HeroMockup() {
             key={item.id}
             type="button"
             onClick={() => setActiveIdx(idx)}
-            className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all ${
               idx === activeIdx
                 ? "bg-[#6B1E30] text-white shadow-md"
                 : "border border-[#2A121B]/15 bg-[#FFFBFA] text-[#7A5A62] hover:border-[#6B1E30]/50 hover:text-[#2A121B]"
             }`}
           >
-            {item.category === "boda" && "💍 Boda"}
-            {item.category === "xv" && "👑 XV Años"}
-            {item.category === "hombre" && "🥂 18 / Hombres"}
-            {item.category === "nino" && "🚀 Niño"}
-            {item.category === "nina" && "✨ Niña"}
-            {item.category === "bautismo" && "🕊️ Bautismo"}
+            <AnimatedCategoryIcon category={item.category} className="h-3.5 w-3.5" />
+            <span>{CATEGORY_SHORT_LABELS[item.category] ?? item.name}</span>
           </button>
         ))}
       </div>
