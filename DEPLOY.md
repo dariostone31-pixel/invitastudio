@@ -39,3 +39,4 @@ La aplicación está preparada para correr sin fricción en **Vercel + Supabase 
    ```json
    { "ok": true, "dbMode": "postgres", "mercadopagoConfigured": true }
    ```
+
