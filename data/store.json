@@ -1,0 +1,106 @@
+{
+  "events": [
+    {
+      "id": "evt-demo-boda",
+      "orderCode": "INV-1001",
+      "slug": "sofia-y-lucas",
+      "panelToken": "demo-boda",
+      "skinId": "boda-sobre-marfil",
+      "planId": "pro",
+      "status": "publicada",
+      "eventTitle": "Sofía & Lucas",
+      "dateISO": "2027-04-17T19:30:00-03:00",
+      "dateDisplay": "Sábado 17 de Abril de 2027",
+      "timeDisplay": "19:30 hs",
+      "venue": "Finca Los Olivares",
+      "address": "Ruta Provincial 26 Km 4",
+      "city": "Luján de Cuyo, Mendoza",
+      "alias": "SOFIA.LUCAS.BODA",
+      "dressCode": "Elegante / Formal",
+      "quote": "Hay momentos en la vida que son especiales por sí solos, pero compartirlos con quienes más queremos los vuelve inolvidables.",
+      "contactName": "Sofía Martínez",
+      "whatsapp": "5492615550101",
+      "email": "sofia@ejemplo.com",
+      "notes": "Ceremonia al aire libre en el jardín principal.",
+      "createdAt": "2026-11-20T12:00:00.000Z"
+    },
+    {
+      "id": "evt-demo-xv",
+      "orderCode": "INV-1002",
+      "slug": "mis-xv-valen",
+      "panelToken": "demo-xv",
+      "skinId": "xv-gala-rosa",
+      "planId": "asistido",
+      "status": "publicada",
+      "eventTitle": "Mis XV Valentina",
+      "dateISO": "2027-05-22T21:00:00-03:00",
+      "dateDisplay": "Sábado 22 de Mayo de 2027",
+      "timeDisplay": "21:00 hs",
+      "venue": "Salón Palacio Duhau Eventos",
+      "address": "Av. Libertador 2450",
+      "city": "San Isidro, Buenos Aires",
+      "alias": "VALEN.XV.2027",
+      "dressCode": "Elegante Sport / Gala Juvenil",
+      "quote": "Empieza una noche soñada, rodeada de música, amigos y las personas que hacen mi vida más feliz.",
+      "contactName": "Carolina (mamá de Valen)",
+      "whatsapp": "549115550202",
+      "email": "caro@ejemplo.com",
+      "notes": "Mesa joven con menú especial sin TACC.",
+      "createdAt": "2026-11-20T15:30:00.000Z"
+    }
+  ],
+  "rsvps": [
+    {
+      "id": "rsvp-1",
+      "eventSlug": "sofia-y-lucas",
+      "guestName": "Familia García López",
+      "attending": true,
+      "passesUsed": 4,
+      "companions": "Martín, Laura, Mateo y Juli",
+      "dietary": [
+        "Sin TACC / Celíaco"
+      ],
+      "song": "La Vida Es Un Carnaval — Celia Cruz",
+      "message": "¡Qué felicidad enorme! Ahí estaremos los cuatro.",
+      "createdAt": "2026-11-20T18:10:00.000Z"
+    },
+    {
+      "id": "rsvp-2",
+      "eventSlug": "sofia-y-lucas",
+      "guestName": "Julieta Fernández & Franco",
+      "attending": true,
+      "passesUsed": 2,
+      "companions": "Franco Díaz",
+      "dietary": [
+        "Vegetariano"
+      ],
+      "song": "Don't Stop Me Now — Queen",
+      "message": "¡No nos lo perdemos por nada!",
+      "createdAt": "2026-11-20T19:45:00.000Z"
+    },
+    {
+      "id": "rsvp-3",
+      "eventSlug": "sofia-y-lucas",
+      "guestName": "Tío Roberto Gómez",
+      "attending": false,
+      "passesUsed": 0,
+      "companions": "",
+      "dietary": [],
+      "song": "",
+      "message": "Justo estoy de viaje en Córdoba, les mando un abrazo gigante.",
+      "createdAt": "2026-11-21T01:15:00.000Z"
+    },
+    {
+      "id": "rsvp-4",
+      "eventSlug": "mis-xv-valen",
+      "guestName": "Camila Torres",
+      "attending": true,
+      "passesUsed": 1,
+      "companions": "",
+      "dietary": [],
+      "song": "Corazón Vacío — María Becerra",
+      "message": "¡Va a ser la mejor noche!",
+      "createdAt": "2026-11-21T02:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,1475 @@
+export type EventCategory =
+  | "boda"
+  | "xv"
+  | "hombre"
+  | "nino"
+  | "nina"
+  | "bautismo";
+
+export type LayoutId =
+  | "editorial-sobre"
+  | "fullscreen-hero"
+  | "neon-dark"
+  | "ticket-vip"
+  | "diario-editorial"
+  | "infantil-animado";
+
+export interface SkinPalette {
+  bg: string;
+  surface: string;
+  surfaceAlt: string;
+  text: string;
+  textMuted: string;
+  accent: string;
+  accentText: string;
+  border: string;
+  isDark: boolean;
+}
+
+export interface EventLocation {
+  label: string;
+  venue: string;
+  address: string;
+  city: string;
+  time: string;
+  mapsUrl: string;
+}
+
+export interface ScheduleItem {
+  time: string;
+  title: string;
+  detail: string;
+}
+
+export interface SampleEventData {
+  eyebrow: string;
+  title: string;
+  monogram: string;
+  badgeText?: string;
+  dateISO: string;
+  dateDisplay: string;
+  timeDisplay: string;
+  quote: string;
+  storyTitle?: string;
+  storyText?: string;
+  parentsOrHosts?: { label: string; names: string[] }[];
+  locations: EventLocation[];
+  schedule: ScheduleItem[];
+  dressCode: {
+    label: string;
+    notes: string;
+    swatches: { name: string; hex: string }[];
+  };
+  gifts: {
+    title: string;
+    intro: string;
+    holder: string;
+    bank: string;
+    alias: string;
+    cbu: string;
+  };
+  adultOnlyNote?: string;
+  kidsNote?: string;
+  rsvpDeadline: string;
+  gallery: string[];
+  audioTitle: string;
+  audioUrl: string;
+}
+
+export interface InvitationSkin {
+  id: string;
+  name: string;
+  subtitle: string;
+  category: EventCategory;
+  layoutId: LayoutId;
+  featured?: boolean;
+  heroImage: string;
+  imageFilter?: string;
+  fontDisplay: "cormorant" | "script" | "pinyon" | "fraunces" | "cinzel" | "oswald" | "fredoka" | "playfair";
+  palette: SkinPalette;
+  sample: SampleEventData;
+}
+
+export const CATEGORY_LABELS: Record<EventCategory, string> = {
+  boda: "Bodas",
+  xv: "XV Años",
+  hombre: "Hombres & 18 Años",
+  nino: "Niños",
+  nina: "Niñas",
+  bautismo: "Bautismos & Bebé",
+};
+
+export const LAYOUT_LABELS: Record<LayoutId, string> = {
+  "editorial-sobre": "Sobre con Sello de Lacre",
+  "fullscreen-hero": "Portada Cinematográfica",
+  "neon-dark": "Edición Nocturna VIP",
+  "ticket-vip": "Pase / Ticket Perforado",
+  "diario-editorial": "Edición Diario / Revista",
+  "infantil-animado": "Aventura Ilustrada",
+};
+
+const BODA_SAMPLE: SampleEventData = {
+  eyebrow: "¡Nos Casamos!",
+  title: "Sofía & Lucas",
+  monogram: "S & L",
+  dateISO: "2027-04-17T19:30:00-03:00",
+  dateDisplay: "Sábado 17 de Abril de 2027",
+  timeDisplay: "19:30 hs",
+  quote:
+    "Hay momentos en la vida que son especiales por sí solos, pero compartirlos con quienes más queremos los vuelve inolvidables.",
+  storyTitle: "Nuestra Historia",
+  storyText:
+    "Todo empezó con un café improvisado un viernes de lluvia en Palermo. Cinco años, dos mudanzas y mil viajes después, elegimos celebrar el comienzo de nuestra familia junto a vos.",
+  parentsOrHosts: [
+    { label: "Padres de la Novia", names: ["Roberto Martínez", "Laura Pereyra"] },
+    { label: "Padres del Novio", names: ["Carlos Gómez", "Patricia Rossi"] },
+  ],
+  locations: [
+    {
+      label: "Ceremonia",
+      venue: "Parroquia San Martín de Tours",
+      address: "San Martín de Tours 2949",
+      city: "Palermo, CABA",
+      time: "19:30 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parroquia+San+Martin+de+Tours+Palermo+Buenos+Aires",
+    },
+    {
+      label: "Fiesta",
+      venue: "Finca Los Olivares",
+      address: "Ruta Provincial 27 Km 14",
+      city: "Benavídez, Buenos Aires",
+      time: "21:00 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Benavidez+Buenos+Aires",
+    },
+  ],
+  schedule: [
+    { time: "19:30", title: "Ceremonia Religiosa", detail: "Llegar 15 minutos antes" },
+    { time: "21:00", title: "Recepción en Jardines", detail: "Cóctel de bienvenida al aire libre" },
+    { time: "22:30", title: "Cena & Brindis", detail: "Menú principal y opciones Sin TACC" },
+    { time: "00:00", title: "Apertura de Pista", detail: "Vals, baile y barra abierta" },
+  ],
+  dressCode: {
+    label: "Elegante",
+    notes: "Sugerimos tonos tierra, oliva o champagne. Por favor evitar el color blanco y marfil, reservados para la novia.",
+    swatches: [
+      { name: "Champagne", hex: "#D6C5A9" },
+      { name: "Verde Oliva", hex: "#6B7B60" },
+      { name: "Terracota", hex: "#A8644B" },
+      { name: "Negro", hex: "#262423" },
+    ],
+  },
+  gifts: {
+    title: "Mesa de Regalos",
+    intro:
+      "Tu presencia es nuestro mejor regalo. Si además querés ayudarnos con nuestra luna de miel, te dejamos nuestros datos:",
+    holder: "Sofía Martínez y Lucas Gómez",
+    bank: "Banco Galicia",
+    alias: "SOFIA.LUCAS.BODA",
+    cbu: "0070099330004125874190",
+  },
+  adultOnlyNote: "Celebración pensada para adultos. Te agradecemos organizar con anticipación.",
+  rsvpDeadline: "Confirmar antes del 15 de Marzo de 2027",
+  gallery: [
+    "/images/gallery/boda-1.webp",
+    "/images/gallery/boda-2.webp",
+    "/images/templates/boda-sobre-marfil.webp",
+  ],
+  audioTitle: "Vals en Piano — Instrumental",
+  audioUrl: "/audio/romantic-piano.wav",
+};
+
+const XV_SAMPLE: SampleEventData = {
+  eyebrow: "Mis XV Años",
+  title: "Valentina",
+  monogram: "V · XV",
+  badgeText: "XV",
+  dateISO: "2027-05-22T21:00:00-03:00",
+  dateDisplay: "Sábado 22 de Mayo de 2027",
+  timeDisplay: "21:00 hs",
+  quote:
+    "Llega una noche soñada, única e irrepetible. Quiero bailar, reír y guardar cada abrazo con las personas que hacen mi vida más feliz.",
+  locations: [
+    {
+      label: "La Fiesta",
+      venue: "Salón Palacio Duhau Gardens",
+      address: "Av. Alvear 1661",
+      city: "Recoleta, CABA",
+      time: "21:00 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Av+Alvear+1661+Buenos+Aires",
+    },
+  ],
+  schedule: [
+    { time: "21:00", title: "Recepción & Fotos", detail: "Alfombra de bienvenida y cabina 360" },
+    { time: "22:15", title: "Entrada Triunfal & Vals", detail: "El momento más esperado de la noche" },
+    { time: "23:00", title: "Cena", detail: "Opciones clásicas, veggie y Sin TACC" },
+    { time: "00:30", title: "Carnaval Carioca & DJ Set", detail: "Fiesta hasta el amanecer" },
+  ],
+  dressCode: {
+    label: "Elegante / Fiesta",
+    notes: "Vení con ganas de brillar y zapatos cómodos para bailar toda la noche. Evitar rosa pastel.",
+    swatches: [
+      { name: "Champán", hex: "#E5C6B0" },
+      { name: "Negro", hex: "#1B191C" },
+      { name: "Borgoña", hex: "#6D283A" },
+      { name: "Plata", hex: "#B8BCC4" },
+    ],
+  },
+  gifts: {
+    title: "Regalos",
+    intro:
+      "Lo más importante es compartir esta noche juntos. Si querés hacerme un presente para mi viaje soñado:",
+    holder: "Valentina Morales",
+    bank: "Mercado Pago",
+    alias: "VALEN.MIS.XV.2027",
+    cbu: "0000003100084521987412",
+  },
+  rsvpDeadline: "Confirmar asistencia antes del 1 de Mayo de 2027",
+  gallery: [
+    "/images/gallery/xv-1.webp",
+    "/images/templates/xv-gala-rosa.webp",
+    "/images/gallery/boda-2.webp",
+  ],
+  audioTitle: "Melodía Nocturna — Instrumental",
+  audioUrl: "/audio/romantic-piano.wav",
+};
+
+const HOMBRE_SAMPLE: SampleEventData = {
+  eyebrow: "Edición Especial · 40 Años",
+  title: "Martín #40",
+  monogram: "M · 40",
+  badgeText: "VIP #40",
+  dateISO: "2027-03-13T20:30:00-03:00",
+  dateDisplay: "Sábado 13 de Marzo de 2027",
+  timeDisplay: "20:30 hs",
+  quote:
+    "Cuatro décadas no se cumplen todos los días. Buena música, brindis de los buenos y los amigos de siempre en un solo lugar.",
+  locations: [
+    {
+      label: "Punto de Encuentro",
+      venue: "Quinta El Roble",
+      address: "Camino Los Nogales 840",
+      city: "San Salvador de Jujuy",
+      time: "20:30 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=San+Salvador+de+Jujuy",
+    },
+  ],
+  schedule: [
+    { time: "20:30", title: "Picada & Tragos de Autor", detail: "Recepción en la galería con música" },
+    { time: "22:00", title: "Fuegos & Asado", detail: "Cortes a la estaca y opciones vegetarianas" },
+    { time: "00:00", title: "Brindis de los 40", detail: "Torta y banda en vivo" },
+    { time: "01:00", title: "Cachengue & Rock 90s", detail: "DJ hasta que aguanten" },
+  ],
+  dressCode: {
+    label: "Elegante Sport / Noche",
+    notes: "Cómodo, con onda de noche. Traer abrigo liviano para el parque.",
+    swatches: [
+      { name: "Carbón", hex: "#1C1C1E" },
+      { name: "Whisky", hex: "#C89B54" },
+      { name: "Arena", hex: "#D6CBB8" },
+    ],
+  },
+  gifts: {
+    title: "Vaquita / Regalo",
+    intro:
+      "Con que vengas a brindar ya está pago. Si querés sumarte a la vaquita para el próximo viaje en moto:",
+    holder: "Martín Figueroa",
+    bank: "Banco Macro",
+    alias: "MARTIN.CUARENTA.OK",
+    cbu: "2850590940095123456789",
+  },
+  rsvpDeadline: "Confirmá antes del 1 de Marzo así calculamos el asado",
+  gallery: [
+    "/images/templates/hombre-whisky-gold.webp",
+    "/images/gallery/boda-2.webp",
+  ],
+  audioTitle: "Lounge & Jazz Nocturno",
+  audioUrl: "/audio/lounge-warm.wav",
+};
+
+const NINO_SAMPLE: SampleEventData = {
+  eyebrow: "¡Aventurero en Camino!",
+  title: "Bautista cumple 5",
+  monogram: "B · 5",
+  badgeText: "5 AÑITOS",
+  dateISO: "2027-06-12T16:00:00-03:00",
+  dateDisplay: "Sábado 12 de Junio de 2027",
+  timeDisplay: "16:00 a 19:00 hs",
+  quote:
+    "¡Vení a explorar la selva de dinosaurios! Habrá juegos, búsqueda de fósiles, piñata y mucha torta para festejar mis 5 años.",
+  locations: [
+    {
+      label: "Salón de Aventuras",
+      venue: "Multiespacio Mundo Chico",
+      address: "Av. Libertador 1420",
+      city: "Vicente López, Buenos Aires",
+      time: "16:00 hs (Puntual)",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Vicente+Lopez+Buenos+Aires",
+    },
+  ],
+  schedule: [
+    { time: "16:00", title: "Bienvenida de Exploradores", detail: "Maquillaje artístico y sector blando" },
+    { time: "17:00", title: "Búsqueda del Tesoro Dino", detail: "Juegos guiados por animadores" },
+    { time: "18:15", title: "Merienda & Torta", detail: "Avisanos si hay alergias o Sin TACC" },
+    { time: "19:00", title: "Piñata & Despedida", detail: "Entrega de sorpresitas" },
+  ],
+  dressCode: {
+    label: "Súper Cómodo para Jugar",
+    notes: "Zapatillas y ropa cómoda para saltar en los inflables. ¡No hace falta disfraz!",
+    swatches: [
+      { name: "Selva", hex: "#588157" },
+      { name: "Arena", hex: "#E6CCB2" },
+      { name: "Sol", hex: "#E9C46A" },
+    ],
+  },
+  gifts: {
+    title: "Regalo (Opcional)",
+    intro:
+      "Lo que más quiere Bauti es jugar con sus amigos. Si preferís hacerle un presente práctico o sumarte a su bici nueva:",
+    holder: "Camila Ruiz (Mamá de Bauti)",
+    bank: "Mercado Pago",
+    alias: "BAUTI.CUMPLE.CINCO",
+    cbu: "0000003100051234987654",
+  },
+  kidsNote: "Los papás que deseen quedarse a tomar unos mates en el patio del salón son bienvenidos.",
+  rsvpDeadline: "Confirmar antes del 4 de Junio (indicar alergias del peque)",
+  gallery: ["/images/templates/nino-dino-aventura.webp"],
+  audioTitle: "Cajita Alegre — Instrumental",
+  audioUrl: "/audio/playful-celesta.wav",
+};
+
+const NINA_SAMPLE: SampleEventData = {
+  eyebrow: "Una Tarde Mágica",
+  title: "Emma cumple 6",
+  monogram: "E · 6",
+  badgeText: "6 AÑITOS",
+  dateISO: "2027-07-10T16:30:00-03:00",
+  dateDisplay: "Sábado 10 de Julio de 2027",
+  timeDisplay: "16:30 a 19:30 hs",
+  quote:
+    "Te invito a mi castillo en las nubes para compartir una tarde llena de cuentos, brillitos, música y alegría.",
+  locations: [
+    {
+      label: "El Castillo",
+      venue: "Jardín Encantado Eventos",
+      address: "Calle Los Paraísos 455",
+      city: "San Isidro, Buenos Aires",
+      time: "16:30 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=San+Isidro+Buenos+Aires",
+    },
+  ],
+  schedule: [
+    { time: "16:30", title: "Recepción Real", detail: "Coronas y brillos para todas las amigas" },
+    { time: "17:30", title: "Show Musical & Juegos", detail: "Baile y taller de pulseritas" },
+    { time: "18:30", title: "Mesa Dulce & Soplar Velitas", detail: "Opciones libres de gluten disponibles" },
+    { time: "19:30", title: "Cierre Mágico", detail: "Bolsitas de recuerdo" },
+  ],
+  dressCode: {
+    label: "Libre y Cómodo",
+    notes: "Si querés venir con tu vestido o detalle favorito pastel, ¡genial! Traer medias para los peloteros.",
+    swatches: [
+      { name: "Rosa Pastel", hex: "#F472B6" },
+      { name: "Lavanda", hex: "#C084FC" },
+      { name: "Oro Suave", hex: "#EAB308" },
+    ],
+  },
+  gifts: {
+    title: "Presente (Opcional)",
+    intro:
+      "Tu compañía en este día es lo mejor. Si querés colaborar con su regalo especial:",
+    holder: "Julieta Méndez (Mamá de Emma)",
+    bank: "Banco Santander",
+    alias: "EMMA.SEIS.ANIOS",
+    cbu: "0720145188000036985214",
+  },
+  kidsNote: "Horario puntual. Papás invitados a quedarse en el sector cafetería.",
+  rsvpDeadline: "Confirmar antes del 2 de Julio",
+  gallery: ["/images/templates/nina-reino-pastel.webp"],
+  audioTitle: "Melodía Encantada",
+  audioUrl: "/audio/playful-celesta.wav",
+};
+
+const BAUTISMO_SAMPLE: SampleEventData = {
+  eyebrow: "Mi Bautismo & Primer Añito",
+  title: "Mateo",
+  monogram: "M",
+  badgeText: "1 AÑO",
+  dateISO: "2027-08-15T12:00:00-03:00",
+  dateDisplay: "Domingo 15 de Agosto de 2027",
+  timeDisplay: "12:00 hs",
+  quote:
+    "Con el corazón lleno de amor, queremos invitarte a celebrar la bendición del bautismo y el primer añito de nuestro pequeño Mateo.",
+  parentsOrHosts: [
+    { label: "Sus Papás", names: ["Agustina Silva", "Tomás Ferreyra"] },
+    { label: "Sus Padrinos", names: ["Camila Silva", "Ignacio Ferreyra"] },
+  ],
+  locations: [
+    {
+      label: "Ceremonia",
+      venue: "Capilla Nuestra Señora del Pilar",
+      address: "Junín 1898",
+      city: "Recoleta, CABA",
+      time: "12:00 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Iglesia+del+Pilar+Recoleta",
+    },
+    {
+      label: "Almuerzo Familiar",
+      venue: "Casa Quinta La Magnolia",
+      address: "Las Camelias 320",
+      city: "Pilar, Buenos Aires",
+      time: "13:30 hs",
+      mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pilar+Buenos+Aires",
+    },
+  ],
+  schedule: [
+    { time: "12:00", title: "Bautismo en Capilla", detail: "Nos encontramos 15 min antes en el atrio" },
+    { time: "13:30", title: "Almuerzo al Sol", detail: "Mesa familiar y rincón de juegos para peques" },
+    { time: "16:00", title: "Mesa Dulce & Primer Añito", detail: "Soplamos juntos la primera velita" },
+  ],
+  dressCode: {
+    label: "Elegante de Día / Tonos Claros",
+    notes: "Sugerimos colores claros, beige, lino o celeste suave para acompañar la armonía del día.",
+    swatches: [
+      { name: "Lino", hex: "#E6DEC8" },
+      { name: "Salvia", hex: "#9CAF88" },
+      { name: "Blanco", hex: "#FFFFFF" },
+    ],
+  },
+  gifts: {
+    title: "Con Amor",
+    intro:
+      "El mejor regalo es tenerte cerca en este día tan especial. Si deseás dejarle un mimo a Mateo:",
+    holder: "Agustina Silva",
+    bank: "Banco Macro",
+    alias: "MATEO.BAUTISMO.1",
+    cbu: "2850590940095999888777",
+  },
+  rsvpDeadline: "Confirmar asistencia antes del 1 de Agosto",
+  gallery: ["/images/templates/bebe-lino-natural.webp"],
+  audioTitle: "Piano de Cuna — Instrumental",
+  audioUrl: "/audio/romantic-piano.wav",
+};
+
+export const INVITATION_SKINS: InvitationSkin[] = [
+  // ================= BODAS =================
+  {
+    id: "boda-sobre-marfil",
+    name: "Sobre Real Oro & Marfil",
+    subtitle: "Clásico editorial con sello de lacre y papel algodón",
+    category: "boda",
+    layoutId: "editorial-sobre",
+    featured: true,
+    heroImage: "/images/templates/boda-sobre-marfil.webp",
+    fontDisplay: "script",
+    palette: {
+      bg: "#FAF7F2",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F3ECE0",
+      text: "#2A2420",
+      textMuted: "#6F655C",
+      accent: "#B89352",
+      accentText: "#FFFFFF",
+      border: "#E6DAC6",
+      isDark: false,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-gran-noticia",
+    name: "La Gran Noticia (Diario)",
+    subtitle: "Estilo periódico vintage con foto editorial",
+    category: "boda",
+    layoutId: "diario-editorial",
+    heroImage: "/images/gallery/boda-1.webp",
+    imageFilter: "grayscale contrast-110",
+    fontDisplay: "playfair",
+    palette: {
+      bg: "#F3EFE6",
+      surface: "#FAF8F2",
+      surfaceAlt: "#E8E1D3",
+      text: "#181817",
+      textMuted: "#5A554C",
+      accent: "#7A5C3E",
+      accentText: "#FFFFFF",
+      border: "#CFC5B4",
+      isDark: false,
+    },
+    sample: {
+      ...BODA_SAMPLE,
+      eyebrow: "Edición Especial · Nupcias",
+      badgeText: "EDICIÓN N° 01",
+    },
+  },
+  {
+    id: "boda-boho-pampas",
+    name: "Boho Pampas & Terracota",
+    subtitle: "Portada cinematográfica cálida de campo",
+    category: "boda",
+    layoutId: "fullscreen-hero",
+    heroImage: "/images/gallery/boda-1.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#F8F1EA",
+      surface: "#FFFDF9",
+      surfaceAlt: "#EFE2D4",
+      text: "#35251D",
+      textMuted: "#7A6052",
+      accent: "#B86B4B",
+      accentText: "#FFFFFF",
+      border: "#E3CDBE",
+      isDark: false,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-noche-gala",
+    name: "Noche de Gala Art Déco",
+    subtitle: "Elegancia nocturna en negro carbón y dorado",
+    category: "boda",
+    layoutId: "neon-dark",
+    heroImage: "/images/gallery/boda-2.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#101116",
+      surface: "#181A22",
+      surfaceAlt: "#222531",
+      text: "#F5EFE6",
+      textMuted: "#B7AFA2",
+      accent: "#D4AF37",
+      accentText: "#101116",
+      border: "#343025",
+      isDark: true,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-botanica-eucalipto",
+    name: "Jardín Botánico & Eucalipto",
+    subtitle: "Acuarela orgánica con hojas de eucalipto y rosas blancas",
+    category: "boda",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/boda-jardin-botanico.webp",
+    fontDisplay: "pinyon",
+    palette: {
+      bg: "#F6F8F4",
+      surface: "#FFFFFF",
+      surfaceAlt: "#EBF0E6",
+      text: "#243024",
+      textMuted: "#5E6E5D",
+      accent: "#5F7D5B",
+      accentText: "#FFFFFF",
+      border: "#D5DFD0",
+      isDark: false,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-acuarela-azul",
+    name: "Acuarela Azul Serenata",
+    subtitle: "Azul francés y papel texturado ideal ceremonias de día",
+    category: "boda",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/boda-sobre-marfil.webp",
+    imageFilter: "hue-rotate-[185deg] saturate-90",
+    fontDisplay: "pinyon",
+    palette: {
+      bg: "#F4F7FA",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E6EEF6",
+      text: "#1B2A3C",
+      textMuted: "#576B82",
+      accent: "#3B6998",
+      accentText: "#FFFFFF",
+      border: "#CBD9E8",
+      isDark: false,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-playa-brisa",
+    name: "Brisa de Playa & Lino",
+    subtitle: "Minimalismo costero cálido para bodas al aire libre",
+    category: "boda",
+    layoutId: "fullscreen-hero",
+    heroImage: "/images/gallery/boda-1.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#F9F8F4",
+      surface: "#FFFFFF",
+      surfaceAlt: "#EFECE3",
+      text: "#2B3236",
+      textMuted: "#687278",
+      accent: "#7A948E",
+      accentText: "#FFFFFF",
+      border: "#DFDBD0",
+      isDark: false,
+    },
+    sample: BODA_SAMPLE,
+  },
+  {
+    id: "boda-boarding-pass",
+    name: "Destination Wedding Pass",
+    subtitle: "Estilo pase de abordar para casamientos en quinta o viaje",
+    category: "boda",
+    layoutId: "ticket-vip",
+    heroImage: "/images/gallery/boda-2.webp",
+    fontDisplay: "playfair",
+    palette: {
+      bg: "#F7F4EF",
+      surface: "#FFFFFF",
+      surfaceAlt: "#ECE6DC",
+      text: "#23211E",
+      textMuted: "#6E685F",
+      accent: "#9E7B4F",
+      accentText: "#FFFFFF",
+      border: "#DED6C8",
+      isDark: false,
+    },
+    sample: {
+      ...BODA_SAMPLE,
+      eyebrow: "BOARDING PASS · NUESTRA BODA",
+      badgeText: "DESTINO AMOR",
+    },
+  },
+
+  // ================= XV AÑOS =================
+  {
+    id: "xv-gala-rosa",
+    name: "Gala Rosa & Champán",
+    subtitle: "Portada de revista con luces doradas y vestido",
+    category: "xv",
+    layoutId: "fullscreen-hero",
+    featured: true,
+    heroImage: "/images/templates/xv-gala-rosa.webp",
+    fontDisplay: "script",
+    palette: {
+      bg: "#FDF7F9",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F7EBF0",
+      text: "#352028",
+      textMuted: "#7A5B66",
+      accent: "#C86D8E",
+      accentText: "#FFFFFF",
+      border: "#EED6DF",
+      isDark: false,
+    },
+    sample: XV_SAMPLE,
+  },
+  {
+    id: "xv-neon-boliche",
+    name: "Neón Party & Boliche",
+    subtitle: "Oscuro vibrante con destellos magenta y violeta",
+    category: "xv",
+    layoutId: "neon-dark",
+    heroImage: "/images/gallery/xv-1.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#090714",
+      surface: "#141029",
+      surfaceAlt: "#1D173B",
+      text: "#F8F6FF",
+      textMuted: "#B8B0D4",
+      accent: "#FF2E93",
+      accentText: "#FFFFFF",
+      border: "#382864",
+      isDark: true,
+    },
+    sample: XV_SAMPLE,
+  },
+  {
+    id: "xv-festival-pass",
+    name: "Festival VIP Pass",
+    subtitle: "Ticket perforado estilo recital o Lollapalooza",
+    category: "xv",
+    layoutId: "ticket-vip",
+    heroImage: "/images/gallery/xv-1.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#16121E",
+      surface: "#221C30",
+      surfaceAlt: "#2E2640",
+      text: "#FFFFFF",
+      textMuted: "#C2B9D6",
+      accent: "#FF6B8B",
+      accentText: "#FFFFFF",
+      border: "#443760",
+      isDark: true,
+    },
+    sample: {
+      ...XV_SAMPLE,
+      eyebrow: "ALL ACCESS · XV TOUR 2027",
+      badgeText: "VIP PASS",
+    },
+  },
+  {
+    id: "xv-mariposa-sobre",
+    name: "Sobre Rosa Imperial",
+    subtitle: "Sobre clásico con sello de lacre y marco floral",
+    category: "xv",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/boda-sobre-marfil.webp",
+    imageFilter: "hue-rotate-[-18deg] saturate-110",
+    fontDisplay: "script",
+    palette: {
+      bg: "#FAF3F6",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F4E5EC",
+      text: "#33222A",
+      textMuted: "#735864",
+      accent: "#B87A90",
+      accentText: "#FFFFFF",
+      border: "#EAD3DC",
+      isDark: false,
+    },
+    sample: XV_SAMPLE,
+  },
+  {
+    id: "xv-mariposas-lila",
+    name: "Mariposas Nocturnas & Oro",
+    subtitle: "Cielo nocturno violeta con mariposas luminosas",
+    category: "xv",
+    layoutId: "neon-dark",
+    heroImage: "/images/templates/xv-mariposa-neon.webp",
+    fontDisplay: "script",
+    palette: {
+      bg: "#130C21",
+      surface: "#1E1433",
+      surfaceAlt: "#291C45",
+      text: "#FAF7FF",
+      textMuted: "#C8B8E6",
+      accent: "#D9A441",
+      accentText: "#130C21",
+      border: "#432F6B",
+      isDark: true,
+    },
+    sample: XV_SAMPLE,
+  },
+  {
+    id: "xv-esmeralda-real",
+    name: "Esmeralda & Dorado Real",
+    subtitle: "Verde esmeralda intenso con acentos oro para gala nocturna",
+    category: "xv",
+    layoutId: "fullscreen-hero",
+    heroImage: "/images/templates/xv-gala-rosa.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#0D1F1B",
+      surface: "#152E28",
+      surfaceAlt: "#1D3E36",
+      text: "#F4F8F6",
+      textMuted: "#B0C7BF",
+      accent: "#D4AF37",
+      accentText: "#0D1F1B",
+      border: "#2B594D",
+      isDark: true,
+    },
+    sample: XV_SAMPLE,
+  },
+  {
+    id: "xv-editorial-vogue",
+    name: "Edición Tapa de Revista",
+    subtitle: "Portada monocromática con tipografía de alta costura",
+    category: "xv",
+    layoutId: "diario-editorial",
+    heroImage: "/images/templates/xv-gala-rosa.webp",
+    imageFilter: "grayscale contrast-110",
+    fontDisplay: "playfair",
+    palette: {
+      bg: "#F8F6F4",
+      surface: "#FFFFFF",
+      surfaceAlt: "#EDE9E4",
+      text: "#181818",
+      textMuted: "#5E5B57",
+      accent: "#A63D62",
+      accentText: "#FFFFFF",
+      border: "#DAD4CC",
+      isDark: false,
+    },
+    sample: {
+      ...XV_SAMPLE,
+      eyebrow: "EDICIÓN ESPECIAL · XV AÑOS",
+      badgeText: "PORTADA 2027",
+    },
+  },
+  {
+    id: "xv-cielo-acuarela",
+    name: "Cielo Pastel & Flores",
+    subtitle: "Acuarela etérea en tonos celeste, lavanda y marfil",
+    category: "xv",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/boda-jardin-botanico.webp",
+    fontDisplay: "script",
+    palette: {
+      bg: "#F3F6FA",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E4ECF7",
+      text: "#222E40",
+      textMuted: "#5C6D85",
+      accent: "#6B88B8",
+      accentText: "#FFFFFF",
+      border: "#CFDCF0",
+      isDark: false,
+    },
+    sample: XV_SAMPLE,
+  },
+
+  // ================= HOMBRES & 18 AÑOS =================
+  {
+    id: "hombre-18-rooftop",
+    name: "18 Años · Rooftop Night",
+    subtitle: "Especial 18 años varón con skyline nocturno y luces ámbar",
+    category: "hombre",
+    layoutId: "fullscreen-hero",
+    featured: true,
+    heroImage: "/images/templates/hombre-18-rooftop.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#0B111C",
+      surface: "#121B2B",
+      surfaceAlt: "#19263D",
+      text: "#F8FAFC",
+      textMuted: "#94A3B8",
+      accent: "#F59E0B",
+      accentText: "#0B111C",
+      border: "#263859",
+      isDark: true,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "MY 18TH NIGHT · ROOFTOP PARTY",
+      title: "Mateo · 18",
+      monogram: "M · 18",
+      badgeText: "18 AÑOS VIP",
+    },
+  },
+  {
+    id: "hombre-18-street",
+    name: "18 Años · Monocromo VIP",
+    subtitle: "Ticket perforado arquitectónico en negro, plata y grafito",
+    category: "hombre",
+    layoutId: "ticket-vip",
+    heroImage: "/images/templates/hombre-editorial-mono.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#121316",
+      surface: "#1B1D22",
+      surfaceAlt: "#262930",
+      text: "#F4F4F5",
+      textMuted: "#A1A1AA",
+      accent: "#E4E4E7",
+      accentText: "#121316",
+      border: "#343741",
+      isDark: true,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "OPEN BAR · 18 EDITION",
+      title: "Lucas #18",
+      monogram: "18",
+      badgeText: "PASS #18",
+    },
+  },
+  {
+    id: "hombre-whisky-gold",
+    name: "Whisky & Black Gold",
+    subtitle: "Edición nocturna de lujo para 30, 40, 50 y 60 años",
+    category: "hombre",
+    layoutId: "neon-dark",
+    heroImage: "/images/templates/hombre-whisky-gold.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#111112",
+      surface: "#1A1A1D",
+      surfaceAlt: "#242429",
+      text: "#F3EDE2",
+      textMuted: "#B2AA9E",
+      accent: "#C89B54",
+      accentText: "#111112",
+      border: "#363024",
+      isDark: true,
+    },
+    sample: HOMBRE_SAMPLE,
+  },
+  {
+    id: "hombre-estadio-vip",
+    name: "Tercer Tiempo / Estadio",
+    subtitle: "Ticket VIP de partido con dorsal y fecha destacada",
+    category: "hombre",
+    layoutId: "ticket-vip",
+    heroImage: "/images/templates/hombre-futbol-clasico.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#0D1F15",
+      surface: "#152E20",
+      surfaceAlt: "#1D3E2C",
+      text: "#F8FAFC",
+      textMuted: "#A7C4B3",
+      accent: "#4ADE80",
+      accentText: "#0A1910",
+      border: "#2B593F",
+      isDark: true,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "COPA AMIGOS · ENTRADA GENERAL",
+      title: "Fede #30",
+      monogram: "30",
+      badgeText: "TRIBUNA VIP",
+    },
+  },
+  {
+    id: "hombre-asado-sobre",
+    name: "Club & Lounge Madera",
+    subtitle: "Sobre masculino cálido en madera ahumada y cobre",
+    category: "hombre",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/hombre-asado-lounge.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#1B1613",
+      surface: "#261F1A",
+      surfaceAlt: "#332922",
+      text: "#F5EFE8",
+      textMuted: "#BEB0A2",
+      accent: "#D97736",
+      accentText: "#FFFFFF",
+      border: "#4A3A2F",
+      isDark: true,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "Fuegos, Quinta & Amigos",
+      title: "Los 50 de Sergio",
+      monogram: "S · 50",
+    },
+  },
+  {
+    id: "hombre-caballero-diario",
+    name: "Edición Caballero",
+    subtitle: "Tapa estilo revista clásica para 50, 60 años o recibidas",
+    category: "hombre",
+    layoutId: "diario-editorial",
+    heroImage: "/images/templates/hombre-editorial-mono.webp",
+    fontDisplay: "playfair",
+    palette: {
+      bg: "#EFECE6",
+      surface: "#FAF9F6",
+      surfaceAlt: "#E4DFD5",
+      text: "#1C1F22",
+      textMuted: "#585F66",
+      accent: "#3B4C5E",
+      accentText: "#FFFFFF",
+      border: "#CBC5B9",
+      isDark: false,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "EDICIÓN CONMEMORATIVA · 60 AÑOS",
+      title: "Don Carlos · 60",
+      badgeText: "EDICIÓN DE ORO",
+    },
+  },
+  {
+    id: "hombre-gaming-cyber",
+    name: "Cyber Lounge / Night",
+    subtitle: "Oscuro eléctrico con luces cian para 18, 25 o 30 años",
+    category: "hombre",
+    layoutId: "neon-dark",
+    heroImage: "/images/templates/nino-gamer-street.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#0B111E",
+      surface: "#121C30",
+      surfaceAlt: "#1B2842",
+      text: "#F1F5F9",
+      textMuted: "#94A3B8",
+      accent: "#38BDF8",
+      accentText: "#08101C",
+      border: "#263859",
+      isDark: true,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "AFTER OFFICE & BAR",
+      title: "Tomás · 35",
+      monogram: "T · 35",
+    },
+  },
+  {
+    id: "hombre-minimal-mono",
+    name: "Arquitecto Minimal",
+    subtitle: "Editorial en hormigón, sombra y tipografía sobria",
+    category: "hombre",
+    layoutId: "fullscreen-hero",
+    heroImage: "/images/templates/hombre-editorial-mono.webp",
+    fontDisplay: "cinzel",
+    palette: {
+      bg: "#F4F4F5",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E4E4E7",
+      text: "#18181B",
+      textMuted: "#52525B",
+      accent: "#18181B",
+      accentText: "#FFFFFF",
+      border: "#D4D4D8",
+      isDark: false,
+    },
+    sample: {
+      ...HOMBRE_SAMPLE,
+      eyebrow: "CELEBRACIÓN · 40 AÑOS",
+      title: "Nicolás · XL",
+      monogram: "N · XL",
+    },
+  },
+
+  // ================= NIÑOS =================
+  {
+    id: "nino-dino-aventura",
+    name: "Dino Nórdico Minimal",
+    subtitle: "Diseño escandinavo 2026 en papel algodón, salvia y trazo fino",
+    category: "nino",
+    layoutId: "infantil-animado",
+    featured: true,
+    heroImage: "/images/templates/nino-dino-aventura.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#F6F5F0",
+      surface: "#FFFFFF",
+      surfaceAlt: "#EAE7DC",
+      text: "#2A3027",
+      textMuted: "#626B5E",
+      accent: "#5A7358",
+      accentText: "#FFFFFF",
+      border: "#D8D4C5",
+      isDark: false,
+    },
+    sample: NINO_SAMPLE,
+  },
+  {
+    id: "nino-espacio-cohete",
+    name: "Órbita & Espacio Minimal",
+    subtitle: "Ilustración contemporánea en azul petróleo y líneas doradas",
+    category: "nino",
+    layoutId: "infantil-animado",
+    heroImage: "/images/templates/nino-espacio-cohete.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#111B2B",
+      surface: "#18253B",
+      surfaceAlt: "#20304D",
+      text: "#F8FAFC",
+      textMuted: "#AEBFD8",
+      accent: "#E2B866",
+      accentText: "#111B2B",
+      border: "#2D4266",
+      isDark: true,
+    },
+    sample: {
+      ...NINO_SAMPLE,
+      eyebrow: "EXPEDICIÓN ESPACIAL · 5 AÑOS",
+      title: "Bauti · 5 Años",
+      badgeText: "MISIÓN #5",
+    },
+  },
+  {
+    id: "nino-campeones-ticket",
+    name: "Campeones del Potrero",
+    subtitle: "Entrada de estadio celeste y blanca con edad del cumpleañero",
+    category: "nino",
+    layoutId: "ticket-vip",
+    heroImage: "/images/templates/hombre-futbol-clasico.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#EEF7FF",
+      surface: "#FFFFFF",
+      surfaceAlt: "#DCEEFF",
+      text: "#0F2942",
+      textMuted: "#476A8A",
+      accent: "#1D84D1",
+      accentText: "#FFFFFF",
+      border: "#BDDCF7",
+      isDark: false,
+    },
+    sample: {
+      ...NINO_SAMPLE,
+      eyebrow: "CAMPEONATO DE CUMPLEAÑOS",
+      title: "Mateo #8",
+      badgeText: "CAMISETA #8",
+    },
+  },
+  {
+    id: "nino-pixel-gamer",
+    name: "Esports & Gamer Moderno",
+    subtitle: "Estética 2026 grafito y neón sutil para pre-adolescentes (8–14 años)",
+    category: "nino",
+    layoutId: "neon-dark",
+    heroImage: "/images/templates/nino-gamer-street.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#111318",
+      surface: "#1A1D24",
+      surfaceAlt: "#232833",
+      text: "#F8FAFC",
+      textMuted: "#A1A9B8",
+      accent: "#34D399",
+      accentText: "#0B1220",
+      border: "#2E3545",
+      isDark: true,
+    },
+    sample: {
+      ...NINO_SAMPLE,
+      eyebrow: "LEVEL 10 UNLOCKED",
+      title: "Santi · Nivel 10",
+      badgeText: "PLAYER 1",
+    },
+  },
+  {
+    id: "nino-safari-sobre",
+    name: "Safari Botánico Tierno",
+    subtitle: "Sobre minimalista en lino crema y verde salvia",
+    category: "nino",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/nino-dino-aventura.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#FAF7F2",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F1ECE1",
+      text: "#352F27",
+      textMuted: "#73695B",
+      accent: "#8A6D46",
+      accentText: "#FFFFFF",
+      border: "#E5DDD0",
+      isDark: false,
+    },
+    sample: {
+      ...NINO_SAMPLE,
+      eyebrow: "Mi Primer Añito",
+      title: "Benja · 1 Año",
+    },
+  },
+  {
+    id: "nino-super-comic",
+    name: "Urban Street & Sport",
+    subtitle: "Tarjeta urbana moderna para chicos de 7 a 12 años",
+    category: "nino",
+    layoutId: "ticket-vip",
+    heroImage: "/images/templates/nino-gamer-street.webp",
+    fontDisplay: "oswald",
+    palette: {
+      bg: "#F1F5F9",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E2E8F0",
+      text: "#0F172A",
+      textMuted: "#475569",
+      accent: "#0EA5E9",
+      accentText: "#FFFFFF",
+      border: "#CBD5E1",
+      isDark: false,
+    },
+    sample: {
+      ...NINO_SAMPLE,
+      eyebrow: "PASS VIP · CUMPLEAÑOS",
+      title: "Lauti · 9 Años",
+      badgeText: "CREW #09",
+    },
+  },
+
+  // ================= NIÑAS =================
+  {
+    id: "nina-reino-pastel",
+    name: "Reino Pastel",
+    subtitle: "Castillo encantado en acuarela rosa, lila y dorado",
+    category: "nina",
+    layoutId: "infantil-animado",
+    featured: true,
+    heroImage: "/images/templates/nina-reino-pastel.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#FFF6FA",
+      surface: "#FFFFFF",
+      surfaceAlt: "#FDEAF2",
+      text: "#422436",
+      textMuted: "#7E566E",
+      accent: "#D95D9B",
+      accentText: "#FFFFFF",
+      border: "#F6D1E2",
+      isDark: false,
+    },
+    sample: NINA_SAMPLE,
+  },
+  {
+    id: "nina-sirena-coral",
+    name: "Sirena & Arrecife Coral",
+    subtitle: "Acuarela marina en turquesa, coral pastel y perlas",
+    category: "nina",
+    layoutId: "infantil-animado",
+    heroImage: "/images/templates/nina-sirena-coral.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#F0FAF9",
+      surface: "#FFFFFF",
+      surfaceAlt: "#DDF3F1",
+      text: "#1D3B3A",
+      textMuted: "#4F7573",
+      accent: "#E87A70",
+      accentText: "#FFFFFF",
+      border: "#BEE6E3",
+      isDark: false,
+    },
+    sample: {
+      ...NINA_SAMPLE,
+      eyebrow: "Aventura Bajo el Mar",
+      title: "Cata · 6 Años",
+    },
+  },
+  {
+    id: "nina-pop-star",
+    name: "Pop Star Glitter",
+    subtitle: "Onda concierto/disco para nenas de 8 a 12 años",
+    category: "nina",
+    layoutId: "neon-dark",
+    heroImage: "/images/templates/xv-mariposa-neon.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#1D102B",
+      surface: "#29173D",
+      surfaceAlt: "#36204F",
+      text: "#FFF7FB",
+      textMuted: "#D5BBE6",
+      accent: "#F472B6",
+      accentText: "#1D102B",
+      border: "#513175",
+      isDark: true,
+    },
+    sample: {
+      ...NINA_SAMPLE,
+      eyebrow: "POP STAR PARTY · 10 AÑOS",
+      title: "Sofi Tour #10",
+      badgeText: "BACKSTAGE",
+    },
+  },
+  {
+    id: "nina-pijama-ticket",
+    name: "Pijama Party & Spa",
+    subtitle: "Pase VIP rosado con detalles de fiesta entre amigas",
+    category: "nina",
+    layoutId: "ticket-vip",
+    heroImage: "/images/templates/nina-reino-pastel.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#FFF1F5",
+      surface: "#FFFFFF",
+      surfaceAlt: "#FFE0EB",
+      text: "#4A1B35",
+      textMuted: "#874D6D",
+      accent: "#E85D88",
+      accentText: "#FFFFFF",
+      border: "#FAC6D7",
+      isDark: false,
+    },
+    sample: {
+      ...NINA_SAMPLE,
+      eyebrow: "PASE DE PIJAMADA REAL",
+      title: "Mía cumple 9",
+      badgeText: "SPA & CINE",
+    },
+  },
+  {
+    id: "nina-hadas-sobre",
+    name: "Bosque de Hadas",
+    subtitle: "Sobre romántico pastel con sello dorado",
+    category: "nina",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/nina-reino-pastel.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#FAF5FF",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F1E6FC",
+      text: "#352447",
+      textMuted: "#6F5987",
+      accent: "#9E6BD6",
+      accentText: "#FFFFFF",
+      border: "#E2D0F5",
+      isDark: false,
+    },
+    sample: NINA_SAMPLE,
+  },
+  {
+    id: "nina-arcoiris-boho",
+    name: "Arcoíris Boho & Flores",
+    subtitle: "Tonos durazno, rosa viejo y lavanda súper delicados",
+    category: "nina",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/nina-sirena-coral.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#FDF7F2",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F8EBE1",
+      text: "#452D28",
+      textMuted: "#82615B",
+      accent: "#D4846A",
+      accentText: "#FFFFFF",
+      border: "#EED7C9",
+      isDark: false,
+    },
+    sample: {
+      ...NINA_SAMPLE,
+      eyebrow: "Mi Dulce Cumpleaños",
+      title: "Alma · 4 Años",
+    },
+  },
+
+  // ================= BAUTISMOS & BEBÉ =================
+  {
+    id: "bebe-lino-natural",
+    name: "Angelito & Lino Natural",
+    subtitle: "Acuarela cálida en lino, olivo y estrellitas doradas",
+    category: "bautismo",
+    layoutId: "editorial-sobre",
+    featured: true,
+    heroImage: "/images/templates/bebe-lino-natural.webp",
+    fontDisplay: "pinyon",
+    palette: {
+      bg: "#F9F6F0",
+      surface: "#FFFFFF",
+      surfaceAlt: "#EFE9DD",
+      text: "#3B332B",
+      textMuted: "#766A5D",
+      accent: "#B59663",
+      accentText: "#FFFFFF",
+      border: "#E3DAC8",
+      isDark: false,
+    },
+    sample: BAUTISMO_SAMPLE,
+  },
+  {
+    id: "bebe-osito-nubes",
+    name: "Osito en las Nubes",
+    subtitle: "Ilustración dulce de osito en tonos arena y crema",
+    category: "bautismo",
+    layoutId: "infantil-animado",
+    heroImage: "/images/templates/bebe-ositos-nubes.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#FAF7F2",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F2ECE1",
+      text: "#3E3328",
+      textMuted: "#7A6A5A",
+      accent: "#B89364",
+      accentText: "#FFFFFF",
+      border: "#E6DAC8",
+      isDark: false,
+    },
+    sample: {
+      ...BAUTISMO_SAMPLE,
+      eyebrow: "Baby Shower & Dulce Espera",
+      title: "Bebé Simón",
+      badgeText: "BABY SHOWER",
+    },
+  },
+  {
+    id: "bebe-nubes-celeste",
+    name: "Nubes & Estrellitas Celeste",
+    subtitle: "Apertura ilustrada súper dulce para Baby Shower o Bautismo",
+    category: "bautismo",
+    layoutId: "infantil-animado",
+    heroImage: "/images/templates/bebe-lino-natural.webp",
+    fontDisplay: "fredoka",
+    palette: {
+      bg: "#F3F8FC",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E4F0FA",
+      text: "#22384D",
+      textMuted: "#58738C",
+      accent: "#5D9CD6",
+      accentText: "#FFFFFF",
+      border: "#C9E0F5",
+      isDark: false,
+    },
+    sample: {
+      ...BAUTISMO_SAMPLE,
+      eyebrow: "Dulce Espera · Baby Shower",
+      title: "Bebé Oliver",
+      badgeText: "BABY SHOWER",
+    },
+  },
+  {
+    id: "bebe-florcitas-rosa",
+    name: "Florcitas & Primer Añito",
+    subtitle: "Rosa talco y papel algodón para bautismo o 1er año de nena",
+    category: "bautismo",
+    layoutId: "editorial-sobre",
+    heroImage: "/images/templates/bebe-ositos-nubes.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#FDF7F8",
+      surface: "#FFFFFF",
+      surfaceAlt: "#F6E8EB",
+      text: "#3E2A2F",
+      textMuted: "#7A5D64",
+      accent: "#C88A96",
+      accentText: "#FFFFFF",
+      border: "#EBD5DA",
+      isDark: false,
+    },
+    sample: {
+      ...BAUTISMO_SAMPLE,
+      eyebrow: "Mi Bautismo & Primer Añito",
+      title: "Emma",
+    },
+  },
+  {
+    id: "comunion-oliva-hero",
+    name: "Oliva & Paz Minimal",
+    subtitle: "Portada luminosa para Primera Comunión o Confirmación",
+    category: "bautismo",
+    layoutId: "fullscreen-hero",
+    heroImage: "/images/templates/boda-jardin-botanico.webp",
+    fontDisplay: "cormorant",
+    palette: {
+      bg: "#F6F8F4",
+      surface: "#FFFFFF",
+      surfaceAlt: "#E9EFE5",
+      text: "#253024",
+      textMuted: "#5B6B59",
+      accent: "#6C8465",
+      accentText: "#FFFFFF",
+      border: "#D2DDD0",
+      isDark: false,
+    },
+    sample: {
+      ...BAUTISMO_SAMPLE,
+      eyebrow: "Mi Primera Comunión",
+      title: "Julieta",
+      badgeText: "COMUNIÓN",
+    },
+  },
+  {
+    id: "bebe-edicion-nacimiento",
+    name: "Edición Dulce Llegada",
+    subtitle: "Estilo periódico familiar para anunciar el bautismo o año",
+    category: "bautismo",
+    layoutId: "diario-editorial",
+    heroImage: "/images/templates/bebe-lino-natural.webp",
+    fontDisplay: "playfair",
+    palette: {
+      bg: "#F7F3EC",
+      surface: "#FFFDF9",
+      surfaceAlt: "#EDE5D8",
+      text: "#2D2722",
+      textMuted: "#6E6358",
+      accent: "#A48458",
+      accentText: "#FFFFFF",
+      border: "#DDD2C0",
+      isDark: false,
+    },
+    sample: BAUTISMO_SAMPLE,
+  },
+];
+
+export function getSkinById(id: string): InvitationSkin {
+  return INVITATION_SKINS.find((s) => s.id === id) ?? INVITATION_SKINS[0];
+}

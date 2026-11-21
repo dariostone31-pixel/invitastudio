@@ -1,0 +1,56 @@
+-- InvitaStudio — Esquema PostgreSQL / Supabase
+-- Ejecutar en el SQL Editor de tu proyecto Supabase (opcional: el backend también auto-crea estas tablas al iniciar si faltan).
+
+create table if not exists public.events (
+  id text primary key,
+  order_code text not null unique,
+  slug text not null unique,
+  panel_token text not null unique,
+  skin_id text not null,
+  plan_id text not null check (plan_id in ('esencial', 'pro', 'asistido')),
+  status text not null default 'pendiente' check (status in ('pendiente', 'en_edicion', 'publicada')),
+  payment_status text not null default 'pendiente' check (payment_status in ('pendiente', 'pagado', 'rechazado')),
+  payment_method text,
+  mp_preference_id text,
+  mp_payment_id text,
+  paid_amount integer,
+  event_title text not null,
+  date_iso text not null,
+  date_display text not null,
+  time_display text not null,
+  venue text not null,
+  address text not null default '',
+  city text not null default 'Argentina',
+  alias text not null default '',
+  dress_code text not null default 'Elegante Sport',
+  quote text not null default '',
+  hero_image_url text,
+  gallery_images jsonb,
+  font_override text,
+  accent_override text,
+  audio_override text,
+  memory_mode boolean not null default false,
+  enabled_sections jsonb,
+  contact_name text not null,
+  whatsapp text not null,
+  email text not null,
+  notes text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.rsvps (
+  id text primary key,
+  event_slug text not null references public.events(slug) on delete cascade,
+  guest_name text not null,
+  attending boolean not null default true,
+  passes_used integer not null default 1,
+  companions text not null default '',
+  dietary jsonb not null default '[]'::jsonb,
+  song text not null default '',
+  message text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_events_slug on public.events (slug);
+create index if not exists idx_events_panel_token on public.events (panel_token);
+create index if not exists idx_rsvps_event_slug on public.rsvps (event_slug);

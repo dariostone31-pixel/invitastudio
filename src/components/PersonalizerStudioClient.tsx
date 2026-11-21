@@ -1,0 +1,657 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Save,
+  Check,
+  Palette,
+  Type,
+  Image as ImageIcon,
+  Music,
+  Sliders,
+  ExternalLink,
+  Upload,
+  Sparkles,
+  FileText,
+} from "lucide-react";
+import type { EventRecord, EnabledSectionsConfig } from "@/lib/db";
+import {
+  INVITATION_SKINS,
+  CATEGORY_LABELS,
+  getSkinById,
+  InvitationSkin,
+} from "@/templates/catalog";
+import { InvitationRenderer } from "./invitation-engine/InvitationRenderer";
+
+interface PersonalizerStudioClientProps {
+  event: EventRecord;
+}
+
+const FONT_OPTIONS: { id: InvitationSkin["fontDisplay"]; label: string; desc: string }[] = [
+  { id: "pinyon", label: "Caligrafía Boutique", desc: "Pinyon Script (lujo silencioso)" },
+  { id: "script", label: "Caligrafía Romántica", desc: "Alex Brush (cursiva fluida)" },
+  { id: "cormorant", label: "Clásica Editorial", desc: "Cormorant Garamond (serif)" },
+  { id: "fraunces", label: "Editorial Moderna", desc: "Fraunces (serif expresiva)" },
+  { id: "cinzel", label: "Imperial Lujo", desc: "Cinzel (mayúsculas nobles)" },
+  { id: "playfair", label: "Revista / Diario", desc: "Playfair Display" },
+  { id: "oswald", label: "Urbana / VIP", desc: "Oswald (moderna compacta)" },
+  { id: "fredoka", label: "Alegre / Infantil", desc: "Fredoka (redonda amigable)" },
+];
+
+const ACCENT_SWATCHES = [
+  { name: "Oro Champán", hex: "#B89352" },
+  { name: "Rosa Imperial", hex: "#C86D8E" },
+  { name: "Verde Salvia", hex: "#5F7D5B" },
+  { name: "Azul Francés", hex: "#3B6998" },
+  { name: "Terracota Boho", hex: "#B86B4B" },
+  { name: "Dorado VIP", hex: "#D4AF37" },
+  { name: "Fucsia Neón", hex: "#FF2E93" },
+  { name: "Coral Alegre", hex: "#E87A70" },
+];
+
+const AUDIO_OPTIONS = [
+  { label: "Usar música predeterminada del diseño", value: "" },
+  { label: "Piano Romántico (Instrumental)", value: "/audio/romantic-piano.wav" },
+  { label: "Lounge Cálido (Eventos & Hombres)", value: "/audio/lounge-warm.wav" },
+  { label: "Celesta Alegre (Infantil & Bebé)", value: "/audio/playful-celesta.wav" },
+  { label: "Sin música de fondo", value: "none" },
+];
+
+const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
+  { key: "countdown", label: "Cuenta Regresiva en vivo" },
+  { key: "story", label: "Nuestra Historia" },
+  { key: "schedule", label: "Itinerario / Programa" },
+  { key: "gallery", label: "Galería de Fotos" },
+  { key: "dressCode", label: "Código de Vestimenta" },
+  { key: "gifts", label: "Regalos / Copiar Alias" },
+  { key: "wishes", label: "Muro de Buenos Deseos / Firmas" },
+  { key: "rsvp", label: "Botón Confirmar Asistencia" },
+];
+
+export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProps) {
+  const [activeTab, setActiveTab] = useState<
+    "estilo" | "textos" | "fotos" | "modulos"
+  >("estilo");
+
+  const [skinId, setSkinId] = useState(event.skinId);
+  const [eventTitle, setEventTitle] = useState(event.eventTitle);
+  const [dateDisplay, setDateDisplay] = useState(event.dateDisplay);
+  const [timeDisplay, setTimeDisplay] = useState(event.timeDisplay);
+  const [venue, setVenue] = useState(event.venue);
+  const [address, setAddress] = useState(event.address);
+  const [alias, setAlias] = useState(event.alias);
+  const [dressCode, setDressCode] = useState(event.dressCode);
+  const [quote, setQuote] = useState(event.quote);
+
+  const selectedSkin = getSkinById(skinId);
+
+  const [fontOverride, setFontOverride] = useState<InvitationSkin["fontDisplay"]>(
+    event.fontOverride || selectedSkin.fontDisplay
+  );
+  const [accentOverride, setAccentOverride] = useState<string>(
+    event.accentOverride || selectedSkin.palette.accent
+  );
+  const [audioOverride, setAudioOverride] = useState<string>(event.audioOverride || "");
+  const [heroImageUrl, setHeroImageUrl] = useState<string>(event.heroImageUrl || "");
+  const [galleryImages, setGalleryImages] = useState<string[]>(
+    event.galleryImages || []
+  );
+  const [memoryMode, setMemoryMode] = useState<boolean>(Boolean(event.memoryMode));
+
+  const [sections, setSections] = useState<EnabledSectionsConfig>({
+    countdown: event.enabledSections?.countdown ?? true,
+    story: event.enabledSections?.story ?? true,
+    schedule: event.enabledSections?.schedule ?? true,
+    gallery: event.enabledSections?.gallery ?? true,
+    dressCode: event.enabledSections?.dressCode ?? true,
+    gifts: event.enabledSections?.gifts ?? true,
+    wishes: event.enabledSections?.wishes ?? true,
+    rsvp: event.enabledSections?.rsvp ?? true,
+  });
+
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+
+  const handleSkinChange = (newSkinId: string) => {
+    setSkinId(newSkinId);
+    const next = getSkinById(newSkinId);
+    setFontOverride(next.fontDisplay);
+    setAccentOverride(next.palette.accent);
+  };
+
+  const handleUploadHero = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("files", files[0]);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && data.urls?.[0]) {
+        setHeroImageUrl(data.urls[0]);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUploadGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      Array.from(files)
+        .slice(0, 6)
+        .forEach((f) => fd.append("files", f));
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.urls)) {
+        setGalleryImages((prev) => [...prev, ...data.urls].slice(0, 8));
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/panel/${event.panelToken}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skinId,
+          eventTitle,
+          dateDisplay,
+          timeDisplay,
+          venue,
+          address,
+          alias,
+          dressCode,
+          quote,
+          heroImageUrl,
+          galleryImages,
+          fontOverride,
+          accentOverride,
+          audioOverride,
+          memoryMode,
+          enabledSections: sections,
+        }),
+      });
+      if (res.ok) {
+        setSavedToast(true);
+        setTimeout(() => setSavedToast(false), 2600);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900">
+      {/* Top Studio Bar */}
+      <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/panel/${event.panelToken}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Volver al Panel
+            </Link>
+            <div>
+              <h1 className="flex items-center gap-1.5 text-sm font-bold text-stone-900 sm:text-base">
+                <Sparkles className="h-4 w-4 text-amber-600" />
+                Estudio de Personalización · {eventTitle}
+              </h1>
+              <p className="text-[11px] text-stone-500">
+                Editá tipografías, colores, fotos y secciones con vista previa en vivo
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={`/i/${event.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Abrir Link Público
+            </Link>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-5 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-stone-800 disabled:opacity-60"
+            >
+              {savedToast ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  ¡Guardado!
+                </>
+              ) : (
+                <>
+                  <Save className="h-3.5 w-3.5" />
+                  {saving ? "Guardando..." : "Guardar Cambios"}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Split Screen Studio */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-6 sm:px-6 lg:grid-cols-12">
+        {/* Left Controls */}
+        <div className="space-y-5 lg:col-span-6">
+          {/* Tabs */}
+          <div className="grid grid-cols-4 gap-2 rounded-2xl border border-stone-200 bg-white p-1.5 shadow-sm">
+            {(
+              [
+                ["estilo", "Estilo & Letra", Palette],
+                ["textos", "Textos", FileText],
+                ["fotos", "Fotos & Música", ImageIcon],
+                ["modulos", "Secciones", Sliders],
+              ] as const
+            ).map(([id, label, Icon]) => {
+              const active = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-stone-900 text-white shadow-sm"
+                      : "text-stone-600 hover:bg-stone-100"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Panel: Estilo & Tipografía */}
+          {activeTab === "estilo" && (
+            <div className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                  Plantilla Base (42 Modelos)
+                </label>
+                <select
+                  value={skinId}
+                  onChange={(e) => handleSkinChange(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+                >
+                  {INVITATION_SKINS.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {CATEGORY_LABELS[s.category]} — {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <Type className="h-3.5 w-3.5 text-amber-600" />
+                  Tipografía del Título Principal
+                </label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {FONT_OPTIONS.map((f) => {
+                    const active = fontOverride === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFontOverride(f.id)}
+                        className={`rounded-2xl border p-3 text-left transition-all ${
+                          active
+                            ? "border-stone-900 bg-stone-900 text-white shadow-sm"
+                            : "border-stone-200 bg-stone-50 text-stone-800 hover:border-stone-400"
+                        }`}
+                      >
+                        <div className={`font-display-${f.id} text-xl font-semibold`}>
+                          {f.label}
+                        </div>
+                        <div className="mt-0.5 text-[10px] opacity-75">{f.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <Palette className="h-3.5 w-3.5 text-amber-600" />
+                  Color de Acento y Botones
+                </label>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {ACCENT_SWATCHES.map((sw) => {
+                    const active = accentOverride.toLowerCase() === sw.hex.toLowerCase();
+                    return (
+                      <button
+                        key={sw.hex}
+                        type="button"
+                        onClick={() => setAccentOverride(sw.hex)}
+                        title={sw.name}
+                        className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-transform ${
+                          active
+                            ? "scale-105 border-stone-900 bg-stone-900 text-white"
+                            : "border-stone-200 bg-white text-stone-700 hover:border-stone-400"
+                        }`}
+                      >
+                        <span
+                          className="h-3.5 w-3.5 rounded-full border border-black/15"
+                          style={{ backgroundColor: sw.hex }}
+                        />
+                        {sw.name}
+                      </button>
+                    );
+                  })}
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700">
+                    <span>Otro color</span>
+                    <input
+                      type="color"
+                      value={accentOverride}
+                      onChange={(e) => setAccentOverride(e.target.value)}
+                      className="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Panel: Textos */}
+          {activeTab === "textos" && (
+            <div className="grid grid-cols-1 gap-4 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Título / Nombres en Portada
+                </label>
+                <input
+                  type="text"
+                  value={eventTitle}
+                  onChange={(e) => setEventTitle(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Fecha visible
+                </label>
+                <input
+                  type="text"
+                  value={dateDisplay}
+                  onChange={(e) => setDateDisplay(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Horario
+                </label>
+                <input
+                  type="text"
+                  value={timeDisplay}
+                  onChange={(e) => setTimeDisplay(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Salón / Lugar
+                </label>
+                <input
+                  type="text"
+                  value={venue}
+                  onChange={(e) => setVenue(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Dress Code
+                </label>
+                <input
+                  type="text"
+                  value={dressCode}
+                  onChange={(e) => setDressCode(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Alias para Regalos
+                </label>
+                <input
+                  type="text"
+                  value={alias}
+                  onChange={(e) => setAlias(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Frase o Dedicatoria de Portada
+                </label>
+                <textarea
+                  rows={2}
+                  value={quote}
+                  onChange={(e) => setQuote(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Panel: Fotos & Música */}
+          {activeTab === "fotos" && (
+            <div className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+              <div>
+                <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
+                  Foto Principal de Portada
+                </label>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={heroImageUrl || selectedSkin.heroImage}
+                    alt="Portada"
+                    className="h-24 w-24 rounded-2xl border border-stone-200 object-cover"
+                  />
+                  <div className="space-y-2">
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white hover:bg-stone-800">
+                      <Upload className="h-3.5 w-3.5" />
+                      {uploading ? "Subiendo..." : "Subir Foto Propia"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUploadHero}
+                        className="hidden"
+                      />
+                    </label>
+                    {heroImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setHeroImageUrl("")}
+                        className="block text-xs font-medium text-stone-500 underline"
+                      >
+                        Restaurar arte del modelo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
+                  Fotos de la Galería ({galleryImages.length})
+                </label>
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-4 text-center hover:border-stone-500">
+                  <Upload className="h-5 w-5 text-stone-500" />
+                  <span className="mt-1 text-xs font-semibold text-stone-700">
+                    Agregar fotos a la galería (hasta 8)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleUploadGallery}
+                    className="hidden"
+                  />
+                </label>
+                {galleryImages.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {galleryImages.map((url, idx) => (
+                      <div key={url + idx} className="relative h-16 w-16">
+                        <img
+                          src={url}
+                          alt={`Galería ${idx + 1}`}
+                          className="h-full w-full rounded-xl border border-stone-200 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGalleryImages((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] font-bold text-white"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                  <Music className="h-3.5 w-3.5 text-amber-600" />
+                  Pista Musical de Fondo
+                </label>
+                <select
+                  value={audioOverride}
+                  onChange={(e) => setAudioOverride(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+                >
+                  {AUDIO_OPTIONS.map((opt) => (
+                    <option key={opt.label} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Panel: Módulos On/Off */}
+          {activeTab === "modulos" && (
+            <div className="space-y-3 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+              <p className="text-xs text-stone-500">
+                Encendé o apagá las secciones que quieras mostrar en tu invitación:
+              </p>
+              {SECTION_LABELS.map((item) => {
+                const enabled = Boolean(sections[item.key] ?? true);
+                return (
+                  <label
+                    key={item.key}
+                    className="flex cursor-pointer items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3"
+                  >
+                    <span className="text-sm font-semibold text-stone-800">
+                      {item.label}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onChange={(e) =>
+                        setSections((prev) => ({
+                          ...prev,
+                          [item.key]: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 accent-stone-900"
+                    />
+                  </label>
+                );
+              })}
+
+              <div className="pt-2">
+                <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3.5">
+                  <div>
+                    <span className="block text-sm font-bold text-amber-950">
+                      Modo Recuerdo (Post-Evento)
+                    </span>
+                    <span className="block text-[11px] text-amber-800">
+                      Transforma la cuenta regresiva en un álbum conmemorativo de agradecimientos
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={memoryMode}
+                    onChange={(e) => setMemoryMode(e.target.checked)}
+                    className="h-4 w-4 accent-amber-700"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Live Mobile Preview */}
+        <div className="lg:col-span-6">
+          <div className="sticky top-20 flex flex-col items-center">
+            <span className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
+              Vista Previa en Tiempo Real (Móvil)
+            </span>
+            <div className="h-[720px] w-full max-w-[400px] overflow-y-auto rounded-[38px] border-[8px] border-stone-900 bg-white shadow-2xl">
+              <InvitationRenderer
+                skin={selectedSkin}
+                eventSlug={event.slug}
+                customTitle={eventTitle}
+                customDateDisplay={dateDisplay}
+                customTimeDisplay={timeDisplay}
+                customDateISO={event.dateISO}
+                customVenue={venue}
+                customAddress={address}
+                customAlias={alias}
+                customDressCode={dressCode}
+                customQuote={quote}
+                customHeroImage={heroImageUrl || undefined}
+                customGallery={galleryImages.length > 0 ? galleryImages : undefined}
+                customFont={fontOverride}
+                customAccent={accentOverride}
+                customAudioUrl={audioOverride || undefined}
+                memoryMode={memoryMode}
+                enabledSections={sections}
+                skipGate={true}
+                showPreviewChrome={false}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
