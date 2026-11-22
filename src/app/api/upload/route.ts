@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "events");
+const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
 const MAX_SIZE_BYTES = 4 * 1024 * 1024; // 4 MB
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
           fs.mkdirSync(UPLOAD_DIR, { recursive: true });
         }
         fs.writeFileSync(path.join(UPLOAD_DIR, safeName), buffer);
-        savedUrls.push(`/uploads/events/${safeName}`);
+        savedUrls.push(`/api/uploads/${safeName}`);
       }
     }
 

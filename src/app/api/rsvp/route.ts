@@ -16,14 +16,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { eventSlug, guestName, attending, passesUsed, companions, dietary, song, message } = body;
 
-    if (!eventSlug || !guestName || typeof guestName !== "string") {
+    if (!eventSlug || !guestName || typeof guestName !== "string" || !guestName.trim()) {
       return NextResponse.json(
         { error: "Nombre del invitado y evento son obligatorios" },
         { status: 400 }
       );
     }
 
-    const record = await addRsvp({
+    const { rsvp, updated } = await addRsvp({
       eventSlug: String(eventSlug),
       guestName: String(guestName),
       attending: Boolean(attending),
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       message: message ? String(message) : "",
     });
 
-    return NextResponse.json({ ok: true, rsvp: record }, { status: 201 });
+    return NextResponse.json({ ok: true, rsvp, updated }, { status: updated ? 200 : 201 });
   } catch {
     return NextResponse.json({ error: "Error procesando confirmación" }, { status: 500 });
   }

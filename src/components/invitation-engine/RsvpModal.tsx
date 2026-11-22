@@ -43,6 +43,7 @@ export function RsvpModal({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [wasUpdated, setWasUpdated] = useState(false);
 
   if (!isOpen) return null;
 
@@ -57,7 +58,11 @@ export function RsvpModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || submitting) return;
+    if (submitting) return;
+    if (!name.trim()) {
+      setSubmitError("Ingresá tu nombre y apellido para registrar la confirmación.");
+      return;
+    }
     setSubmitError(null);
     setSubmitting(true);
 
@@ -77,9 +82,11 @@ export function RsvpModal({
             message,
           }),
         });
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          throw new Error("No se pudo guardar");
+          throw new Error(data.error || "No se pudo guardar");
         }
+        setWasUpdated(Boolean(data.updated));
       } catch {
         setSubmitError("Hubo un problema de conexión. Intentá nuevamente.");
         setSubmitting(false);
@@ -318,7 +325,11 @@ export function RsvpModal({
               )}
             </div>
             <h3 className="mt-4 text-xl font-semibold">
-              {attending ? `¡Gracias por confirmar, ${name}!` : `Registramos tu aviso, ${name}`}
+              {attending
+                ? wasUpdated
+                  ? `¡Actualizamos tu confirmación, ${name}!`
+                  : `¡Gracias por confirmar, ${name}!`
+                : `Registramos tu aviso, ${name}`}
             </h3>
             <p className="mt-2 text-xs leading-relaxed" style={{ color: palette.textMuted }}>
               {attending

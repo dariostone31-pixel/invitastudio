@@ -729,11 +729,13 @@ export async function addRsvp(input: {
   dietary?: string[];
   song?: string;
   message?: string;
-}): Promise<RsvpRecord> {
+}): Promise<{ rsvp: RsvpRecord; updated: boolean }> {
+  const cleanName = input.guestName.trim();
+  const normalizedName = cleanName.toLowerCase();
   const record: RsvpRecord = {
     id: `rsvp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     eventSlug: input.eventSlug,
-    guestName: input.guestName.trim(),
+    guestName: cleanName,
     attending: Boolean(input.attending),
     passesUsed: input.attending ? Math.max(1, Number(input.passesUsed) || 1) : 0,
     companions: (input.companions || "").trim(),
@@ -745,12 +747,50 @@ export async function addRsvp(input: {
 
   if (getDbMode() === "postgres") {
     const pool = await ensurePgReady();
+    const existing = await pool.query(
+      "select id from public.rsvps where event_slug = $1 and lower(trim(guest_name)) = $2 limit 1",
+      [input.eventSlug, normalizedName]
+    );
+    if (existing.rows[0]) {
+      const existingId = String(existing.rows[0].id);
+      await pool.query(
+        `update public.rsvps
+         set guest_name = $2, attending = $3, passes_used = $4, companions = $5,
+             dietary = $6::jsonb, song = $7, message = $8, created_at = $9
+         where id = $1`,
+        [
+          existingId,
+          record.guestName,
+          record.attending,
+          record.passesUsed,
+          record.companions,
+          JSON.stringify(record.dietary),
+          record.song,
+          record.message,
+          record.createdAt,
+        ]
+      );
+      return { rsvp: { ...record, id: existingId }, updated: true };
+    }
     await insertRsvpPg(pool, record);
-    return record;
+    return { rsvp: record, updated: false };
   }
 
   const db = ensureLocalStore();
+  const existingIdx = db.rsvps.findIndex(
+    (r) =>
+      r.eventSlug === input.eventSlug &&
+      r.guestName.trim().toLowerCase() === normalizedName
+  );
+  if (existingIdx !== -1) {
+    const existingId = db.rsvps[existingIdx].id;
+    const updatedRecord: RsvpRecord = { ...record, id: existingId };
+    db.rsvps[existingIdx] = updatedRecord;
+    saveLocalStore(db);
+    return { rsvp: updatedRecord, updated: true };
+  }
+
   db.rsvps.push(record);
   saveLocalStore(db);
-  return record;
+  return { rsvp: record, updated: false };
 }

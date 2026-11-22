@@ -222,6 +222,7 @@ export function OrganizerPanelClient({
                   type="text"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Ej. Familia Gómez"
                   className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
                 />
               </div>

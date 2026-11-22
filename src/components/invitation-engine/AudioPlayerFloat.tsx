@@ -25,6 +25,7 @@ export function AudioPlayerFloat({
   borderColor,
 }: AudioPlayerFloatProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [actuallyPlaying, setActuallyPlaying] = React.useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -32,22 +33,50 @@ export function AudioPlayerFloat({
     if (isPlaying) {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Browser blocked autoplay until user gesture
-        });
+        playPromise
+          .then(() => setActuallyPlaying(true))
+          .catch(() => {
+            // Browser blocked autoplay until direct user gesture on player
+            setActuallyPlaying(false);
+          });
+      } else {
+        setActuallyPlaying(!audio.paused);
       }
     } else {
       audio.pause();
+      setActuallyPlaying(false);
     }
   }, [isPlaying, src]);
+
+  const handleDirectClick = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (actuallyPlaying) {
+        audio.pause();
+        setActuallyPlaying(false);
+        if (isPlaying) onToggle();
+      } else {
+        const p = audio.play();
+        if (p !== undefined) {
+          p.then(() => setActuallyPlaying(true)).catch(() => setActuallyPlaying(false));
+        } else {
+          setActuallyPlaying(true);
+        }
+        if (!isPlaying) onToggle();
+      }
+    } else {
+      onToggle();
+    }
+  };
 
   return (
     <>
       <audio ref={audioRef} src={src} loop preload="none" />
       <button
         type="button"
-        onClick={onToggle}
-        aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
+        onClick={handleDirectClick}
+        aria-label={actuallyPlaying ? "Pausar música" : "Reproducir música"}
+        aria-pressed={actuallyPlaying}
         title={title}
         className="fixed right-4 top-4 z-40 flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95"
         style={{
@@ -60,10 +89,10 @@ export function AudioPlayerFloat({
           className="flex h-6 w-6 items-center justify-center rounded-full"
           style={{ backgroundColor: accentColor, color: "#FFFFFF" }}
         >
-          {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="ml-0.5 h-3 w-3" />}
+          {actuallyPlaying ? <Pause className="h-3 w-3" /> : <Play className="ml-0.5 h-3 w-3" />}
         </span>
 
-        {isPlaying ? (
+        {actuallyPlaying ? (
           <span className="flex items-end gap-[2px] h-3.5 pr-1">
             <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: accentColor }} />
             <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: accentColor }} />
@@ -71,7 +100,7 @@ export function AudioPlayerFloat({
           </span>
         ) : (
           <span className="flex items-center gap-1 pr-1 opacity-80">
-            {isPlaying ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {actuallyPlaying ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
             <span className="hidden sm:inline">Música</span>
           </span>
         )}

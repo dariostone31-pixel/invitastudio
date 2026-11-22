@@ -37,9 +37,15 @@ export function CountdownTimer({
   fontClass,
   variant = "grid",
 }: CountdownTimerProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetISO));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
+    setTimeLeft(calculateTimeLeft(targetISO));
     const id = setInterval(() => {
       setTimeLeft(calculateTimeLeft(targetISO));
     }, 1000);
