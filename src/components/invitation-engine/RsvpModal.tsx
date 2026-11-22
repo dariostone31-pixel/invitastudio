@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { X, CheckCircle2, HeartHandshake } from "lucide-react";
 import { SkinPalette } from "@/templates/catalog";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 interface RsvpModalProps {
   isOpen: boolean;
@@ -44,6 +45,9 @@ export function RsvpModal({
   const [submitted, setSubmitted] = useState(false);
 
   if (!isOpen) return null;
+
+  const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
+  const textAccent = ensureContrast(palette.accent, palette.surface, 4.6);
 
   const toggleDietary = (item: string) => {
     setDietary((prev) =>
@@ -116,8 +120,8 @@ export function RsvpModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="pr-8">
               <p
-                className="text-[10px] font-semibold uppercase tracking-[0.22em]"
-                style={{ color: palette.accent }}
+                className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+                style={{ color: textAccent }}
               >
                 Confirmación de Asistencia
               </p>
@@ -151,10 +155,10 @@ export function RsvpModal({
                 <button
                   type="button"
                   onClick={() => setAttending(true)}
-                  className="rounded-xl border py-2.5 text-xs font-semibold transition-all"
+                  className="min-h-[44px] rounded-xl border py-2.5 text-xs font-semibold transition-all"
                   style={{
-                    backgroundColor: attending ? palette.accent : palette.bg,
-                    borderColor: attending ? palette.accent : palette.border,
+                    backgroundColor: attending ? buttonBg : palette.bg,
+                    borderColor: attending ? buttonBg : palette.border,
                     color: attending ? palette.accentText : palette.text,
                   }}
                 >
@@ -231,10 +235,10 @@ export function RsvpModal({
                           key={opt}
                           type="button"
                           onClick={() => toggleDietary(opt)}
-                          className="rounded-full border px-3 py-1 text-[11px] font-medium transition-all"
+                          className="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
                           style={{
-                            backgroundColor: active ? palette.accent : palette.bg,
-                            borderColor: active ? palette.accent : palette.border,
+                            backgroundColor: active ? buttonBg : palette.bg,
+                            borderColor: active ? buttonBg : palette.border,
                             color: active ? palette.accentText : palette.textMuted,
                           }}
                         >
@@ -292,9 +296,9 @@ export function RsvpModal({
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-full py-3.5 text-xs font-bold uppercase tracking-[0.2em] shadow-lg transition-transform active:scale-95 disabled:opacity-60"
+              className="min-h-[44px] w-full rounded-full py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-lg transition-transform active:scale-95 disabled:opacity-60"
               style={{
-                backgroundColor: palette.accent,
+                backgroundColor: buttonBg,
                 color: palette.accentText,
               }}
             >
@@ -305,10 +309,10 @@ export function RsvpModal({
           <div className="py-4 text-center">
             <div
               className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ backgroundColor: `${palette.accent}22`, color: palette.accent }}
+              style={{ backgroundColor: `${buttonBg}22`, color: textAccent }}
             >
               {attending ? (
-                <CheckCircle2 className="h-8 w-8" />
+                <CheckCircle2 className="animate-check-once h-8 w-8" />
               ) : (
                 <HeartHandshake className="h-8 w-8" />
               )}
@@ -330,9 +334,9 @@ export function RsvpModal({
             <button
               type="button"
               onClick={resetAndClose}
-              className="mt-6 w-full rounded-full py-3 text-xs font-semibold uppercase tracking-[0.2em]"
+              className="mt-6 min-h-[44px] w-full rounded-full py-3 text-[13px] font-semibold uppercase tracking-[0.14em]"
               style={{
-                backgroundColor: palette.accent,
+                backgroundColor: buttonBg,
                 color: palette.accentText,
               }}
             >

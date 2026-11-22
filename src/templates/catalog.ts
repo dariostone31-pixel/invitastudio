@@ -172,7 +172,7 @@ const BODA_SAMPLE: SampleEventData = {
   gallery: [
     "/images/gallery/boda-1.webp",
     "/images/gallery/boda-2.webp",
-    "/images/templates/boda-sobre-marfil.webp",
+    "/images/gallery/boda-3.webp",
   ],
   audioTitle: "Vals en Piano — Instrumental",
   audioUrl: "/audio/romantic-piano.wav",
@@ -227,7 +227,7 @@ const XV_SAMPLE: SampleEventData = {
   gallery: [
     "/images/gallery/xv-1.webp",
     "/images/templates/xv-gala-rosa.webp",
-    "/images/gallery/boda-2.webp",
+    "/images/templates/xv-editorial-vogue.webp",
   ],
   audioTitle: "Melodía Nocturna — Instrumental",
   audioUrl: "/audio/romantic-piano.wav",
@@ -280,7 +280,7 @@ const HOMBRE_SAMPLE: SampleEventData = {
   rsvpDeadline: "Confirmá antes del 1 de Marzo así calculamos el asado",
   gallery: [
     "/images/templates/hombre-whisky-gold.webp",
-    "/images/gallery/boda-2.webp",
+    "/images/templates/hombre-asado-lounge.webp",
   ],
   audioTitle: "Lounge & Jazz Nocturno",
   audioUrl: "/audio/lounge-warm.wav",

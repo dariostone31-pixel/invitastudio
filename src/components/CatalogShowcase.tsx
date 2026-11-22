@@ -10,6 +10,7 @@ import {
 } from "@/templates/catalog";
 import { Eye, Sparkles, ArrowRight } from "lucide-react";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 const CATEGORIES: ("all" | EventCategory)[] = [
   "all",
@@ -87,6 +88,8 @@ export function CatalogShowcase() {
       <div key={selectedCat} className="animate-panel-in mt-10 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((skin) => {
           const fontClass = FONT_MAP[skin.fontDisplay];
+          const pillTextColor = ensureContrast(skin.palette.accent, skin.palette.surface, 4.6);
+          const demoBtnBg = getAccessibleButtonBg(skin.palette.accent, skin.palette.accentText);
           return (
             <article
               key={skin.id}
@@ -125,25 +128,25 @@ export function CatalogShowcase() {
                     style={{ color: skin.palette.text }}
                   >
                     <span
-                      className="inline-block rounded-full border px-2.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.18em]"
+                      className="inline-block rounded-full border px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em]"
                       style={{
                         backgroundColor: skin.palette.surface,
                         borderColor: skin.palette.border,
-                        color: skin.palette.accent,
+                        color: pillTextColor,
                       }}
                     >
                       {skin.sample.eyebrow}
                     </span>
-                    <h4 className={`mt-2 truncate text-xl font-semibold ${fontClass}`}>
+                    <h4 className={`mt-2 truncate text-xl font-semibold leading-snug ${fontClass}`}>
                       {skin.sample.title}
                     </h4>
-                    <p className="mt-0.5 text-[9px]" style={{ color: skin.palette.textMuted }}>
+                    <p className="mt-0.5 text-[10px]" style={{ color: skin.palette.textMuted }}>
                       {skin.sample.dateDisplay}
                     </p>
                     <div
-                      className="mx-auto mt-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider shadow-sm"
+                      className="mx-auto mt-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm"
                       style={{
-                        backgroundColor: skin.palette.accent,
+                        backgroundColor: demoBtnBg,
                         color: skin.palette.accentText,
                       }}
                     >
@@ -167,17 +170,17 @@ export function CatalogShowcase() {
                 <div className="mt-5 flex items-center gap-2.5">
                   <Link
                     href={`/demo/${skin.id}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#6B1E30]/35 bg-white px-4 py-2.5 text-xs font-semibold text-[#6B1E30] transition-colors hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
+                    className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border border-[#6B1E30]/35 bg-white px-4 py-2.5 text-[13px] font-semibold text-[#6B1E30] transition-colors hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
                   >
-                    <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <Eye className="h-4 w-4" strokeWidth={1.6} />
                     Ver invitación
                   </Link>
                   <Link
                     href={`/encargar?modelo=${skin.id}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#6B1E30] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#4A1420]"
+                    className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full bg-[#6B1E30] px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#4A1420]"
                   >
                     Elegir
-                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.6} />
                   </Link>
                 </div>
               </div>

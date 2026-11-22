@@ -5,6 +5,7 @@ import Link from "next/link";
 import { INVITATION_SKINS } from "@/templates/catalog";
 import { Play, MapPin, CheckCircle2, Sparkles } from "lucide-react";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 const FEATURED = INVITATION_SKINS.filter((s) => s.featured);
 
@@ -32,6 +33,8 @@ export function HeroMockup() {
   const [activeIdx, setActiveIdx] = useState(0);
   const active = FEATURED[activeIdx] ?? INVITATION_SKINS[0];
   const titleFont = HERO_FONT_MAP[active.fontDisplay];
+  const buttonBg = getAccessibleButtonBg(active.palette.accent, active.palette.accentText);
+  const accentOnSurface = ensureContrast(active.palette.accent, active.palette.surface, 4.6);
 
   return (
     <div className="flex flex-col items-center">
@@ -73,7 +76,7 @@ export function HeroMockup() {
           >
             <span
               className="flex h-4 w-4 items-center justify-center rounded-full"
-              style={{ backgroundColor: active.palette.accent, color: active.palette.accentText }}
+              style={{ backgroundColor: buttonBg, color: active.palette.accentText }}
             >
               <Play className="h-2.5 w-2.5" />
             </span>
@@ -88,25 +91,25 @@ export function HeroMockup() {
 
           <div className="relative -mt-8 px-4 text-center">
             <div
-              className="mx-auto inline-block rounded-full border px-3 py-0.5 text-[9px] font-semibold uppercase tracking-[0.2em]"
+              className="mx-auto inline-block rounded-full border px-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
               style={{
                 backgroundColor: active.palette.surface,
                 borderColor: active.palette.border,
-                color: active.palette.accent,
+                color: accentOnSurface,
               }}
             >
               {active.sample.eyebrow}
             </div>
-            <h3 className={`mt-2 text-3xl font-semibold leading-tight ${titleFont}`}>
+            <h3 className={`mt-2 truncate text-3xl font-semibold leading-tight ${titleFont}`}>
               {active.sample.title}
             </h3>
-            <p className="mt-1 text-[10px] uppercase tracking-widest" style={{ color: active.palette.textMuted }}>
+            <p className="mt-1 text-[11px] uppercase tracking-wider" style={{ color: active.palette.textMuted }}>
               {active.sample.dateDisplay}
             </p>
 
             {/* Mini preview of guest pass + actions */}
             <div
-              className="mt-3 rounded-2xl border p-3 text-left text-[10px]"
+              className="mt-3 rounded-2xl border p-3 text-left text-[11px]"
               style={{
                 backgroundColor: active.palette.surface,
                 borderColor: active.palette.border,
@@ -114,23 +117,23 @@ export function HeroMockup() {
             >
               <div className="flex items-center justify-between font-semibold">
                 <span className="inline-flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" style={{ color: active.palette.accent }} />
+                  <Sparkles className="h-3 w-3" style={{ color: accentOnSurface }} />
                   Pase Familia García
                 </span>
-                <span style={{ color: active.palette.accent }}>4 lugares</span>
+                <span style={{ color: accentOnSurface }}>4 lugares</span>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-1.5">
                 <span
                   className="inline-flex items-center justify-center gap-1 rounded-lg border py-1.5 font-medium"
                   style={{ borderColor: active.palette.border }}
                 >
-                  <MapPin className="h-3 w-3" style={{ color: active.palette.accent }} />
+                  <MapPin className="h-3 w-3" style={{ color: accentOnSurface }} />
                   Mapa
                 </span>
                 <span
                   className="inline-flex items-center justify-center gap-1 rounded-lg py-1.5 font-semibold"
                   style={{
-                    backgroundColor: active.palette.accent,
+                    backgroundColor: buttonBg,
                     color: active.palette.accentText,
                   }}
                 >
@@ -142,9 +145,9 @@ export function HeroMockup() {
 
             <Link
               href={`/demo/${active.id}`}
-              className="mt-3 block w-full rounded-full py-2.5 text-center text-[11px] font-bold uppercase tracking-[0.18em] shadow-md transition-transform hover:scale-[1.02]"
+              className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-full py-2.5 text-center text-[12px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.02]"
               style={{
-                backgroundColor: active.palette.accent,
+                backgroundColor: buttonBg,
                 color: active.palette.accentText,
               }}
             >

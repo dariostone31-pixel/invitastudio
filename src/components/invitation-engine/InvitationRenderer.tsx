@@ -31,6 +31,7 @@ import { RevealSection } from "./RevealSection";
 import { AmbientParticles } from "./AmbientParticles";
 import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 export interface PublicWish {
   id: string;
@@ -154,6 +155,14 @@ export function InvitationRenderer({
 
   const { sample, layoutId } = skin;
   const palette = customAccent ? { ...skin.palette, accent: customAccent } : skin.palette;
+  const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
+  const textAccentOnSurface = ensureContrast(palette.accent, palette.surface, 4.6);
+  const textAccentOnBg = ensureContrast(palette.accent, palette.bg, 4.6);
+  const textAccentOnAlt = ensureContrast(palette.accent, palette.surfaceAlt, 4.6);
+  const showAmbientParticles =
+    layoutId === "neon-dark" ||
+    skin.id === "nina-hadas-sobre" ||
+    skin.id === "xv-mariposas-lila";
   const heroImage = customHeroImage || skin.heroImage;
   const galleryList =
     customGallery && customGallery.length > 0 ? customGallery : sample.gallery;
@@ -255,8 +264,10 @@ export function InvitationRenderer({
         />
       )}
 
-      {/* Ambient Falling Petals / Sparkles */}
-      <AmbientParticles category={skin.category} layoutId={layoutId} color={palette.accent} />
+      {/* Ambient Falling Petals / Sparkles: solo en temáticas nocturnas / mágicas */}
+      {showAmbientParticles && (
+        <AmbientParticles category={skin.category} layoutId={layoutId} color={palette.accent} />
+      )}
 
       {/* Fondo atmosférico sutil en escritorio */}
       <div
@@ -299,7 +310,7 @@ export function InvitationRenderer({
         {/* ================= HERO SECTION ================= */}
         {layoutId === "fullscreen-hero" || layoutId === "editorial-sobre" ? (
           <section className="relative overflow-hidden">
-            <div className="relative h-[510px] w-full overflow-hidden">
+            <div className="relative h-[420px] sm:h-[460px] w-full overflow-hidden">
               <img
                 src={heroImage}
                 alt={eventTitle}
@@ -316,7 +327,7 @@ export function InvitationRenderer({
                     {sample.eyebrow}
                   </p>
                   <h1
-                    className={`animate-tracking-expand text-on-image mt-3 text-4xl sm:text-5xl font-semibold leading-[1.08] ${displayFont}`}
+                    className={`animate-tracking-expand text-on-image mt-3 py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
                   >
                     {eventTitle}
                   </h1>
@@ -340,23 +351,23 @@ export function InvitationRenderer({
 
               {guestName && (
                 <div
-                  className="mt-5 rounded-2xl border px-4 py-3.5 shadow-sm"
+                  className="mt-5 rounded-[22px] border px-5 py-4 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.accent,
                   }}
                 >
                   <p
-                    className="text-[10px] font-semibold uppercase tracking-[0.24em]"
-                    style={{ color: palette.accent }}
+                    className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: textAccentOnSurface }}
                   >
                     Pase Personalizado
                   </p>
-                  <p className="mt-0.5 text-base font-semibold" style={{ color: palette.text }}>
+                  <p className="mt-1 text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
                   {(passes || table) && (
-                    <p className="mt-1 text-xs" style={{ color: palette.textMuted }}>
+                    <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
                       {passes ? `Reservamos ${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
                       {passes && table ? " · " : ""}
                       {table ? `Mesa asignada: ${table}` : ""}
@@ -366,7 +377,7 @@ export function InvitationRenderer({
               )}
 
               <p
-                className="mx-auto mt-5 max-w-sm text-sm italic leading-relaxed"
+                className="mx-auto mt-5 max-w-sm text-[15px] italic leading-[1.65]"
                 style={{ color: palette.textMuted }}
               >
                 &ldquo;{quoteText}&rdquo;
@@ -375,7 +386,7 @@ export function InvitationRenderer({
           </section>
         ) : (
           <section className="relative overflow-hidden">
-            <div className="relative h-[430px] w-full overflow-hidden">
+            <div className="relative h-[320px] sm:h-[360px] w-full overflow-hidden">
               <img
                 src={heroImage}
                 alt={eventTitle}
@@ -396,25 +407,25 @@ export function InvitationRenderer({
 
             <div className="relative -mt-20 px-6 pb-4 text-center">
               <div
-                className="font-ui-jost mx-auto inline-block rounded-full border px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] shadow-sm"
+                className="font-ui-jost mx-auto inline-block rounded-full border px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] shadow-sm"
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
-                  color: palette.accent,
+                  color: textAccentOnSurface,
                 }}
               >
                 {sample.eyebrow}
               </div>
 
               <h1
-                className={`animate-tracking-expand mt-4 text-5xl sm:text-6xl font-semibold leading-[1.08] tracking-tight ${displayFont}`}
+                className={`animate-tracking-expand mt-4 py-1 text-5xl sm:text-6xl font-semibold leading-[1.2] tracking-tight ${displayFont}`}
                 style={{ color: palette.text }}
               >
                 {eventTitle}
               </h1>
 
               <p
-                className="font-ui-jost mt-2 text-xs font-medium uppercase tracking-[0.26em]"
+                className="font-ui-jost mt-2 text-[12px] font-medium uppercase tracking-[0.2em]"
                 style={{ color: palette.textMuted }}
               >
                 {dateDisplay} · {timeDisplay}
@@ -428,23 +439,23 @@ export function InvitationRenderer({
               {/* Pase personalizado si viene en URL */}
               {guestName && (
                 <div
-                  className="mt-5 rounded-2xl border px-4 py-3.5 shadow-sm"
+                  className="mt-5 rounded-[22px] border px-5 py-4 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.accent,
                   }}
                 >
                   <p
-                    className="text-[10px] font-semibold uppercase tracking-[0.24em]"
-                    style={{ color: palette.accent }}
+                    className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: textAccentOnSurface }}
                   >
                     Pase Personalizado
                   </p>
-                  <p className="mt-0.5 text-base font-semibold" style={{ color: palette.text }}>
+                  <p className="mt-1 text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
                   {(passes || table) && (
-                    <p className="mt-1 text-xs" style={{ color: palette.textMuted }}>
+                    <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
                       {passes ? `Reservamos ${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
                       {passes && table ? " · " : ""}
                       {table ? `Mesa asignada: ${table}` : ""}
@@ -454,7 +465,7 @@ export function InvitationRenderer({
               )}
 
               <p
-                className="mx-auto mt-6 max-w-sm text-sm italic leading-relaxed"
+                className="mx-auto mt-6 max-w-sm text-[15px] italic leading-[1.65]"
                 style={{ color: palette.textMuted }}
               >
                 &ldquo;{quoteText}&rdquo;
@@ -474,10 +485,10 @@ export function InvitationRenderer({
                   borderColor: palette.accent,
                 }}
               >
-                <Heart className="animate-icon-beat mx-auto h-6 w-6" style={{ color: palette.accent }} />
+                <Heart className="animate-heart-once mx-auto h-6 w-6" style={{ color: textAccentOnAlt }} />
                 <p
-                  className="font-ui-jost mt-2 text-[10px] font-semibold uppercase tracking-[0.3em]"
-                  style={{ color: palette.accent }}
+                  className="font-ui-jost mt-2 text-[11px] font-semibold uppercase tracking-[0.24em]"
+                  style={{ color: textAccentOnAlt }}
                 >
                   Álbum & Modo Recuerdo
                 </p>
@@ -511,27 +522,27 @@ export function InvitationRenderer({
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} color={palette.accent} />
               <section className="text-center">
-                <Users className="animate-icon-beat mx-auto h-5 w-5" style={{ color: palette.accent }} />
-                <h2 className={`mt-2 text-3xl font-semibold ${sectionHeadingFont}`}>
+                <Users className="mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
+                <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Con la bendición de
                 </h2>
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   {sample.parentsOrHosts.map((group) => (
                     <div
                       key={group.label}
-                      className="rounded-2xl border p-4"
+                      className="rounded-[22px] border p-5 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.1)]"
                       style={{
                         backgroundColor: palette.surface,
                         borderColor: palette.border,
                       }}
                     >
                       <p
-                        className="text-[10px] font-semibold uppercase tracking-[0.2em]"
-                        style={{ color: palette.accent }}
+                        className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: textAccentOnSurface }}
                       >
                         {group.label}
                       </p>
-                      <div className="mt-1.5 space-y-0.5 text-sm font-medium">
+                      <div className="mt-2 space-y-1 text-[15px] font-medium leading-relaxed">
                         {group.names.map((n) => (
                           <p key={n}>{n}</p>
                         ))}
@@ -548,19 +559,19 @@ export function InvitationRenderer({
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} color={palette.accent} />
               <section
-                className="rounded-3xl border p-6 text-center shadow-sm"
+                className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
                 }}
               >
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border" style={{ borderColor: palette.border, color: palette.accent }}>
-                  <AnimatedCategoryIcon category={skin.category} className="h-5 w-5" />
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border" style={{ borderColor: palette.border, color: textAccentOnSurface }}>
+                  <AnimatedCategoryIcon category={skin.category} className="h-7 w-7" />
                 </div>
-                <h2 className={`mt-2.5 text-3xl font-semibold ${sectionHeadingFont}`}>
+                <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   {sample.storyTitle || "Nuestra Historia"}
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed" style={{ color: palette.textMuted }}>
+                <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
                   {sample.storyText}
                 </p>
               </section>
@@ -573,44 +584,44 @@ export function InvitationRenderer({
           <section className="space-y-4">
             <div className="text-center">
               <p
-                className="text-[10px] font-semibold uppercase tracking-[0.24em]"
-                style={{ color: palette.accent }}
+                className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+                style={{ color: textAccentOnBg }}
               >
                 Dónde & Cuándo
               </p>
-              <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>
+              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 Coordenadas del Evento
               </h2>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-4">
               {locations.map((loc) => (
                 <div
                   key={loc.label}
-                  className="rounded-3xl border p-5 text-center shadow-sm"
+                  className="rounded-[22px] border p-5 sm:p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.border,
                   }}
                 >
                   <span
-                    className="inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
+                    className="inline-block rounded-full px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em]"
                     style={{
                       backgroundColor: palette.surfaceAlt,
-                      color: palette.accent,
+                      color: textAccentOnAlt,
                     }}
                   >
                     {loc.label}
                   </span>
                   <h3 className="mt-2.5 text-lg font-semibold">{loc.venue}</h3>
-                  <p className="mt-1 text-xs" style={{ color: palette.textMuted }}>
+                  <p className="mt-1.5 text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
                     {loc.address} · {loc.city}
                   </p>
                   <p
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold"
-                    style={{ color: palette.accent }}
+                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold"
+                    style={{ color: textAccentOnSurface }}
                   >
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="h-4 w-4" strokeWidth={1.75} />
                     {loc.time}
                   </p>
                   <div className="mt-4">
@@ -618,13 +629,13 @@ export function InvitationRenderer({
                       href={loc.mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-xs font-semibold uppercase tracking-[0.18em] transition-opacity hover:opacity-90"
+                      className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90"
                       style={{
-                        backgroundColor: palette.accent,
+                        backgroundColor: buttonBg,
                         color: palette.accentText,
                       }}
                     >
-                      <MapPin className="h-3.5 w-3.5" />
+                      <MapPin className="animate-pin-once h-4 w-4" strokeWidth={1.75} />
                       Ver en Google Maps
                     </a>
                   </div>
@@ -643,14 +654,14 @@ export function InvitationRenderer({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-xs font-semibold transition-opacity hover:opacity-80"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[20px] border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80"
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
                   color: palette.text,
                 }}
               >
-                <CalendarPlus className="h-4 w-4" style={{ color: palette.accent }} />
+                <CalendarPlus className="h-4 w-4" strokeWidth={1.75} style={{ color: textAccentOnSurface }} />
                 Google Calendar
               </a>
               <button
@@ -658,14 +669,14 @@ export function InvitationRenderer({
                 onClick={() =>
                   downloadIcsFile(eventTitle, dateISO, fullAddress, quoteText)
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-xs font-semibold transition-opacity hover:opacity-80"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[20px] border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80"
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
                   color: palette.text,
                 }}
               >
-                <Download className="h-4 w-4" style={{ color: palette.accent }} />
+                <Download className="h-4 w-4" strokeWidth={1.75} style={{ color: textAccentOnSurface }} />
                 Calendario iPhone (.ics)
               </button>
             </div>
@@ -679,12 +690,12 @@ export function InvitationRenderer({
               <section>
                 <div className="mb-5 text-center">
                   <p
-                    className="text-[10px] font-semibold uppercase tracking-[0.24em]"
-                    style={{ color: palette.accent }}
+                    className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+                    style={{ color: textAccentOnBg }}
                   >
                     Programa del Día
                   </p>
-                  <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>Itinerario</h2>
+                  <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>Itinerario</h2>
                 </div>
 
                 {/* Mobile <640px: left rail full-width cards; >=640px: center axis alternating */}
@@ -710,23 +721,23 @@ export function InvitationRenderer({
                         {isLeft ? (
                           <>
                             <div
-                              className="rounded-2xl border p-4 text-left shadow-sm sm:p-3.5 sm:text-right"
+                              className="rounded-[20px] border p-4 text-left shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)] sm:p-4 sm:text-right"
                               style={{
                                 backgroundColor: palette.surface,
                                 borderColor: palette.border,
                               }}
                             >
                               <span
-                                className="font-ui-jost text-[11px] font-bold tracking-wider"
-                                style={{ color: palette.accent }}
+                                className="font-ui-jost text-[12px] font-bold tracking-wider"
+                                style={{ color: textAccentOnSurface }}
                               >
                                 {item.time} hs
                               </span>
-                              <h3 className="mt-0.5 text-sm font-semibold">
+                              <h3 className="mt-1 text-[15px] font-semibold">
                                 {item.title}
                               </h3>
                               <p
-                                className="mt-0.5 text-xs"
+                                className="mt-1 text-[14px] leading-relaxed"
                                 style={{ color: palette.textMuted }}
                               >
                                 {item.detail}
@@ -738,23 +749,23 @@ export function InvitationRenderer({
                           <>
                             <div className="hidden sm:block" />
                             <div
-                              className="rounded-2xl border p-4 text-left shadow-sm sm:p-3.5"
+                              className="rounded-[20px] border p-4 text-left shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)] sm:p-4"
                               style={{
                                 backgroundColor: palette.surface,
                                 borderColor: palette.border,
                               }}
                             >
                               <span
-                                className="font-ui-jost text-[11px] font-bold tracking-wider"
-                                style={{ color: palette.accent }}
+                                className="font-ui-jost text-[12px] font-bold tracking-wider"
+                                style={{ color: textAccentOnSurface }}
                               >
                                 {item.time} hs
                               </span>
-                              <h3 className="mt-0.5 text-sm font-semibold">
+                              <h3 className="mt-1 text-[15px] font-semibold">
                                 {item.title}
                               </h3>
                               <p
-                                className="mt-0.5 text-xs"
+                                className="mt-1 text-[14px] leading-relaxed"
                                 style={{ color: palette.textMuted }}
                               >
                                 {item.detail}
@@ -776,8 +787,8 @@ export function InvitationRenderer({
               <OrnamentDivider layoutId={layoutId} color={palette.accent} />
               <section>
                 <div className="mb-4 text-center">
-                  <Camera className="animate-icon-sway mx-auto h-5 w-5" style={{ color: palette.accent }} />
-                  <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>
+                  <Camera className="mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
+                  <h2 className={`mt-2 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                     Momentos Especiales
                   </h2>
                 </div>
@@ -787,7 +798,7 @@ export function InvitationRenderer({
                       key={imgUrl + idx}
                       type="button"
                       onClick={() => setLightboxImg(imgUrl)}
-                      className="group relative h-60 w-52 flex-shrink-0 snap-center overflow-hidden rounded-2xl border shadow-sm"
+                      className="group relative h-60 w-52 flex-shrink-0 snap-center overflow-hidden rounded-[22px] border shadow-[0_10px_26px_-14px_rgba(42,36,32,0.14)]"
                       style={{ borderColor: palette.border }}
                     >
                       <img
@@ -811,33 +822,33 @@ export function InvitationRenderer({
           <RevealSection>
             <OrnamentDivider layoutId={layoutId} color={palette.accent} />
             <section
-              className="rounded-3xl border p-6 text-center shadow-sm"
+              className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
               style={{
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
               }}
             >
-              <Shirt className="animate-icon-sway mx-auto h-5 w-5" style={{ color: palette.accent }} />
+              <Shirt className="animate-sway-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnSurface }} />
             <p
-              className="mt-2 text-[10px] font-semibold uppercase tracking-[0.24em]"
+              className="mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: palette.textMuted }}
             >
               Código de Vestimenta
             </p>
-            <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>
+            <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {dressCodeLabel}
             </h2>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: palette.textMuted }}>
+            <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
               {sample.dressCode.notes}
             </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3.5">
               {sample.dressCode.swatches.map((sw) => (
                 <div key={sw.name} className="flex flex-col items-center gap-1">
                   <span
                     className="h-7 w-7 rounded-full border shadow-inner"
                     style={{ backgroundColor: sw.hex, borderColor: palette.border }}
                   />
-                  <span className="text-[10px]" style={{ color: palette.textMuted }}>
+                  <span className="text-[11px]" style={{ color: palette.textMuted }}>
                     {sw.name}
                   </span>
                 </div>
@@ -846,7 +857,7 @@ export function InvitationRenderer({
 
             {(sample.adultOnlyNote || sample.kidsNote) && (
               <div
-                className="mt-5 rounded-2xl border px-4 py-3 text-xs leading-relaxed"
+                className="mt-5 rounded-[18px] border px-4 py-3 text-[14px] leading-relaxed"
                 style={{
                   backgroundColor: palette.surfaceAlt,
                   borderColor: palette.border,
@@ -865,22 +876,22 @@ export function InvitationRenderer({
           <RevealSection>
             <OrnamentDivider layoutId={layoutId} color={palette.accent} />
             <section
-              className="rounded-3xl border p-6 text-center shadow-sm"
+              className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
               style={{
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
               }}
             >
-              <Gift className="animate-icon-sway mx-auto h-5 w-5" style={{ color: palette.accent }} />
-            <h2 className={`mt-2 text-3xl font-semibold ${sectionHeadingFont}`}>
+              <Gift className="animate-gift-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnSurface }} />
+            <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {sample.gifts.title}
             </h2>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: palette.textMuted }}>
+            <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
               {sample.gifts.intro}
             </p>
 
             <div
-              className="mt-4 space-y-2 rounded-2xl border p-4 text-left text-xs"
+              className="mt-5 space-y-2.5 rounded-[18px] border p-4 text-left text-[14px]"
               style={{
                 backgroundColor: palette.bg,
                 borderColor: palette.border,
@@ -896,7 +907,7 @@ export function InvitationRenderer({
               </div>
               <div className="flex items-center justify-between gap-2 pt-1">
                 <div>
-                  <span className="block text-[10px]" style={{ color: palette.textMuted }}>
+                  <span className="block text-[11px]" style={{ color: palette.textMuted }}>
                     ALIAS
                   </span>
                   <span className="font-mono font-semibold">{aliasText}</span>
@@ -904,46 +915,46 @@ export function InvitationRenderer({
                 <button
                   type="button"
                   onClick={() => handleCopy(aliasText, "alias")}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all active:scale-95"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
                   style={{
-                    backgroundColor: palette.accent,
+                    backgroundColor: buttonBg,
                     color: palette.accentText,
                   }}
                 >
                   {copiedField === "alias" ? (
                     <>
-                      <Check className="h-3.5 w-3.5" />
+                      <Check className="h-4 w-4" strokeWidth={1.75} />
                       ¡Copiado!
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-4 w-4" strokeWidth={1.75} />
                       Copiar Alias
                     </>
                   )}
                 </button>
               </div>
-              <div className="flex items-center justify-between gap-2 border-t pt-2" style={{ borderColor: palette.border }}>
+              <div className="flex items-center justify-between gap-2 border-t pt-2.5" style={{ borderColor: palette.border }}>
                 <div className="min-w-0">
-                  <span className="block text-[10px]" style={{ color: palette.textMuted }}>
+                  <span className="block text-[11px]" style={{ color: palette.textMuted }}>
                     CBU / CVU
                   </span>
-                  <span className="block truncate font-mono text-[11px]">{sample.gifts.cbu}</span>
+                  <span className="block truncate font-mono text-[13px]">{sample.gifts.cbu}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(sample.gifts.cbu, "cbu")}
-                  className="inline-flex flex-shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium"
+                  className="inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-medium"
                   style={{ borderColor: palette.border, color: palette.text }}
                 >
                   {copiedField === "cbu" ? (
                     <>
-                      <Check className="h-3 w-3" />
+                      <Check className="h-4 w-4" strokeWidth={1.75} />
                       Copiado
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3 w-3" />
+                      <Copy className="h-4 w-4" strokeWidth={1.75} />
                       CBU
                     </>
                   )}
@@ -958,33 +969,33 @@ export function InvitationRenderer({
           {sections.wishes && wishesList.length > 0 && (
           <RevealSection>
             <OrnamentDivider layoutId={layoutId} color={palette.accent} />
-            <section className="space-y-3">
+            <section className="space-y-3.5">
               <div className="text-center">
-                <MessageSquareHeart className="animate-icon-beat mx-auto h-5 w-5" style={{ color: palette.accent }} />
+                <MessageSquareHeart className="animate-message-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
                 <p
-                  className="font-ui-jost mt-1.5 text-[10px] font-semibold uppercase tracking-[0.28em]"
-                  style={{ color: palette.accent }}
+                  className="font-ui-jost mt-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                  style={{ color: textAccentOnBg }}
                 >
                   Libro de Firmas
                 </p>
-                <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>
+                <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Buenos Deseos
                 </h2>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {wishesList.slice(0, 6).map((w) => (
                   <div
                     key={w.id}
-                    className="rounded-2xl border p-4 shadow-sm"
+                    className="rounded-[22px] border p-5 shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)]"
                     style={{
                       backgroundColor: palette.surface,
                       borderColor: palette.border,
                     }}
                   >
-                    <p className="text-xs italic leading-relaxed" style={{ color: palette.textMuted }}>
+                    <p className="text-[15px] italic leading-[1.6]" style={{ color: palette.textMuted }}>
                       &ldquo;{w.message}&rdquo;
                     </p>
-                    <p className="font-ui-jost mt-1.5 text-[11px] font-semibold" style={{ color: palette.accent }}>
+                    <p className="font-ui-jost mt-2 text-[12px] font-semibold" style={{ color: textAccentOnSurface }}>
                       — {w.guestName}
                     </p>
                   </div>
@@ -997,38 +1008,46 @@ export function InvitationRenderer({
           {/* ================= LOS PROTAGONISTAS (2 CARDS FOTO 1:1) ================= */}
           {galleryList.length >= 2 && (skin.category === "boda" || skin.category === "xv") && (
             <RevealSection>
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-8 grid grid-cols-2 gap-3.5">
                 {galleryList.slice(0, 2).map((img, i) => (
                   <div
                     key={img + i}
-                    className="relative aspect-square overflow-hidden rounded-2xl border shadow-sm"
+                    className="relative aspect-square overflow-hidden rounded-[22px] border shadow-[0_10px_26px_-14px_rgba(42,36,32,0.14)]"
                     style={{ borderColor: palette.border }}
                   >
                     <img
                       src={img}
-                      alt={`Protagonista ${i + 1}`}
+                      alt={
+                        skin.category === "boda"
+                          ? i === 0
+                            ? eventTitle
+                            : "Brindis de Honor"
+                          : `Protagonista ${i + 1}`
+                      }
                       loading="lazy"
                       className={`h-full w-full object-cover ${skin.imageFilter ?? ""}`}
                     />
                     <div
                       className="absolute inset-x-0 bottom-0 h-24"
                       style={{
-                        background: `linear-gradient(to top, ${palette.accent}E6 0%, transparent 100%)`,
+                        background: "linear-gradient(to top, rgba(28, 22, 18, 0.85) 0%, transparent 100%)",
                       }}
                     />
-                    <div className="absolute inset-x-3 bottom-2.5 text-center text-white">
+                    <div className="absolute inset-x-3 bottom-3 text-center text-white">
                       <p className={`text-lg font-semibold leading-tight ${sectionHeadingFont}`}>
                         {skin.category === "boda"
-                          ? eventTitle.split("&")[i]?.trim() || eventTitle
+                          ? i === 0
+                            ? eventTitle
+                            : "Brindis de Honor"
                           : i === 0
                           ? eventTitle
                           : "Noche Soñada"}
                       </p>
-                      <p className="font-ui-jost text-[11px] uppercase tracking-[0.18em] opacity-95">
+                      <p className="font-ui-jost mt-0.5 text-[11px] uppercase tracking-[0.16em] opacity-95">
                         {skin.category === "boda"
                           ? i === 0
-                            ? "Novia"
-                            : "Novio"
+                            ? "Los Novios"
+                            : "Celebración"
                           : i === 0
                           ? "Quinceañera"
                           : "Celebración"}
@@ -1045,25 +1064,25 @@ export function InvitationRenderer({
           <RevealSection>
             <OrnamentDivider layoutId={layoutId} color={palette.accent} />
             <section
-              className="rounded-3xl border p-7 text-center shadow-md"
+              className="rounded-[24px] border p-6 sm:p-7 text-center shadow-[0_12px_30px_-16px_rgba(42,36,32,0.14)]"
               style={{
                 backgroundColor: palette.surfaceAlt,
                 borderColor: palette.accent,
               }}
             >
-              <CheckCircle2 className="animate-icon-beat mx-auto h-6 w-6" style={{ color: palette.accent }} />
-              <h2 className={`mt-2 text-3xl font-semibold ${sectionHeadingFont}`}>
+              <CheckCircle2 className="animate-check-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnAlt }} />
+              <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 ¿Contamos con vos?
               </h2>
-              <p className="mt-2 text-xs leading-relaxed" style={{ color: palette.textMuted }}>
+              <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
                 {sample.rsvpDeadline}. Podés indicar si asistís, alergias o menús especiales (Sin TACC) y sugerir música.
               </p>
               <button
                 type="button"
                 onClick={() => setRsvpOpen(true)}
-                className="mt-5 w-full rounded-full py-4 text-xs font-bold uppercase tracking-[0.22em] shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
+                className="mt-5 min-h-[44px] w-full rounded-full px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.01] active:scale-95"
                 style={{
-                  backgroundColor: palette.accent,
+                  backgroundColor: buttonBg,
                   color: palette.accentText,
                 }}
               >
@@ -1075,19 +1094,19 @@ export function InvitationRenderer({
 
           {/* ================= BLOQUE GRACIAS FULL-BLEED ================= */}
           <RevealSection>
-            <section className="relative mt-8 overflow-hidden rounded-3xl border shadow-md" style={{ borderColor: palette.border }}>
+            <section className="relative mt-9 overflow-hidden rounded-[24px] border shadow-[0_12px_30px_-16px_rgba(42,36,32,0.14)]" style={{ borderColor: palette.border }}>
               <img
-                src={heroImage}
+                src={galleryList[0] || heroImage}
                 alt="Gracias"
                 loading="lazy"
                 className={`h-52 w-full object-cover ${skin.imageFilter ?? ""}`}
               />
               <div className="absolute inset-0 bg-black/55 backdrop-blur-[1px]" />
               <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
-                <p className="font-ui-jost text-[10px] font-semibold uppercase tracking-[0.3em] text-white/85">
+                <p className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.26em] text-white/90">
                   Te esperamos
                 </p>
-                <p className={`text-on-image mt-2 text-4xl font-semibold ${displayFont}`}>
+                <p className={`text-on-image mt-2 py-1 text-4xl font-semibold leading-[1.2] ${displayFont}`}>
                   ¡Gracias por acompañarnos!
                 </p>
               </div>
@@ -1105,9 +1124,9 @@ export function InvitationRenderer({
                 color: palette.text,
               }}
             >
-              <Sparkles className="h-3.5 w-3.5" style={{ color: palette.accent }} />
+              <Sparkles className="h-3.5 w-3.5" style={{ color: textAccentOnSurface }} />
               <span>
-                Creado con <strong style={{ color: palette.accent }}>InvitaStudio</strong> · Creá la tuya
+                Creado con <strong style={{ color: textAccentOnSurface }}>InvitaStudio</strong> · Creá la tuya
               </span>
             </Link>
           </footer>

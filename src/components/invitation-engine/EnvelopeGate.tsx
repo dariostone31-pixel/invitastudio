@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { InvitationSkin } from "@/templates/catalog";
 import { Sparkles, Ticket, Newspaper, LockOpen, Star } from "lucide-react";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 interface EnvelopeGateProps {
   skin: InvitationSkin;
@@ -28,6 +29,8 @@ export function EnvelopeGate({
   const [gone, setGone] = useState(false);
   const { palette, layoutId, sample, heroImage } = skin;
   const title = customTitle || sample.title;
+  const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
+  const textAccentOnSurface = ensureContrast(palette.accent, palette.surface, 4.6);
 
   useEffect(() => {
     if (!gone) {
@@ -201,7 +204,7 @@ export function EnvelopeGate({
                     : "animate-seal-pulse hover:scale-105 active:scale-95"
                 }`}
                 style={{
-                  backgroundColor: palette.accent,
+                  backgroundColor: buttonBg,
                   borderColor: palette.surface,
                   color: palette.accentText,
                 }}
@@ -209,7 +212,7 @@ export function EnvelopeGate({
                 <span className={`text-xl font-semibold leading-none ${fontDisplayClass}`}>
                   {sample.monogram}
                 </span>
-                <span className="mt-1 text-[8px] font-bold uppercase tracking-[0.22em] opacity-90">
+                <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] opacity-95">
                   Abrir
                 </span>
               </button>
@@ -217,27 +220,27 @@ export function EnvelopeGate({
 
             <div className="relative z-20 px-6 pb-8 pt-3 text-center">
               <p
-                className="text-[11px] font-semibold uppercase tracking-[0.26em]"
+                className="text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: palette.textMuted }}
               >
                 {sample.eyebrow}
               </p>
               <h1
-                className={`mt-2 text-5xl font-semibold leading-tight ${fontDisplayClass}`}
+                className={`mt-2 py-1 text-5xl font-semibold leading-[1.2] ${fontDisplayClass}`}
                 style={{ color: palette.text }}
               >
                 {title}
               </h1>
-              <p className="mt-1.5 text-xs tracking-wide" style={{ color: palette.textMuted }}>
+              <p className="mt-1.5 text-[13px] tracking-wide" style={{ color: palette.textMuted }}>
                 {sample.dateDisplay}
               </p>
               {guestPill}
               <button
                 type="button"
                 onClick={handleTap}
-                className="mt-6 w-full rounded-full py-3.5 text-xs font-semibold uppercase tracking-[0.22em] shadow-md transition-all hover:opacity-95 active:scale-[0.98]"
+                className="mt-6 min-h-[44px] w-full rounded-full px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.14em] shadow-md transition-all hover:opacity-95 active:scale-[0.98]"
                 style={{
-                  backgroundColor: palette.accent,
+                  backgroundColor: buttonBg,
                   color: palette.accentText,
                 }}
               >
@@ -303,9 +306,9 @@ export function EnvelopeGate({
             <button
               type="button"
               onClick={handleTap}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-xs font-bold uppercase tracking-[0.22em] text-stone-900 shadow-xl transition-transform hover:scale-[1.02] active:scale-95"
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-stone-900 shadow-xl transition-transform hover:scale-[1.02] active:scale-95"
             >
-              <Sparkles className="animate-icon-beat h-4 w-4 text-amber-600" />
+              <Sparkles className="h-4 w-4 text-amber-700" strokeWidth={1.75} />
               Abrir Invitación
             </button>
           </div>
@@ -335,39 +338,39 @@ export function EnvelopeGate({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
             <div
-              className="animate-float-slow absolute bottom-3 left-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
-              style={{ backgroundColor: palette.accent, color: palette.accentText }}
+              className="animate-float-slow absolute bottom-3 left-3 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+              style={{ backgroundColor: buttonBg, color: palette.accentText }}
             >
               {sample.badgeText || "VIP NIGHT"}
             </div>
           </div>
 
           <p
-            className="text-[11px] font-semibold uppercase tracking-[0.28em]"
-            style={{ color: palette.accent }}
+            className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ color: textAccentOnSurface }}
           >
             {sample.eyebrow}
           </p>
           <h1
-            className={`mt-2 text-4xl font-bold uppercase tracking-wide ${fontDisplayClass}`}
+            className={`mt-2 py-1 text-4xl font-bold uppercase leading-[1.2] tracking-wide ${fontDisplayClass}`}
             style={{ color: palette.text }}
           >
             {title}
           </h1>
-          <p className="mt-1.5 text-xs tracking-wider" style={{ color: palette.textMuted }}>
+          <p className="mt-1.5 text-[13px] tracking-wider" style={{ color: palette.textMuted }}>
             {sample.dateDisplay} · {sample.timeDisplay}
           </p>
           {guestPill}
           <button
             type="button"
             onClick={handleTap}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-xs font-bold uppercase tracking-[0.24em] shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
+            className="mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
             style={{
-              backgroundColor: palette.accent,
+              backgroundColor: buttonBg,
               color: palette.accentText,
             }}
           >
-            <LockOpen className="animate-icon-sway h-4 w-4" />
+            <LockOpen className="h-4 w-4" strokeWidth={1.75} />
             Ingresar al Evento
           </button>
         </div>
@@ -393,28 +396,28 @@ export function EnvelopeGate({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
               <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between text-white">
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em]">
-                  <Ticket className="animate-icon-sway h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em]">
+                  <Ticket className="h-4 w-4" strokeWidth={1.75} />
                   {sample.badgeText || "ALL ACCESS"}
                 </span>
-                <span className="font-mono text-xs opacity-80">N° 0040-27</span>
+                <span className="font-mono text-xs opacity-90">N° 0040-27</span>
               </div>
             </div>
 
             <div className="px-6 pb-4 pt-5 text-center">
               <p
-                className="text-[11px] font-bold uppercase tracking-[0.24em]"
-                style={{ color: palette.accent }}
+                className="text-[11px] font-bold uppercase tracking-[0.2em]"
+                style={{ color: textAccentOnSurface }}
               >
                 {sample.eyebrow}
               </p>
               <h1
-                className={`mt-1.5 text-4xl font-bold uppercase ${fontDisplayClass}`}
+                className={`mt-1.5 py-1 text-4xl font-bold uppercase leading-[1.2] ${fontDisplayClass}`}
                 style={{ color: palette.text }}
               >
                 {title}
               </h1>
-              <p className="mt-1 text-xs" style={{ color: palette.textMuted }}>
+              <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
                 {sample.dateDisplay} · {sample.timeDisplay}
               </p>
               {guestPill}
@@ -459,9 +462,9 @@ export function EnvelopeGate({
               <button
                 type="button"
                 onClick={handleTap}
-                className="w-full rounded-xl py-3.5 text-xs font-bold uppercase tracking-[0.22em] shadow-lg transition-transform active:scale-95"
+                className="min-h-[44px] w-full rounded-xl px-5 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-lg transition-transform active:scale-95"
                 style={{
-                  backgroundColor: palette.accent,
+                  backgroundColor: buttonBg,
                   color: palette.accentText,
                 }}
               >
@@ -485,9 +488,9 @@ export function EnvelopeGate({
           }}
         >
           <div className="border-b-2 pb-2 text-center" style={{ borderColor: palette.text }}>
-            <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.22em]">
+            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.16em]">
               <span>{sample.badgeText || "EDICIÓN ESPECIAL"}</span>
-              <Newspaper className="animate-icon-sway h-3.5 w-3.5" />
+              <Newspaper className="h-4 w-4" strokeWidth={1.75} />
               <span>ARGENTINA</span>
             </div>
             <h2 className={`mt-1 text-2xl font-bold tracking-tight ${fontDisplayClass}`}>
@@ -496,7 +499,7 @@ export function EnvelopeGate({
           </div>
 
           <div
-            className="border-b py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em]"
+            className="border-b py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em]"
             style={{ borderColor: palette.border }}
           >
             {sample.dateDisplay}
@@ -504,12 +507,12 @@ export function EnvelopeGate({
 
           <div className="py-4 text-center">
             <p
-              className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-              style={{ color: palette.accent }}
+              className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+              style={{ color: textAccentOnSurface }}
             >
               {sample.eyebrow}
             </p>
-            <h1 className={`mt-1 text-4xl font-bold leading-tight ${fontDisplayClass}`}>
+            <h1 className={`mt-1 py-1 text-4xl font-bold leading-[1.2] ${fontDisplayClass}`}>
               {title}
             </h1>
             <div className="mt-3 h-40 w-full overflow-hidden border" style={{ borderColor: palette.text }}>
@@ -527,7 +530,7 @@ export function EnvelopeGate({
           <button
             type="button"
             onClick={handleTap}
-            className="mt-2 w-full py-3.5 text-xs font-bold uppercase tracking-[0.22em] transition-opacity hover:opacity-90 active:scale-[0.99]"
+            className="mt-2 min-h-[44px] w-full py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] transition-opacity hover:opacity-90 active:scale-[0.99]"
             style={{
               backgroundColor: palette.text,
               color: palette.surface,
@@ -564,7 +567,7 @@ export function EnvelopeGate({
             {sample.badgeText && (
               <div
                 className="animate-float-slow absolute right-4 top-4 rounded-full px-3.5 py-1.5 text-xs font-bold shadow-md"
-                style={{ backgroundColor: palette.accent, color: palette.accentText }}
+                style={{ backgroundColor: buttonBg, color: palette.accentText }}
               >
                 {sample.badgeText}
               </div>
@@ -573,28 +576,28 @@ export function EnvelopeGate({
 
           <div className="px-6 pb-8 pt-1 text-center">
             <p
-              className="text-xs font-bold uppercase tracking-[0.2em]"
-              style={{ color: palette.accent }}
+              className="text-xs font-bold uppercase tracking-[0.18em]"
+              style={{ color: textAccentOnSurface }}
             >
               {sample.eyebrow}
             </p>
-            <h1 className={`mt-1 text-4xl font-bold ${fontDisplayClass}`} style={{ color: palette.text }}>
+            <h1 className={`mt-1 py-1 text-4xl font-bold leading-[1.2] ${fontDisplayClass}`} style={{ color: palette.text }}>
               {title}
             </h1>
-            <p className="mt-1 text-xs font-medium" style={{ color: palette.textMuted }}>
+            <p className="mt-1 text-[13px] font-medium" style={{ color: palette.textMuted }}>
               {sample.dateDisplay}
             </p>
             {guestPill}
             <button
               type="button"
               onClick={handleTap}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold tracking-wide shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
+              className="mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold tracking-wide shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
               style={{
-                backgroundColor: palette.accent,
+                backgroundColor: buttonBg,
                 color: palette.accentText,
               }}
             >
-              <Sparkles className="animate-icon-beat h-4 w-4" />
+              <Sparkles className="h-4 w-4" strokeWidth={1.75} />
               ¡Abrir Mi Invitación!
             </button>
           </div>

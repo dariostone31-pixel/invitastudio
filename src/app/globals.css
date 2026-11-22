@@ -148,15 +148,15 @@ body {
   animation: waPulse 2.4s ease-out infinite;
 }
 
-/* Wax Seal pulse */
+/* Wax Seal pulse — gentle breathing */
 @keyframes sealPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 10px 28px -6px rgba(184, 147, 82, 0.45);
+    box-shadow: 0 10px 26px -8px rgba(130, 101, 47, 0.38);
   }
   50% {
-    transform: scale(1.06);
-    box-shadow: 0 16px 38px -4px rgba(184, 147, 82, 0.7);
+    transform: scale(1.03);
+    box-shadow: 0 14px 30px -6px rgba(130, 101, 47, 0.52);
   }
 }
 
@@ -167,19 +167,57 @@ body {
 
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes iconSway {
-  0%, 100% { transform: rotate(-4deg) scale(1); }
-  50% { transform: rotate(4deg) scale(1.06); }
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(3deg) scale(1.04); }
 }
 
 @keyframes iconBeat {
   0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.12); }
-  45% { transform: scale(1); }
-  65% { transform: scale(1.08); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes giftOnce {
+  0% { transform: translateY(0px) scale(1); }
+  35% { transform: translateY(-3px) scale(1.06) rotate(-3deg); }
+  70% { transform: translateY(0px) scale(1.02) rotate(2deg); }
+  100% { transform: translateY(0px) scale(1) rotate(0deg); }
+}
+
+@keyframes swayOnce {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-3deg); }
+  65% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes checkOnce {
+  0% { transform: scale(0.92); opacity: 0.75; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes drawCheckPath {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes messageOnce {
+  0% { transform: scale(0.92) translateY(2px); opacity: 0.8; }
+  55% { transform: scale(1.07) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0px); opacity: 1; }
+}
+
+@keyframes pinOnce {
+  0%, 100% { transform: translateY(0px); }
+  45% { transform: translateY(-3px); }
 }
 
 @keyframes ringGlint {
@@ -209,7 +247,7 @@ body {
 
 @keyframes kenBurns {
   0% { transform: scale(1) translate3d(0, 0, 0); }
-  50% { transform: scale(1.07) translate3d(0, -1.5%, 0); }
+  50% { transform: scale(1.04) translate3d(0, -1%, 0); }
   100% { transform: scale(1) translate3d(0, 0, 0); }
 }
 
@@ -321,34 +359,57 @@ body {
 }
 
 .animate-seal-pulse {
-  animation: sealPulse 2.3s ease-in-out infinite;
+  animation: sealPulse 3.4s ease-in-out infinite;
 }
 .animate-float-slow {
   animation: floatSlow 3.6s ease-in-out infinite;
 }
 .animate-icon-sway {
-  animation: iconSway 3.4s ease-in-out infinite;
+  animation: iconSway 1.4s ease-in-out 1 both;
 }
 .animate-icon-beat {
-  animation: iconBeat 2.8s ease-in-out infinite;
+  animation: iconBeat 1.2s ease-in-out 1 both;
+}
+.animate-heart-once {
+  animation: iconBeat 900ms ease-out 1 both;
+}
+.animate-gift-once {
+  animation: giftOnce 750ms ease-out 1 both;
+}
+.animate-sway-once {
+  animation: swayOnce 750ms ease-in-out 1 both;
+}
+.animate-check-once {
+  animation: checkOnce 650ms ease-out 1 both;
+}
+.animate-check-once path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 0;
+  animation: drawCheckPath 750ms ease-out 1 both;
+}
+.animate-message-once {
+  animation: messageOnce 700ms ease-out 1 both;
+}
+.animate-pin-once {
+  animation: pinOnce 700ms ease-in-out 1 both;
 }
 .animate-ring-glint {
-  animation: ringGlint 3.2s ease-in-out infinite;
+  animation: ringGlint 1.8s ease-in-out 1 both;
 }
 .animate-crown-float {
-  animation: crownFloat 3s ease-in-out infinite;
+  animation: crownFloat 1.6s ease-in-out 1 both;
 }
 .animate-rocket-bob {
-  animation: rocketBob 2.6s ease-in-out infinite;
+  animation: rocketBob 1.5s ease-in-out 1 both;
 }
 .animate-butterfly-flutter {
-  animation: butterflyFlutter 2.4s ease-in-out infinite;
+  animation: butterflyFlutter 1.4s ease-in-out 1 both;
 }
 .animate-dove-glide {
-  animation: doveGlide 3.4s ease-in-out infinite;
+  animation: doveGlide 1.6s ease-in-out 1 both;
 }
 .animate-ken-burns {
-  animation: kenBurns 18s ease-in-out infinite;
+  animation: kenBurns 20s ease-in-out infinite;
 }
 .animate-particle-float {
   animation: particleFloat 4s ease-in-out infinite;
@@ -412,17 +473,17 @@ body {
   inset: -12px;
 }
 
-/* Accessibility: respect reduced motion preference */
+/* Accessibility: disable ornamental motion only, keeping interactive states readable */
 @media (prefers-reduced-motion: reduce) {
-  .envelope-gate *,
   .animate-rise-1,
   .animate-rise-2,
   .animate-rise-3,
-  .animate-phone-in {
+  .animate-phone-in,
+  .animate-tracking-expand,
+  .animate-panel-in {
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
-    transition: none !important;
   }
   .eq-bar-1,
   .eq-bar-2,
@@ -431,6 +492,13 @@ body {
   .animate-float-slow,
   .animate-icon-sway,
   .animate-icon-beat,
+  .animate-heart-once,
+  .animate-gift-once,
+  .animate-sway-once,
+  .animate-check-once,
+  .animate-check-once path,
+  .animate-message-once,
+  .animate-pin-once,
   .animate-ring-glint,
   .animate-crown-float,
   .animate-rocket-bob,
@@ -443,7 +511,6 @@ body {
   .animate-wa-pulse,
   .animate-drift-1,
   .animate-drift-2,
-  .animate-tracking-expand,
   .btn-gold-shimmer {
     animation: none !important;
   }

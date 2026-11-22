@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { SkinPalette } from "@/templates/catalog";
+import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 interface CountdownTimerProps {
   targetISO: string;
@@ -53,15 +54,17 @@ export function CountdownTimer({
   ];
 
   if (variant === "arch") {
+    const archBg = getAccessibleButtonBg(palette.accent, palette.accentText);
+
     return (
       <div
-        className="my-8 rounded-b-[28px] rounded-t-[130px] px-4 pb-8 pt-12 text-center shadow-lg"
+        className="my-8 rounded-b-[24px] rounded-t-[130px] px-4 pb-8 pt-12 text-center shadow-[0_12px_30px_-14px_rgba(42,36,32,0.18)]"
         style={{
-          backgroundColor: palette.accent,
+          backgroundColor: archBg,
           color: palette.accentText,
         }}
       >
-        <p className="font-ui-jost mb-4 text-[10px] font-semibold uppercase tracking-[0.32em] opacity-90">
+        <p className="font-ui-jost mb-4 text-[11px] font-semibold uppercase tracking-[0.26em] opacity-95">
           Falta Muy Poco
         </p>
         <div className="grid grid-cols-4 gap-2">
@@ -73,7 +76,7 @@ export function CountdownTimer({
               <div className={`text-xl sm:text-2xl font-semibold tabular-nums leading-none ${fontClass}`}>
                 {String(item.value).padStart(2, "0")}
               </div>
-              <div className="font-ui-jost mt-1 text-[9px] font-semibold uppercase tracking-[0.14em] opacity-90">
+              <div className="font-ui-jost mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] opacity-95">
                 {item.label}
               </div>
             </div>
@@ -83,10 +86,12 @@ export function CountdownTimer({
     );
   }
 
+  const numAccent = ensureContrast(palette.accent, palette.surface, 4.6);
+
   return (
-    <div className="my-6 text-center">
+    <div className="my-8 text-center">
       <p
-        className="font-ui-jost mb-3 text-[11px] font-semibold uppercase tracking-[0.26em]"
+        className="font-ui-jost mb-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
         style={{ color: palette.textMuted }}
       >
         Cuenta Regresiva
@@ -95,7 +100,7 @@ export function CountdownTimer({
         {items.map((item) => (
           <div
             key={item.label}
-            className="rounded-2xl border px-2 py-3.5 shadow-sm transition-colors"
+            className="rounded-[20px] border px-2 py-3.5 shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)] transition-colors"
             style={{
               backgroundColor: palette.surface,
               borderColor: palette.border,
@@ -103,12 +108,12 @@ export function CountdownTimer({
           >
             <div
               className={`text-2xl sm:text-3xl font-semibold tabular-nums leading-none ${fontClass}`}
-              style={{ color: palette.accent }}
+              style={{ color: numAccent }}
             >
               {String(item.value).padStart(2, "0")}
             </div>
             <div
-              className="font-ui-jost mt-1.5 text-[10px] font-medium uppercase tracking-[0.18em]"
+              className="font-ui-jost mt-1.5 text-[11px] font-medium uppercase tracking-[0.14em]"
               style={{ color: palette.textMuted }}
             >
               {item.label}
