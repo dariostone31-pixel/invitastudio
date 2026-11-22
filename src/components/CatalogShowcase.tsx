@@ -137,7 +137,7 @@ export function CatalogShowcase() {
                     >
                       {skin.sample.eyebrow}
                     </span>
-                    <h4 className={`mt-2 truncate text-xl font-semibold leading-snug ${fontClass}`}>
+                    <h4 className={`mt-2 break-words text-lg font-semibold leading-snug ${fontClass}`}>
                       {skin.sample.title}
                     </h4>
                     <p className="mt-0.5 text-[10px]" style={{ color: skin.palette.textMuted }}>

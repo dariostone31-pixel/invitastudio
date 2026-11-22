@@ -7,17 +7,11 @@ import {
   Clock,
   CalendarPlus,
   Download,
-  Gift,
   Copy,
   Check,
-  Shirt,
-  Users,
-  Camera,
   X,
   ArrowLeft,
   Sparkles,
-  CheckCircle2,
-  MessageSquareHeart,
   Heart,
 } from "lucide-react";
 import { InvitationSkin } from "@/templates/catalog";
@@ -30,7 +24,16 @@ import { RsvpModal } from "./RsvpModal";
 import { RevealSection } from "./RevealSection";
 import { AmbientParticles } from "./AmbientParticles";
 import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
-import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
+import {
+  CelebrationAttireIcon,
+  CelebrationCameraIcon,
+  CelebrationCeremonyIcon,
+  CelebrationCheckIcon,
+  CelebrationGiftIcon,
+  CelebrationPinIcon,
+  CelebrationToastIcon,
+  CelebrationWishesIcon,
+} from "./CelebrationIcons";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 export interface PublicWish {
@@ -155,6 +158,16 @@ export function InvitationRenderer({
 
   const { sample, layoutId } = skin;
   const palette = customAccent ? { ...skin.palette, accent: customAccent } : skin.palette;
+  const isNewspaper = layoutId === "diario-editorial";
+  const isTicket = layoutId === "ticket-vip";
+  const isEditorialPaper = layoutId === "editorial-sobre";
+  const cardRadius = isNewspaper ? "rounded-none" : isTicket ? "rounded-2xl" : "rounded-[22px]";
+  const innerRadius = isNewspaper ? "rounded-none" : isTicket ? "rounded-xl" : "rounded-[18px]";
+  const cardShadow = isNewspaper
+    ? "shadow-none"
+    : palette.isDark
+    ? "shadow-[0_12px_32px_-16px_rgba(0,0,0,0.45)]"
+    : "shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]";
   const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
   const textAccentOnSurface = ensureContrast(palette.accent, palette.surface, 4.6);
   const textAccentOnBg = ensureContrast(palette.accent, palette.bg, 4.6);
@@ -257,10 +270,11 @@ export function InvitationRenderer({
           title={sample.audioTitle}
           isPlaying={isPlaying}
           onToggle={() => setIsPlaying((p) => !p)}
-          accentColor={palette.accent}
+          accentColor={buttonBg}
           surfaceColor={palette.surface}
           textColor={palette.text}
           borderColor={palette.border}
+          hasTopChrome={showPreviewChrome}
         />
       )}
 
@@ -301,12 +315,17 @@ export function InvitationRenderer({
 
       {/* Contenedor Mobile-First (480px máx centrado en escritorio) */}
       <main
-        className="relative z-10 mx-auto min-h-screen w-full max-w-[480px] shadow-2xl md:my-6 md:overflow-hidden md:rounded-[32px] md:border"
+        className={`relative z-10 mx-auto min-h-screen w-full max-w-[480px] shadow-2xl md:my-6 md:overflow-hidden md:border ${
+          isNewspaper ? "md:rounded-none" : "md:rounded-[32px]"
+        }`}
         style={{
           backgroundColor: palette.bg,
           borderColor: palette.border,
         }}
       >
+        {(isEditorialPaper || isNewspaper) && (
+          <div aria-hidden="true" className="paper-texture absolute inset-0 z-0 opacity-60" />
+        )}
         {/* ================= HERO SECTION ================= */}
         {layoutId === "fullscreen-hero" || layoutId === "editorial-sobre" ? (
           <section className="relative overflow-hidden">
@@ -316,42 +335,98 @@ export function InvitationRenderer({
                 alt={eventTitle}
                 className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""}`}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/70" />
-              <div className="pointer-events-none absolute inset-4 rounded-[22px] border border-white/45" />
-              <CornerOrnaments color="#FFFFFF" />
+              {!isEditorialPaper && (
+                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/70" />
+              )}
+              {isEditorialPaper && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+                  style={{
+                    background: `linear-gradient(to bottom, transparent, ${palette.bg})`,
+                  }}
+                />
+              )}
+              <CornerOrnaments
+                color={isEditorialPaper ? textAccentOnSurface : "#FFFFFF"}
+                layoutId={layoutId}
+              />
 
-              {/* Framed glass editorial overlay */}
+              {/* Framed plaque: ivory paper plaque on editorial-sobre, dark glass on fullscreen photographic hero */}
               <div className="absolute inset-0 flex items-center justify-center px-6">
-                <div className="w-full max-w-[350px] rounded-2xl border border-white/60 bg-black/35 px-5 py-7 text-center text-white shadow-xl backdrop-blur-[4px]">
-                  <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
-                    {sample.eyebrow}
-                  </p>
-                  <h1
-                    className={`animate-tracking-expand text-on-image mt-3 py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                {isEditorialPaper ? (
+                  <div
+                    className="relative w-full max-w-[332px] rounded-[20px] border px-5 py-7 text-center shadow-[0_18px_38px_-16px_rgba(42,36,32,0.22)]"
+                    style={{
+                      backgroundColor: `${palette.surface}F2`,
+                      borderColor: palette.border,
+                      color: palette.text,
+                    }}
                   >
-                    {eventTitle}
-                  </h1>
-                  <div className="mt-5 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
-                    <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
-                      {dateDisplay.split(" ")[0]}
-                    </span>
-                    <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
-                      {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
-                    </span>
-                    <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
-                      {timeDisplay}
-                    </span>
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-2 rounded-[14px] border opacity-55"
+                      style={{ borderColor: palette.accent }}
+                    />
+                    <p
+                      className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
+                      style={{ color: textAccentOnSurface }}
+                    >
+                      {sample.eyebrow}
+                    </p>
+                    <h1
+                      className={`animate-tracking-expand relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                      style={{ color: palette.text }}
+                    >
+                      {eventTitle}
+                    </h1>
+                    <div
+                      className="relative mt-5 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                      style={{ borderColor: palette.border }}
+                    >
+                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                        {dateDisplay.split(" ")[0]}
+                      </span>
+                      <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
+                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                      </span>
+                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                        {timeDisplay}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="w-full max-w-[350px] rounded-2xl border border-white/60 bg-black/35 px-5 py-7 text-center text-white shadow-xl backdrop-blur-[4px]">
+                    <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
+                      {sample.eyebrow}
+                    </p>
+                    <h1
+                      className={`animate-tracking-expand text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                    >
+                      {eventTitle}
+                    </h1>
+                    <div className="mt-5 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
+                      <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                        {dateDisplay.split(" ")[0]}
+                      </span>
+                      <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
+                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                      </span>
+                      <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                        {timeDisplay}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="px-6 pb-4 pt-5 text-center">
-              <CircularSaveSeal monogram={sample.monogram} color={palette.accent} />
+              <CircularSaveSeal monogram={sample.monogram} color={textAccentOnBg} />
 
               {guestName && (
                 <div
-                  className="mt-5 rounded-[22px] border px-5 py-4 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+                  className={`mt-5 ${cardRadius} border px-5 py-4 ${cardShadow}`}
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.accent,
@@ -363,7 +438,7 @@ export function InvitationRenderer({
                   >
                     Pase Personalizado
                   </p>
-                  <p className="mt-1 text-base font-semibold" style={{ color: palette.text }}>
+                  <p className="mt-1 break-words text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
                   {(passes || table) && (
@@ -396,18 +471,21 @@ export function InvitationRenderer({
                 className="absolute inset-0"
                 style={{
                   background: palette.isDark
-                    ? `linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 55%, ${palette.bg} 100%)`
-                    : `linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 55%, ${palette.bg} 100%)`,
+                    ? `linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.45) 55%, ${palette.bg} 100%)`
+                    : `linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.18) 55%, ${palette.bg} 100%)`,
                 }}
               />
-              {/* Decorative inner frame + SVG corner ornaments */}
-              <div className="pointer-events-none absolute inset-4 rounded-[22px] border border-white/35" />
-              <CornerOrnaments color={palette.isDark ? palette.accent : "#FFFFFF"} />
+              <CornerOrnaments
+                color={palette.isDark ? palette.accent : "#FFFFFF"}
+                layoutId={layoutId}
+              />
             </div>
 
             <div className="relative -mt-20 px-6 pb-4 text-center">
               <div
-                className="font-ui-jost mx-auto inline-block rounded-full border px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] shadow-sm"
+                className={`font-ui-jost mx-auto inline-block border px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] shadow-sm ${
+                  isNewspaper ? "rounded-none" : "rounded-full"
+                }`}
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
@@ -418,7 +496,7 @@ export function InvitationRenderer({
               </div>
 
               <h1
-                className={`animate-tracking-expand mt-4 py-1 text-5xl sm:text-6xl font-semibold leading-[1.2] tracking-tight ${displayFont}`}
+                className={`animate-tracking-expand mt-4 break-words py-1 text-5xl sm:text-6xl font-semibold leading-[1.2] tracking-tight ${displayFont}`}
                 style={{ color: palette.text }}
               >
                 {eventTitle}
@@ -433,13 +511,13 @@ export function InvitationRenderer({
 
               <CircularSaveSeal
                 monogram={sample.monogram}
-                color={palette.accent}
+                color={textAccentOnBg}
               />
 
               {/* Pase personalizado si viene en URL */}
               {guestName && (
                 <div
-                  className="mt-5 rounded-[22px] border px-5 py-4 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+                  className={`mt-5 ${cardRadius} border px-5 py-4 ${cardShadow}`}
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.accent,
@@ -451,7 +529,7 @@ export function InvitationRenderer({
                   >
                     Pase Personalizado
                   </p>
-                  <p className="mt-1 text-base font-semibold" style={{ color: palette.text }}>
+                  <p className="mt-1 break-words text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
                   {(passes || table) && (
@@ -517,34 +595,30 @@ export function InvitationRenderer({
             )
           )}
 
-          {/* ================= PADRES / PADRINOS (Si aplica) ================= */}
+          {/* ================= PADRES / PADRINOS (Bloque narrativo abierto) ================= */}
           {sample.parentsOrHosts && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section className="text-center">
-                <Users className="mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
+                <CelebrationCeremonyIcon category={skin.category} className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
                 <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Con la bendición de
                 </h2>
-                <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                <div
+                  className="mt-5 grid grid-cols-1 gap-5 border-y py-5 sm:grid-cols-2 sm:gap-4"
+                  style={{ borderColor: palette.border }}
+                >
                   {sample.parentsOrHosts.map((group) => (
-                    <div
-                      key={group.label}
-                      className="rounded-[22px] border p-5 shadow-[0_10px_28px_-14px_rgba(42,36,32,0.1)]"
-                      style={{
-                        backgroundColor: palette.surface,
-                        borderColor: palette.border,
-                      }}
-                    >
+                    <div key={group.label} className="px-2">
                       <p
                         className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-                        style={{ color: textAccentOnSurface }}
+                        style={{ color: textAccentOnBg }}
                       >
                         {group.label}
                       </p>
                       <div className="mt-2 space-y-1 text-[15px] font-medium leading-relaxed">
                         {group.names.map((n) => (
-                          <p key={n}>{n}</p>
+                          <p key={n} className="break-words">{n}</p>
                         ))}
                       </div>
                     </div>
@@ -554,35 +628,33 @@ export function InvitationRenderer({
             </RevealSection>
           )}
 
-          {/* ================= HISTORIA (Si aplica) ================= */}
+          {/* ================= HISTORIA (Bloque narrativo abierto sobre tono suave) ================= */}
           {sections.story && sample.storyText && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section
-                className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+                className={`${innerRadius} px-6 py-7 text-center`}
                 style={{
-                  backgroundColor: palette.surface,
-                  borderColor: palette.border,
+                  backgroundColor: palette.surfaceAlt,
                 }}
               >
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border" style={{ borderColor: palette.border, color: textAccentOnSurface }}>
-                  <AnimatedCategoryIcon category={skin.category} className="h-7 w-7" />
-                </div>
+                <CelebrationToastIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnAlt }} />
                 <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   {sample.storyTitle || "Nuestra Historia"}
                 </h2>
-                <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
+                <p className="mx-auto mt-2.5 max-w-sm text-[15px] leading-[1.7]" style={{ color: palette.textMuted }}>
                   {sample.storyText}
                 </p>
               </section>
             </RevealSection>
           )}
 
-          {/* ================= LUGARES & MAPA & CALENDARIO ================= */}
+          {/* ================= LUGARES & MAPA & CALENDARIO (Bloque práctico delimitado) ================= */}
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
           <section className="space-y-4">
             <div className="text-center">
+              <CelebrationPinIcon className="mx-auto mb-2 h-8 w-8" style={{ color: textAccentOnBg }} />
               <p
                 className="text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: textAccentOnBg }}
@@ -598,23 +670,26 @@ export function InvitationRenderer({
               {locations.map((loc) => (
                 <div
                   key={loc.label}
-                  className="rounded-[22px] border p-5 sm:p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+                  className={`${cardRadius} border p-5 sm:p-6 text-center ${cardShadow}`}
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.border,
                   }}
                 >
                   <span
-                    className="inline-block rounded-full px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em]"
+                    className={`inline-block px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                      isNewspaper ? "rounded-none border" : "rounded-full"
+                    }`}
                     style={{
                       backgroundColor: palette.surfaceAlt,
+                      borderColor: palette.border,
                       color: textAccentOnAlt,
                     }}
                   >
                     {loc.label}
                   </span>
-                  <h3 className="mt-2.5 text-lg font-semibold">{loc.venue}</h3>
-                  <p className="mt-1.5 text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
+                  <h3 className="mt-2.5 break-words text-lg font-semibold">{loc.venue}</h3>
+                  <p className="mt-1.5 break-words text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
                     {loc.address} · {loc.city}
                   </p>
                   <p
@@ -629,13 +704,15 @@ export function InvitationRenderer({
                       href={loc.mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90"
+                      className={`inline-flex min-h-[44px] w-full items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90 ${
+                        isNewspaper ? "rounded-none" : "rounded-full"
+                      }`}
                       style={{
                         backgroundColor: buttonBg,
                         color: palette.accentText,
                       }}
                     >
-                      <MapPin className="animate-pin-once h-4 w-4" strokeWidth={1.75} />
+                      <MapPin className="h-4 w-4" strokeWidth={1.75} />
                       Ver en Google Maps
                     </a>
                   </div>
@@ -654,7 +731,7 @@ export function InvitationRenderer({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[20px] border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80"
+                className={`inline-flex min-h-[44px] items-center justify-center gap-2 ${innerRadius} border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80`}
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
@@ -669,7 +746,7 @@ export function InvitationRenderer({
                 onClick={() =>
                   downloadIcsFile(eventTitle, dateISO, fullAddress, quoteText)
                 }
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[20px] border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80"
+                className={`inline-flex min-h-[44px] items-center justify-center gap-2 ${innerRadius} border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80`}
                 style={{
                   backgroundColor: palette.surface,
                   borderColor: palette.border,
@@ -686,7 +763,7 @@ export function InvitationRenderer({
           {/* ================= ITINERARIO ================= */}
           {sections.schedule && sample.schedule.length > 0 && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section>
                 <div className="mb-5 text-center">
                   <p
@@ -714,14 +791,14 @@ export function InvitationRenderer({
                         <span
                           className="absolute -left-[19px] top-4 z-10 h-3 w-3 rounded-full border-2 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2"
                           style={{
-                            backgroundColor: palette.accent,
+                            backgroundColor: textAccentOnBg,
                             borderColor: palette.bg,
                           }}
                         />
                         {isLeft ? (
                           <>
                             <div
-                              className="rounded-[20px] border p-4 text-left shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)] sm:p-4 sm:text-right"
+                              className={`${innerRadius} border p-4 text-left ${cardShadow} sm:p-4 sm:text-right`}
                               style={{
                                 backgroundColor: palette.surface,
                                 borderColor: palette.border,
@@ -749,7 +826,7 @@ export function InvitationRenderer({
                           <>
                             <div className="hidden sm:block" />
                             <div
-                              className="rounded-[20px] border p-4 text-left shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)] sm:p-4"
+                              className={`${innerRadius} border p-4 text-left ${cardShadow} sm:p-4`}
                               style={{
                                 backgroundColor: palette.surface,
                                 borderColor: palette.border,
@@ -784,10 +861,10 @@ export function InvitationRenderer({
           {/* ================= GALERÍA DE FOTOS ================= */}
           {sections.gallery && galleryList.length > 0 && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section>
                 <div className="mb-4 text-center">
-                  <Camera className="mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
+                  <CelebrationCameraIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
                   <h2 className={`mt-2 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                     Momentos Especiales
                   </h2>
@@ -798,7 +875,8 @@ export function InvitationRenderer({
                       key={imgUrl + idx}
                       type="button"
                       onClick={() => setLightboxImg(imgUrl)}
-                      className="group relative h-60 w-52 flex-shrink-0 snap-center overflow-hidden rounded-[22px] border shadow-[0_10px_26px_-14px_rgba(42,36,32,0.14)]"
+                      aria-label={`Ampliar foto ${idx + 1}`}
+                      className={`group relative h-60 w-52 flex-shrink-0 snap-center overflow-hidden ${cardRadius} border ${cardShadow}`}
                       style={{ borderColor: palette.border }}
                     >
                       <img
@@ -820,15 +898,15 @@ export function InvitationRenderer({
           {/* ================= DRESS CODE ================= */}
           {sections.dressCode && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section
-              className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
               }}
             >
-              <Shirt className="animate-sway-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnSurface }} />
+              <CelebrationAttireIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnSurface }} />
             <p
               className="mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: palette.textMuted }}
@@ -857,7 +935,7 @@ export function InvitationRenderer({
 
             {(sample.adultOnlyNote || sample.kidsNote) && (
               <div
-                className="mt-5 rounded-[18px] border px-4 py-3 text-[14px] leading-relaxed"
+                className={`mt-5 ${innerRadius} border px-4 py-3 text-[14px] leading-relaxed`}
                 style={{
                   backgroundColor: palette.surfaceAlt,
                   borderColor: palette.border,
@@ -874,15 +952,15 @@ export function InvitationRenderer({
           {/* ================= REGALOS / VAQUITA + COPIAR ALIAS ================= */}
           {sections.gifts && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section
-              className="rounded-[22px] border p-6 text-center shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]"
+              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
               }}
             >
-              <Gift className="animate-gift-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnSurface }} />
+              <CelebrationGiftIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnSurface }} />
             <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {sample.gifts.title}
             </h2>
@@ -891,7 +969,7 @@ export function InvitationRenderer({
             </p>
 
             <div
-              className="mt-5 space-y-2.5 rounded-[18px] border p-4 text-left text-[14px]"
+              className={`mt-5 space-y-2.5 ${innerRadius} border p-4 text-left text-[14px]`}
               style={{
                 backgroundColor: palette.bg,
                 borderColor: palette.border,
@@ -899,23 +977,25 @@ export function InvitationRenderer({
             >
               <div className="flex justify-between gap-2">
                 <span style={{ color: palette.textMuted }}>Titular:</span>
-                <span className="font-semibold">{sample.gifts.holder}</span>
+                <span className="break-words text-right font-semibold">{sample.gifts.holder}</span>
               </div>
               <div className="flex justify-between gap-2">
                 <span style={{ color: palette.textMuted }}>Entidad:</span>
-                <span className="font-semibold">{sample.gifts.bank}</span>
+                <span className="break-words text-right font-semibold">{sample.gifts.bank}</span>
               </div>
               <div className="flex items-center justify-between gap-2 pt-1">
-                <div>
+                <div className="min-w-0">
                   <span className="block text-[11px]" style={{ color: palette.textMuted }}>
                     ALIAS
                   </span>
-                  <span className="font-mono font-semibold">{aliasText}</span>
+                  <span className="break-all font-mono font-semibold">{aliasText}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(aliasText, "alias")}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
+                  className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-all active:scale-95 ${
+                    isNewspaper ? "rounded-none" : "rounded-full"
+                  }`}
                   style={{
                     backgroundColor: buttonBg,
                     color: palette.accentText,
@@ -939,12 +1019,14 @@ export function InvitationRenderer({
                   <span className="block text-[11px]" style={{ color: palette.textMuted }}>
                     CBU / CVU
                   </span>
-                  <span className="block truncate font-mono text-[13px]">{sample.gifts.cbu}</span>
+                  <span className="block break-all font-mono text-[13px]">{sample.gifts.cbu}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(sample.gifts.cbu, "cbu")}
-                  className="inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-medium"
+                  className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 border px-3.5 py-2 text-[13px] font-medium ${
+                    isNewspaper ? "rounded-none" : "rounded-full"
+                  }`}
                   style={{ borderColor: palette.border, color: palette.text }}
                 >
                   {copiedField === "cbu" ? (
@@ -968,10 +1050,10 @@ export function InvitationRenderer({
           {/* ================= MURO DE BUENOS DESEOS / FIRMAS ================= */}
           {sections.wishes && wishesList.length > 0 && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section className="space-y-3.5">
               <div className="text-center">
-                <MessageSquareHeart className="animate-message-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnBg }} />
+                <CelebrationWishesIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
                 <p
                   className="font-ui-jost mt-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
                   style={{ color: textAccentOnBg }}
@@ -986,7 +1068,7 @@ export function InvitationRenderer({
                 {wishesList.slice(0, 6).map((w) => (
                   <div
                     key={w.id}
-                    className="rounded-[22px] border p-5 shadow-[0_8px_22px_-12px_rgba(42,36,32,0.1)]"
+                    className={`${cardRadius} border p-5 ${cardShadow}`}
                     style={{
                       backgroundColor: palette.surface,
                       borderColor: palette.border,
@@ -1012,7 +1094,7 @@ export function InvitationRenderer({
                 {galleryList.slice(0, 2).map((img, i) => (
                   <div
                     key={img + i}
-                    className="relative aspect-square overflow-hidden rounded-[22px] border shadow-[0_10px_26px_-14px_rgba(42,36,32,0.14)]"
+                    className={`relative aspect-square overflow-hidden ${cardRadius} border ${cardShadow}`}
                     style={{ borderColor: palette.border }}
                   >
                     <img
@@ -1034,7 +1116,7 @@ export function InvitationRenderer({
                       }}
                     />
                     <div className="absolute inset-x-3 bottom-3 text-center text-white">
-                      <p className={`text-lg font-semibold leading-tight ${sectionHeadingFont}`}>
+                      <p className={`break-words text-lg font-semibold leading-tight ${sectionHeadingFont}`}>
                         {skin.category === "boda"
                           ? i === 0
                             ? eventTitle
@@ -1062,15 +1144,15 @@ export function InvitationRenderer({
           {/* ================= CONFIRMAR ASISTENCIA (RSVP NATIVO) ================= */}
           {sections.rsvp && !memoryMode && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} color={palette.accent} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section
-              className="rounded-[24px] border p-6 sm:p-7 text-center shadow-[0_12px_30px_-16px_rgba(42,36,32,0.14)]"
+              className={`${isNewspaper ? "rounded-none" : "rounded-[24px]"} border-2 p-6 sm:p-7 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surfaceAlt,
-                borderColor: palette.accent,
+                borderColor: textAccentOnAlt,
               }}
             >
-              <CheckCircle2 className="animate-check-once mx-auto h-8 w-8" strokeWidth={1.6} style={{ color: textAccentOnAlt }} />
+              <CelebrationCheckIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnAlt }} />
               <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 ¿Contamos con vos?
               </h2>
@@ -1080,7 +1162,9 @@ export function InvitationRenderer({
               <button
                 type="button"
                 onClick={() => setRsvpOpen(true)}
-                className="mt-5 min-h-[44px] w-full rounded-full px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.01] active:scale-95"
+                className={`mt-5 min-h-[44px] w-full px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.01] active:scale-95 ${
+                  isNewspaper ? "rounded-none" : "rounded-full"
+                }`}
                 style={{
                   backgroundColor: buttonBg,
                   color: palette.accentText,
@@ -1092,21 +1176,29 @@ export function InvitationRenderer({
           </RevealSection>
           )}
 
-          {/* ================= BLOQUE GRACIAS FULL-BLEED ================= */}
+          {/* ================= BLOQUE GRACIAS EMOCIONAL (SIN APARIENCIA DE FORMULARIO) ================= */}
           <RevealSection>
-            <section className="relative mt-9 overflow-hidden rounded-[24px] border shadow-[0_12px_30px_-16px_rgba(42,36,32,0.14)]" style={{ borderColor: palette.border }}>
+            <section
+              className={`relative mt-9 overflow-hidden ${isNewspaper ? "rounded-none border" : "rounded-[24px]"}`}
+              style={isNewspaper ? { borderColor: palette.border } : undefined}
+            >
               <img
                 src={galleryList[0] || heroImage}
                 alt="Gracias"
                 loading="lazy"
-                className={`h-52 w-full object-cover ${skin.imageFilter ?? ""}`}
+                className={`h-56 w-full object-cover ${skin.imageFilter ?? ""}`}
               />
-              <div className="absolute inset-0 bg-black/55 backdrop-blur-[1px]" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(to top, rgba(20,16,14,0.78) 0%, rgba(20,16,14,0.45) 55%, rgba(20,16,14,0.28) 100%)",
+                }}
+              />
               <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
-                <p className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.26em] text-white/90">
+                <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
                   Te esperamos
                 </p>
-                <p className={`text-on-image mt-2 py-1 text-4xl font-semibold leading-[1.2] ${displayFont}`}>
+                <p className={`text-on-image mt-2 break-words py-1 text-4xl font-semibold leading-[1.2] ${displayFont}`}>
                   ¡Gracias por acompañarnos!
                 </p>
               </div>
@@ -1117,7 +1209,7 @@ export function InvitationRenderer({
           <footer className="mt-12 border-t pt-6 text-center" style={{ borderColor: palette.border }}>
             <Link
               href="/?utm_source=invitacion&utm_medium=footer"
-              className="font-ui-jost inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm transition-transform hover:scale-[1.02]"
+              className="font-ui-jost inline-flex min-h-[44px] items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm transition-transform hover:scale-[1.02]"
               style={{
                 backgroundColor: palette.surface,
                 borderColor: palette.border,
@@ -1153,7 +1245,8 @@ export function InvitationRenderer({
           <button
             type="button"
             onClick={() => setLightboxImg(null)}
-            className="absolute right-5 top-5 rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
+            aria-label="Cerrar vista ampliada"
+            className="absolute right-5 top-5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
           >
             <X className="h-5 w-5" />
           </button>

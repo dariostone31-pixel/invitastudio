@@ -100,7 +100,7 @@ export function HeroMockup() {
             >
               {active.sample.eyebrow}
             </div>
-            <h3 className={`mt-2 truncate text-3xl font-semibold leading-tight ${titleFont}`}>
+            <h3 className={`mt-2 break-words text-3xl font-semibold leading-tight ${titleFont}`}>
               {active.sample.title}
             </h3>
             <p className="mt-1 text-[11px] uppercase tracking-wider" style={{ color: active.palette.textMuted }}>

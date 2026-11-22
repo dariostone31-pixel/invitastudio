@@ -12,6 +12,7 @@ interface AudioPlayerFloatProps {
   surfaceColor: string;
   textColor: string;
   borderColor: string;
+  hasTopChrome?: boolean;
 }
 
 export function AudioPlayerFloat({
@@ -23,6 +24,7 @@ export function AudioPlayerFloat({
   surfaceColor,
   textColor,
   borderColor,
+  hasTopChrome = false,
 }: AudioPlayerFloatProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [actuallyPlaying, setActuallyPlaying] = React.useState(false);
@@ -78,7 +80,9 @@ export function AudioPlayerFloat({
         aria-label={actuallyPlaying ? "Pausar música" : "Reproducir música"}
         aria-pressed={actuallyPlaying}
         title={title}
-        className="fixed right-4 top-4 z-40 flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95"
+        className={`fixed right-3 sm:right-4 z-40 flex min-h-[40px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95 ${
+          hasTopChrome ? "top-14 sm:top-14" : "top-4"
+        }`}
         style={{
           backgroundColor: `${surfaceColor}E6`,
           borderColor: borderColor,

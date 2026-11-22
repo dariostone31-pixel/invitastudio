@@ -27,7 +27,7 @@ export function HeroFan() {
   );
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <section className="mx-auto max-w-6xl overflow-hidden px-4 py-12 sm:px-6">
       <div className="mb-8 text-center">
         <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.34em] text-[#6B1E30]">
           Curaduría de Autor
@@ -38,7 +38,7 @@ export function HeroFan() {
       </div>
 
       <div className="group/fan flex items-center justify-center py-6">
-        <div className="flex items-center justify-center -space-x-8 sm:-space-x-6">
+        <div className="flex items-center justify-center -space-x-12 sm:-space-x-6">
           {skins.map((skin, idx) => {
             const fanAccent = ensureContrast(skin.palette.accent, skin.palette.bg, 4.6);
             return (

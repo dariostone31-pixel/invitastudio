@@ -49,13 +49,18 @@ export function EnvelopeGate({
     onOpen();
     setTimeout(() => {
       setFadingOut(true);
-    }, 520);
+    }, 450);
     setTimeout(() => {
       setGone(true);
-    }, 1050);
+    }, 850);
   };
 
   if (gone) return null;
+
+  const showGateSparkles =
+    layoutId === "neon-dark" ||
+    skin.category === "nina" ||
+    skin.id === "xv-mariposas-lila";
 
   const guestPill = guestName ? (
     <div
@@ -63,17 +68,17 @@ export function EnvelopeGate({
       style={{
         backgroundColor: palette.isDark
           ? "rgba(255,255,255,0.08)"
-          : "rgba(255,255,255,0.94)",
+          : "rgba(255,255,255,0.96)",
         borderColor: palette.accent,
       }}
     >
       <span
         className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-        style={{ color: palette.accent }}
+        style={{ color: palette.isDark ? palette.accent : textAccentOnSurface }}
       >
         Invitación Especial
       </span>
-      <span className="mt-0.5 text-base font-semibold" style={{ color: palette.text }}>
+      <span className="mt-0.5 break-words text-base font-semibold" style={{ color: palette.text }}>
         {`¡Hola, ${guestName}!`}
       </span>
       {(passes || table) && (
@@ -106,27 +111,29 @@ export function EnvelopeGate({
         style={{ backgroundImage: `url(${heroImage})` }}
       />
 
-      {/* Ambient floating sparkles */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <Sparkles
-          className="animate-particle-float absolute left-[12%] top-[18%] h-4 w-4 opacity-50"
-          style={{ color: palette.accent }}
-        />
-        <Sparkles
-          className="animate-particle-float absolute right-[15%] top-[24%] h-5 w-5 opacity-45"
-          style={{ color: palette.accent, animationDelay: "1.2s" }}
-        />
-        <Star
-          className="animate-particle-float absolute bottom-[20%] left-[18%] h-3.5 w-3.5 opacity-40"
-          style={{ color: palette.accent, animationDelay: "2.1s" }}
-        />
-      </div>
+      {/* Ambient floating sparkles only for night / magic / girls themes */}
+      {showGateSparkles && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <Sparkles
+            className="animate-particle-float absolute left-[12%] top-[18%] h-4 w-4 opacity-50"
+            style={{ color: palette.accent }}
+          />
+          <Sparkles
+            className="animate-particle-float absolute right-[15%] top-[24%] h-5 w-5 opacity-45"
+            style={{ color: palette.accent, animationDelay: "1.2s" }}
+          />
+          <Star
+            className="animate-particle-float absolute bottom-[20%] left-[18%] h-3.5 w-3.5 opacity-40"
+            style={{ color: palette.accent, animationDelay: "2.1s" }}
+          />
+        </div>
+      )}
 
       {/* 1. EDITORIAL SOBRE 3D CON SELLO DE LACRE */}
       {layoutId === "editorial-sobre" && (
         <div className="perspective-1000 relative w-full max-w-[400px]">
           <div
-            className={`relative overflow-hidden rounded-3xl border shadow-2xl transition-transform duration-700 ${
+            className={`relative overflow-hidden rounded-3xl border shadow-[0_26px_54px_-18px_rgba(42,36,32,0.22)] transition-transform duration-700 ${
               opening ? "-translate-y-4 scale-[1.02]" : ""
             }`}
             style={{
@@ -134,12 +141,13 @@ export function EnvelopeGate({
               borderColor: palette.border,
             }}
           >
+            <div className="paper-texture absolute inset-0 z-10 opacity-70" />
             {/* Top 3D Envelope Flap */}
-            <div className="perspective-1000 relative h-44 w-full overflow-visible">
+            <div className="perspective-1000 relative h-44 w-full overflow-hidden">
               {/* Inner letter peeking up when opening */}
               <div
-                className={`absolute inset-x-4 bottom-0 top-4 rounded-t-2xl border shadow-inner transition-transform duration-700 ${
-                  opening ? "-translate-y-8 opacity-100" : "translate-y-2 opacity-90"
+                className={`absolute inset-x-6 bottom-2 top-5 overflow-hidden rounded-t-2xl border shadow-inner transition-transform duration-700 ${
+                  opening ? "-translate-y-6 opacity-100" : "translate-y-3 opacity-95"
                 }`}
                 style={{
                   backgroundColor: palette.bg,
@@ -149,7 +157,7 @@ export function EnvelopeGate({
                 <img
                   src={heroImage}
                   alt={title}
-                  className={`h-full w-full rounded-t-2xl object-cover opacity-70 ${
+                  className={`h-full w-full object-cover opacity-55 ${
                     skin.imageFilter ?? ""
                   }`}
                 />
@@ -157,16 +165,15 @@ export function EnvelopeGate({
 
               {/* Animated 3D Triangular Flap */}
               <div
-                className={`envelope-flap absolute inset-0 z-10 overflow-hidden border-b ${
+                className={`envelope-flap absolute inset-0 z-10 overflow-hidden ${
                   opening ? "envelope-flap-open" : ""
                 }`}
                 style={{
                   backgroundColor: palette.surfaceAlt,
-                  borderColor: palette.border,
                 }}
               >
                 <div
-                  className="absolute inset-0 opacity-60"
+                  className="pointer-events-none absolute inset-0 opacity-60"
                   style={{
                     background: `radial-gradient(circle at 50% 85%, ${palette.accent}22, transparent 70%)`,
                   }}
@@ -177,19 +184,25 @@ export function EnvelopeGate({
                   className="h-full w-full"
                 >
                   <polygon
-                    points="0,0 400,0 200,136"
+                    points="0,0 400,0 200,132"
                     fill={palette.surfaceAlt}
                     stroke={palette.border}
                     strokeWidth="1.5"
                   />
                   <polygon
-                    points="0,176 200,104 400,176"
+                    points="0,176 200,98 400,176"
                     fill={palette.surface}
                     stroke={palette.border}
                     strokeWidth="1"
                   />
                 </svg>
               </div>
+              {/* Clean bottom mask so no sliver of inner image leaks under the flap */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-3"
+                style={{ backgroundColor: palette.surface }}
+              />
             </div>
 
             {/* Wax Seal Button overlapping flap */}
