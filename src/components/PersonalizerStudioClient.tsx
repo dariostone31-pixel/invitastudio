@@ -34,6 +34,11 @@ import {
   InvitationSkin,
 } from "@/templates/catalog";
 import { prepareImageForUpload } from "@/lib/imageUpload";
+import {
+  getCompatibleCategories,
+  getDefaultStoryTitleForCategory,
+  getTriviaPresetForCategory,
+} from "@/lib/categoryPresets";
 import { InvitationRenderer } from "./invitation-engine/InvitationRenderer";
 import { PaymentPendingBanner } from "./PaymentPendingBanner";
 
@@ -82,7 +87,7 @@ const HERO_OVERLAY_OPTIONS: { id: HeroOverlayStyle; label: string; desc: string 
 
 const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "countdown", label: "Cuenta Regresiva en vivo" },
-  { key: "story", label: "Nuestra Historia" },
+  { key: "story", label: "Historia / Mensaje Principal" },
   { key: "schedule", label: "Itinerario / Programa" },
   { key: "gallery", label: "Galería de Fotos" },
   { key: "dressCode", label: "Código de Vestimenta" },
@@ -93,27 +98,6 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "trivia", label: "Mini-Trivia con Podio (Juego interactivo)" },
   { key: "collaborativeAlbum", label: "Álbum Colaborativo QR & Hashtag" },
   { key: "rsvp", label: "Botón Confirmar Asistencia" },
-];
-
-const DEFAULT_TRIVIA_PRESET: TriviaQuestion[] = [
-  {
-    id: "q1",
-    question: "¿Cuál es nuestra comida favorita para pedir juntos?",
-    options: ["Pizza", "Sushi", "Asado / Milanesas", "Pastas"],
-    correctIndex: 0,
-  },
-  {
-    id: "q2",
-    question: "¿Qué estilo de música no puede faltar en la pista?",
-    options: ["Cumbia & Cuarteto", "Reggaeton / Pop", "Rock Nacional", "De todo un poco"],
-    correctIndex: 3,
-  },
-  {
-    id: "q3",
-    question: "¿En qué año empezó esta historia?",
-    options: ["2020", "2022", "2024", "2025"],
-    correctIndex: 1,
-  },
 ];
 
 const BANK_OPTIONS = [
@@ -151,6 +135,11 @@ export function PersonalizerStudioClient({
   const [quote, setQuote] = useState(event.quote);
 
   const selectedSkin = getSkinById(skinId);
+  const initialCategory = getSkinById(event.skinId).category;
+  const compatibleCategories = getCompatibleCategories(initialCategory);
+  const filteredSkins = INVITATION_SKINS.filter((s) =>
+    compatibleCategories.includes(s.category)
+  );
 
   const [parentsOrHosts, setParentsOrHosts] = useState<ParentsOrHostsGroup[]>(
     event.parentsOrHosts && event.parentsOrHosts.length > 0
@@ -158,7 +147,9 @@ export function PersonalizerStudioClient({
       : selectedSkin.sample.parentsOrHosts || []
   );
   const [storyTitle, setStoryTitle] = useState(
-    event.storyTitle || selectedSkin.sample.storyTitle || "Nuestra Historia"
+    event.storyTitle ||
+      selectedSkin.sample.storyTitle ||
+      getDefaultStoryTitleForCategory(selectedSkin.category, selectedSkin.name)
   );
   const [storyText, setStoryText] = useState(
     event.storyText || selectedSkin.sample.storyText || ""
@@ -193,7 +184,11 @@ export function PersonalizerStudioClient({
   const [triviaQuestions, setTriviaQuestions] = useState<TriviaQuestion[]>(
     event.triviaQuestions && event.triviaQuestions.length > 0
       ? event.triviaQuestions
-      : DEFAULT_TRIVIA_PRESET
+      : getTriviaPresetForCategory(
+          selectedSkin.category,
+          event.dressCode || selectedSkin.sample.dressCode.label,
+          selectedSkin.id
+        )
   );
   const [memoryMode, setMemoryMode] = useState<boolean>(Boolean(event.memoryMode));
 
@@ -456,14 +451,14 @@ export function PersonalizerStudioClient({
                 <label className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-700">
                   <span className="inline-flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                    Plantilla Base ({INVITATION_SKINS.length} Modelos)
+                    Modelos de esta categoría ({filteredSkins.length})
                   </span>
                   <span className="text-[11px] font-medium normal-case text-stone-500">
                     {selectedSkin.name}
                   </span>
                 </label>
                 <div className="grid max-h-64 grid-cols-2 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-3">
-                  {INVITATION_SKINS.map((s) => {
+                  {filteredSkins.map((s) => {
                     const active = skinId === s.id;
                     return (
                       <button

@@ -23,6 +23,7 @@ import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } f
 import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 import { LEGAL_VERSION } from "@/config/legal";
 import { prepareImageForUpload } from "@/lib/imageUpload";
+import { getDefaultStoryTitleForCategory } from "@/lib/categoryPresets";
 import type { EventRecord, HeroOverlayStyle, ParentsOrHostsGroup, ScheduleItem } from "@/lib/db";
 
 const FONT_CHOICES: { id: InvitationSkin["fontDisplay"]; label: string }[] = [
@@ -103,7 +104,8 @@ function EncargarForm() {
     skinObj.sample.parentsOrHosts || []
   );
   const [storyTitle, setStoryTitle] = useState(
-    skinObj.sample.storyTitle || "Nuestra Historia"
+    skinObj.sample.storyTitle ||
+      getDefaultStoryTitleForCategory(skinObj.category, skinObj.name)
   );
   const [storyText, setStoryText] = useState(skinObj.sample.storyText || "");
   const [schedule, setSchedule] = useState<ScheduleItem[]>(skinObj.sample.schedule || []);
@@ -115,7 +117,9 @@ function EncargarForm() {
     setAccentOverride(s.palette.accent);
     setQuote(s.sample.quote);
     setParentsOrHosts(s.sample.parentsOrHosts ? structuredClone(s.sample.parentsOrHosts) : []);
-    setStoryTitle(s.sample.storyTitle || "Nuestra Historia");
+    setStoryTitle(
+      s.sample.storyTitle || getDefaultStoryTitleForCategory(s.category, s.name)
+    );
     setStoryText(s.sample.storyText || "");
     setSchedule(s.sample.schedule ? structuredClone(s.sample.schedule) : []);
   }, [selectedSkin]);
@@ -147,10 +151,39 @@ function EncargarForm() {
   const [notes, setNotes] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // Fotos
+  // Fotos (Portada única + Galería separada)
+  const [heroUploadedUrl, setHeroUploadedUrl] = useState<string>("");
+  const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleHeroFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingHero(true);
+    setUploadError(null);
+    try {
+      const prepared = await prepareImageForUpload(file);
+      const fd = new FormData();
+      fd.append("files", prepared);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.urls?.[0]) {
+        throw new Error(
+          data.error || "No pudimos subir la foto de portada. Probá con otro archivo."
+        );
+      }
+      setHeroUploadedUrl(data.urls[0]);
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "No se pudo subir la foto de portada."
+      );
+    } finally {
+      setUploadingHero(false);
+      e.target.value = "";
+    }
+  };
 
   // Envío
   const [submitting, setSubmitting] = useState(false);
@@ -261,7 +294,7 @@ function EncargarForm() {
                 storyTitle,
                 storyText,
                 schedule,
-                heroImageUrl: uploadedUrls[0],
+                heroImageUrl: heroUploadedUrl || undefined,
                 heroOverlayOverride,
                 galleryImages: uploadedUrls,
                 fontOverride,
@@ -413,6 +446,9 @@ function EncargarForm() {
         `• Evento: ${createdOrder.eventTitle}\n` +
         `• Fecha y hora: ${createdOrder.dateDisplay} · ${createdOrder.timeDisplay}\n` +
         `• Lugar: ${createdOrder.venue} (${createdOrder.address})\n` +
+        (createdOrder.planId === "asistido" && createdOrder.songRequest
+          ? `• Canción pedida (Llave en Mano): ${createdOrder.songRequest}\n`
+          : "") +
         `• Contacto: ${createdOrder.contactName} | Email: ${createdOrder.email}`
     );
 
@@ -846,6 +882,18 @@ function EncargarForm() {
 
                   {/* Mini preview visual instantáneo de portada */}
                   <div className="flex flex-col justify-center sm:col-span-5">
+                    <div className="mb-2.5">
+                      <label className="mb-1 block text-[11px] font-semibold text-stone-700">
+                        Nombre en la portada (vista en vivo) *
+                      </label>
+                      <input
+                        type="text"
+                        value={eventTitle}
+                        onChange={(e) => setEventTitle(e.target.value)}
+                        placeholder={`Ej. ${skinObj.sample.title}`}
+                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                      />
+                    </div>
                     <span className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
                       Vista rápida de tu portada
                     </span>
@@ -857,7 +905,7 @@ function EncargarForm() {
                       }}
                     >
                       <img
-                        src={uploadedUrls[0] || skinObj.heroImage}
+                        src={heroUploadedUrl || skinObj.heroImage}
                         alt="Vista rápida portada"
                         className={`h-full w-full object-cover ${
                           heroOverlayOverride === "translucido-suave"
@@ -1076,33 +1124,74 @@ function EncargarForm() {
                   ))}
                 </div>
 
-                {/* Fotos desde el celular con compresión automática */}
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-stone-700">
-                    Foto Principal de Portada (1ª foto) & Galería (opcional)
-                  </label>
-                  <p className="mb-2 text-[11px] text-stone-500">
-                    La primera foto que subas se mostrará como protagonista en la portada y en el sobre animado; las demás irán a tu galería.
-                  </p>
-                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-5 text-center transition-colors hover:border-stone-500">
-                    <Upload className="h-6 w-6 text-stone-500" />
-                    <span className="mt-2 text-xs font-semibold text-stone-700">
-                      {uploadingPhotos
-                        ? "Optimizando y subiendo fotos..."
-                        : "Tocá acá para elegir tu foto de portada y galería (hasta 6 · JPG, PNG o WebP)"}
-                    </span>
-                    <span className="mt-0.5 text-[11px] text-stone-400">
-                      Las optimizamos automáticamente desde tu celular para que carguen rápido
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      disabled={uploadingPhotos}
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
+                {/* Fotos separadas: 1) Portada (1 sola) + 2) Galería */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-stone-700">
+                      Foto de Portada (1 sola foto · opcional)
+                    </label>
+                    <p className="mb-2 text-[11px] text-stone-500">
+                      Se mostrará como protagonista en la portada principal y en el sobre animado.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex flex-1 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-4 text-center transition-colors hover:border-stone-500">
+                        <Upload className="h-5 w-5 text-stone-500" />
+                        <span className="mt-1.5 text-xs font-semibold text-stone-700">
+                          {uploadingHero
+                            ? "Subiendo foto de portada..."
+                            : heroUploadedUrl
+                            ? "Cambiar foto de portada"
+                            : "Elegir 1 foto para la portada"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingHero}
+                          onChange={handleHeroFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                      {heroUploadedUrl && (
+                        <div className="relative h-20 w-20 flex-shrink-0">
+                          <img
+                            src={heroUploadedUrl}
+                            alt="Foto de portada"
+                            className="h-full w-full rounded-xl border border-emerald-400 object-cover"
+                          />
+                          <button
+                            type="button"
+                            aria-label="Quitar foto de portada"
+                            onClick={() => setHeroUploadedUrl("")}
+                            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] font-bold text-white"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-stone-700">
+                      Fotos de Galería (opcional · hasta 6 fotos)
+                    </label>
+                    <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-4 text-center transition-colors hover:border-stone-500">
+                      <Upload className="h-5 w-5 text-stone-500" />
+                      <span className="mt-1.5 text-xs font-semibold text-stone-700">
+                        {uploadingPhotos
+                          ? "Optimizando y subiendo fotos..."
+                          : "Agregar fotos a la galería (JPG, PNG o WebP)"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={uploadingPhotos}
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                   {uploadError && (
                     <div className="mt-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                       <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -1110,12 +1199,12 @@ function EncargarForm() {
                     </div>
                   )}
                   {uploadedUrls.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       {uploadedUrls.map((url, idx) => (
                         <div key={url + idx} className="relative h-16 w-16">
                           <img
                             src={url}
-                            alt={`Foto ${idx + 1}`}
+                            alt={`Galería ${idx + 1}`}
                             className="h-full w-full rounded-xl border border-emerald-300 object-cover"
                           />
                           <button

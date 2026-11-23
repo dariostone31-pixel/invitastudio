@@ -105,7 +105,7 @@ const MORE_THAN_INVITE = [
   {
     icon: Users,
     title: "Panel & Planilla Excel",
-    desc: "Links con nombre por familia (PRO / Llave en Mano) y descarga CSV para el salón.",
+    desc: "Links con nombre por familia (PRO / Llave en Mano) y descarga Excel (.xlsx) para el salón.",
   },
   {
     icon: Music,
@@ -179,6 +179,12 @@ export default function HomePage() {
 
           <div className="flex items-center gap-2.5">
             <Link
+              href="/mi-panel"
+              className="hidden rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-colors hover:border-[#6B1E30] hover:text-[#6B1E30] sm:inline-flex"
+            >
+              Mi Panel
+            </Link>
+            <Link
               href="/encargar"
               className="rounded-full bg-[#6B1E30] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all hover:bg-[#4A1420]"
             >
@@ -195,6 +201,9 @@ export default function HomePage() {
           <a href="#modelos" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
             Modelos (42)
           </a>
+          <Link href="/mi-panel" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+            Mi Panel
+          </Link>
           <a href="#como-funciona" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
             Cómo funciona
           </a>

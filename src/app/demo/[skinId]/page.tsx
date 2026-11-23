@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { getSkinById } from "@/templates/catalog";
 import { listRsvpsForSlug } from "@/lib/db";
+import { getTriviaPresetForCategory } from "@/lib/categoryPresets";
 import { InvitationRenderer } from "@/components/invitation-engine/InvitationRenderer";
 
 interface DemoPageProps {
@@ -61,43 +62,11 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
       votes: i === 0 ? 4 : 2,
       createdAt: r.createdAt,
     }));
-  const demoTriviaQuestions = [
-    {
-      id: "tq-1",
-      question:
-        skin.category === "xv"
-          ? "¿Cuál es su comida favorita?"
-          : "¿Dónde fue su primer viaje juntos?",
-      options:
-        skin.category === "xv"
-          ? ["Pizza", "Sushi", "Milanesas con papas fritas", "Pastas"]
-          : ["Bariloche", "Mendoza", "Mar del Plata", "Córdoba"],
-      correctIndex: 1,
-    },
-    {
-      id: "tq-2",
-      question:
-        skin.category === "xv"
-          ? "¿Qué música no puede faltar en su pista?"
-          : "¿En qué estación del año eligieron celebrar?",
-      options:
-        skin.category === "xv"
-          ? ["Pop & Reggaeton", "Solo Rock", "Tango", "Jazz"]
-          : ["Otoño", "Invierno", "Primavera", "Verano"],
-      correctIndex: 0,
-    },
-    {
-      id: "tq-3",
-      question: "¿Cuál es el código de vestimenta para esta noche?",
-      options: [
-        "Deportivo",
-        skin.sample.dressCode.label,
-        "Disfraz obligatorio",
-        "Playa",
-      ],
-      correctIndex: 1,
-    },
-  ];
+  const demoTriviaQuestions = getTriviaPresetForCategory(
+    skin.category,
+    skin.sample.dressCode.label,
+    skin.id
+  );
 
   return (
     <InvitationRenderer

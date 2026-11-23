@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -20,6 +20,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
+import { getWhatsAppHref } from "@/config/business";
 import { PaymentPendingBanner } from "./PaymentPendingBanner";
 
 interface OrganizerPanelClientProps {
@@ -41,7 +42,30 @@ export function OrganizerPanelClient({
   const [guestPasses, setGuestPasses] = useState("3");
   const [guestTable, setGuestTable] = useState("5");
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedPanelLink, setCopiedPanelLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("invita_saved_panels");
+      const list = raw ? JSON.parse(raw) : [];
+      const filtered = Array.isArray(list)
+        ? list.filter((x) => x && x.panelToken !== event.panelToken)
+        : [];
+      filtered.unshift({
+        panelToken: event.panelToken,
+        eventTitle: event.eventTitle,
+        orderCode: event.orderCode,
+        slug: event.slug,
+      });
+      window.localStorage.setItem(
+        "invita_saved_panels",
+        JSON.stringify(filtered.slice(0, 5))
+      );
+    } catch {
+      // ignore
+    }
+  }, [event.panelToken, event.eventTitle, event.orderCode, event.slug]);
 
   // Optional preloaded guest list (ultra-simple line editor)
   const [showGuestListBox, setShowGuestListBox] = useState(false);
@@ -216,6 +240,20 @@ export function OrganizerPanelClient({
               <Sparkles className="h-3.5 w-3.5 text-amber-600" />
               {isEssentialPlan ? "Editar Datos Básicos" : "Personalizar Diseño y Fotos"}
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard
+                  ?.writeText(`${origin}/panel/${event.panelToken}`)
+                  .catch(() => {});
+                setCopiedPanelLink(true);
+                setTimeout(() => setCopiedPanelLink(false), 2000);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:border-stone-900"
+            >
+              {copiedPanelLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedPanelLink ? "¡Link de Panel Copiado!" : "Guardar Link de mi Panel"}
+            </button>
             <Link
               href={`/i/${event.slug}`}
               target="_blank"
@@ -239,7 +277,7 @@ export function OrganizerPanelClient({
                   className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Descargar Excel (.csv)
+                  Descargar Excel (.xlsx)
                 </a>
               </>
             )}
@@ -252,6 +290,46 @@ export function OrganizerPanelClient({
           event={event}
           mercadopagoConfigured={mercadopagoConfigured}
         />
+
+        {event.planId === "asistido" && (
+          <section className="rounded-3xl border border-amber-300 bg-gradient-to-r from-amber-50 via-white to-amber-50/40 p-5 shadow-sm print:hidden">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-900 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-50">
+                  <Sparkles className="h-3 w-3" />
+                  Plan Llave en Mano · Carga Asistida Activa
+                </span>
+                <h2 className="mt-1.5 font-cormorant text-xl font-bold text-stone-900">
+                  Nuestro equipo arma los detalles por vos
+                </h2>
+                <p className="mt-0.5 text-xs text-stone-600">
+                  Podés enviarnos tus fotos, canción de fondo elegida o tu lista de invitados por WhatsApp y dejamos todo cargado en menos de 24 hs hábiles.
+                  {event.songRequest && (
+                    <span className="mt-1 block font-semibold text-amber-950">
+                      Canción solicitada: &ldquo;{event.songRequest}&rdquo;
+                    </span>
+                  )}
+                </p>
+              </div>
+              {(() => {
+                const assistWa = getWhatsAppHref(
+                  `¡Hola! Soy organizador del pedido ${event.orderCode} (${event.eventTitle}) con Plan Llave en Mano. Quiero enviar fotos/cambios o la canción de fondo para que lo carguen en mi invitación.`
+                );
+                return assistWa ? (
+                  <a
+                    href={assistWa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Enviar fotos / pedir cambios
+                  </a>
+                ) : null;
+              })()}
+            </div>
+          </section>
+        )}
 
         {/* Panel Opcional de Reporte PDF elegido por el organizador */}
         {!isEssentialPlan && showPdfPanel && (
@@ -401,13 +479,13 @@ export function OrganizerPanelClient({
             <div className="max-w-md">
               <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
                 <Sparkles className="h-3.5 w-3.5" />
-                Generador de Pases por WhatsApp
+                Opción 1 · Envío individual por WhatsApp
               </span>
               <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">
-                Creá un link personalizado para cada invitado o familia
+                Creá un link personalizado (de a 1 invitado por vez)
               </h2>
               <p className="mt-1 text-xs text-stone-600">
-                Al abrir su enlace, la invitación los recibe por su nombre y les muestra exactamente cuántos lugares tienen reservados.
+                Escribí el nombre de una persona o familia, envíaselo por WhatsApp y luego tocá &ldquo;Limpiar&rdquo; para pasar al siguiente invitado. Al abrirlo, la tarjeta los saluda por su nombre con sus lugares reservados.
               </p>
             </div>
 
@@ -489,6 +567,17 @@ export function OrganizerPanelClient({
                 <MessageCircle className="h-3.5 w-3.5" />
                 Recordatorio manual
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuestName("");
+                  setGuestPasses("2");
+                  setGuestTable("");
+                }}
+                className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100"
+              >
+                Limpiar / Siguiente
+              </button>
             </div>
           </div>
         </section>
@@ -502,11 +591,11 @@ export function OrganizerPanelClient({
                 <div className="flex items-center gap-2">
                   <ListChecks className="h-4 w-4 text-amber-700" />
                   <h2 className="font-cormorant text-2xl font-semibold text-stone-900">
-                    Lista rápida de invitados (Opcional)
+                    Opción 2 · Buscador automático si enviás 1 solo link general (Opcional)
                   </h2>
                 </div>
                 <p className="mt-0.5 text-xs text-stone-500">
-                  Si pegás tu lista acá, el invitado se busca con 2 letras al confirmar. Si la dejás vacía, cualquiera escribe su nombre libremente.
+                  Si preferís mandar el mismo link a todo el mundo en lugar de ir uno por uno arriba, pegá acá tu lista de invitados: al tocar &ldquo;Confirmar Asistencia&rdquo;, escriben 2 letras de su nombre y se autocompleta su cupo.
                 </p>
               </div>
               <button

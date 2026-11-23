@@ -755,11 +755,22 @@ export async function createOrderEvent(input: {
   notes: string;
 }): Promise<EventRecord> {
   const existing = await listEvents();
-  const num = 1001 + existing.length + Math.floor(Math.random() * 5);
+  const existingCodes = new Set(existing.map((e) => e.orderCode.toUpperCase()));
+  const maxNum = existing.reduce((max, e) => {
+    const m = /^INV-(\d+)$/i.exec(e.orderCode);
+    const n = m ? Number(m[1]) : 1000;
+    return n > max ? n : max;
+  }, 1000);
+  let num = Math.max(maxNum + 1, 1001 + existing.length);
+  while (existingCodes.has(`INV-${num}`)) {
+    num += 1;
+  }
   const orderCode = `INV-${num}`;
   const baseSlug = slugify(input.eventTitle) || "evento";
-  const slug = `${baseSlug}-${num}`;
   const rand = Math.random().toString(36).slice(2, 6);
+  const slug = existing.some((e) => e.slug === `${baseSlug}-${num}`)
+    ? `${baseSlug}-${num}-${rand}`
+    : `${baseSlug}-${num}`;
   const panelToken = `panel-${baseSlug}-${rand}`;
 
   const dateISO = input.eventDate

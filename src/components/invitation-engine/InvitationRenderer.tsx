@@ -47,6 +47,7 @@ import {
   CelebrationWishesIcon,
 } from "./CelebrationIcons";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
+import { getDefaultStoryTitleForCategory } from "@/lib/categoryPresets";
 
 export interface PublicWish {
   id: string;
@@ -111,33 +112,75 @@ const FONT_MAP: Record<InvitationSkin["fontDisplay"], string> = {
   playfair: "font-display-playfair",
 };
 
-function buildGoogleCalendarUrl(title: string, dateISO: string, location: string, details: string) {
-  const start = new Date(dateISO);
-  if (Number.isNaN(start.getTime())) return "https://calendar.google.com";
-  const end = new Date(start.getTime() + 5 * 60 * 60 * 1000);
-  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+function parseEventDateRange(dateISO: string, timeDisplay?: string) {
+  const datePart = String(dateISO || "").slice(0, 10);
+  const matchDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!matchDate) return null;
+  const year = Number(matchDate[1]);
+  const month = Number(matchDate[2]);
+  const day = Number(matchDate[3]);
+
+  const times = Array.from(String(timeDisplay || "").matchAll(/(\d{1,2}):(\d{2})/g));
+  const startH = times[0] ? Math.min(23, Number(times[0][1])) : 20;
+  const startM = times[0] ? Math.min(59, Number(times[0][2])) : 0;
+
+  let endH = (startH + 4) % 24;
+  let endM = startM;
+  let crossesMidnight = startH + 4 >= 24;
+
+  if (times[1]) {
+    endH = Math.min(23, Number(times[1][1]));
+    endM = Math.min(59, Number(times[1][2]));
+    crossesMidnight = endH < startH || (endH === startH && endM <= startM);
+  }
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const startStr = `${year}${pad(month)}${pad(day)}T${pad(startH)}${pad(startM)}00`;
+
+  const endDateObj = new Date(Date.UTC(year, month - 1, day + (crossesMidnight ? 1 : 0)));
+  const endStr = `${endDateObj.getUTCFullYear()}${pad(endDateObj.getUTCMonth() + 1)}${pad(
+    endDateObj.getUTCDate()
+  )}T${pad(endH)}${pad(endM)}00`;
+
+  return { startStr, endStr };
+}
+
+function buildGoogleCalendarUrl(
+  title: string,
+  dateISO: string,
+  location: string,
+  details: string,
+  timeDisplay?: string
+) {
+  const range = parseEventDateRange(dateISO, timeDisplay);
+  if (!range) return "https://calendar.google.com";
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: title,
-    dates: `${fmt(start)}/${fmt(end)}`,
+    dates: `${range.startStr}/${range.endStr}`,
+    ctz: "America/Argentina/Buenos_Aires",
     location,
     details,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-function downloadIcsFile(title: string, dateISO: string, location: string, details: string) {
-  const start = new Date(dateISO);
-  if (Number.isNaN(start.getTime())) return;
-  const end = new Date(start.getTime() + 5 * 60 * 60 * 1000);
-  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+function downloadIcsFile(
+  title: string,
+  dateISO: string,
+  location: string,
+  details: string,
+  timeDisplay?: string
+) {
+  const range = parseEventDateRange(dateISO, timeDisplay);
+  if (!range) return;
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Invita con Alma//ES",
     "BEGIN:VEVENT",
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
+    `DTSTART;TZID=America/Argentina/Buenos_Aires:${range.startStr}`,
+    `DTEND;TZID=America/Argentina/Buenos_Aires:${range.endStr}`,
     `SUMMARY:${title}`,
     `LOCATION:${location}`,
     `DESCRIPTION:${details}`,
@@ -395,7 +438,10 @@ export function InvitationRenderer({
     customParentsOrHosts && customParentsOrHosts.length > 0
       ? customParentsOrHosts
       : sample.parentsOrHosts;
-  const storyHeading = customStoryTitle?.trim() || sample.storyTitle || "Nuestra Historia";
+  const storyHeading =
+    customStoryTitle?.trim() ||
+    sample.storyTitle ||
+    getDefaultStoryTitleForCategory(skin.category, skin.name);
   const storyBody = customStoryText?.trim() || sample.storyText;
   const scheduleList =
     customSchedule && customSchedule.length > 0 ? customSchedule : sample.schedule;
@@ -951,7 +997,8 @@ export function InvitationRenderer({
                   eventTitle,
                   dateISO,
                   fullAddress,
-                  quoteText
+                  quoteText,
+                  timeDisplay
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -968,7 +1015,7 @@ export function InvitationRenderer({
               <button
                 type="button"
                 onClick={() =>
-                  downloadIcsFile(eventTitle, dateISO, fullAddress, quoteText)
+                  downloadIcsFile(eventTitle, dateISO, fullAddress, quoteText, timeDisplay)
                 }
                 className={`inline-flex min-h-[44px] items-center justify-center gap-2 ${innerRadius} border px-4 py-3 text-[13px] font-semibold transition-opacity hover:opacity-80`}
                 style={{
