@@ -51,7 +51,7 @@ export function RsvpModal({
   }, [guestSearch, guestList]);
 
   const effectiveMaxPasses = selectedMaxPasses || maxPasses;
-  const [companions, setCompanions] = useState("");
+  const [companionNames, setCompanionNames] = useState<string[]>([]);
   const [dietary, setDietary] = useState<string[]>([]);
   const [song, setSong] = useState("");
   const [message, setMessage] = useState("");
@@ -91,7 +91,13 @@ export function RsvpModal({
             guestName: name.trim(),
             attending,
             passesUsed: attending ? passesUsed : 0,
-            companions,
+            companions: attending
+              ? companionNames
+                  .slice(0, Math.max(0, passesUsed - 1))
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .join(", ")
+              : "",
             dietary,
             song,
             message,
@@ -265,46 +271,81 @@ export function RsvpModal({
 
             {attending && (
               <>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-3">
                   <div>
                     <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
-                      Cantidad de lugares (máx. {effectiveMaxPasses})
+                      ¿Cuántas personas asisten en total? (máx. {effectiveMaxPasses})
                     </label>
-                    <select
-                      value={passesUsed}
-                      onChange={(e) => setPassesUsed(Number(e.target.value))}
-                      className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
+                    <div
+                      className="flex items-center justify-between rounded-xl border px-3 py-2"
                       style={{
                         backgroundColor: palette.bg,
                         borderColor: palette.border,
-                        color: palette.text,
                       }}
                     >
-                      {Array.from({ length: effectiveMaxPasses }, (_, idx) => idx + 1).map((n) => (
-                        <option key={n} value={n}>
-                          {n} {n === 1 ? "persona" : "personas"}
-                        </option>
-                      ))}
-                    </select>
+                      <button
+                        type="button"
+                        aria-label="Restar una persona"
+                        onClick={() => setPassesUsed((n) => Math.max(1, n - 1))}
+                        disabled={passesUsed <= 1}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border text-base font-bold transition-opacity disabled:opacity-40"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                          color: palette.text,
+                        }}
+                      >
+                        −
+                      </button>
+                      <span className="text-sm font-semibold" style={{ color: palette.text }}>
+                        {passesUsed} {passesUsed === 1 ? "persona (solo vos)" : "personas"}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Sumar una persona"
+                        onClick={() => setPassesUsed((n) => Math.min(effectiveMaxPasses, n + 1))}
+                        disabled={passesUsed >= effectiveMaxPasses}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border text-base font-bold transition-opacity disabled:opacity-40"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                          color: palette.text,
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
-                      Acompañantes
-                    </label>
-                    <input
-                      type="text"
-                      value={companions}
-                      onChange={(e) => setCompanions(e.target.value)}
-                      placeholder="Nombres (opcional)"
-                      className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
-                      style={{
-                        backgroundColor: palette.bg,
-                        borderColor: palette.border,
-                        color: palette.text,
-                      }}
-                    />
-                  </div>
+                  {passesUsed > 1 && (
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium" style={{ color: palette.textMuted }}>
+                        Nombres de tus {passesUsed - 1} {passesUsed - 1 === 1 ? "acompañante" : "acompañantes"} (opcional)
+                      </label>
+                      {Array.from({ length: passesUsed - 1 }, (_, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          value={companionNames[idx] || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCompanionNames((prev) => {
+                              const next = [...prev];
+                              next[idx] = val;
+                              return next;
+                            });
+                          }}
+                          placeholder={`Nombre del acompañante ${idx + 1}`}
+                          className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                          style={{
+                            backgroundColor: palette.bg,
+                            borderColor: palette.border,
+                            color: palette.text,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>

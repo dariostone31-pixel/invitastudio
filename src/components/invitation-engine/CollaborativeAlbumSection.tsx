@@ -32,11 +32,15 @@ export function CollaborativeAlbumSection({
   isNewspaper = false,
 }: CollaborativeAlbumSectionProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [demoNotice, setDemoNotice] = useState(false);
 
+  const isDemoAlbum = (albumUrl || "").trim() === "#demo-album";
   const cleanHandle = (instagramHandle || "").trim().replace(/^@/, "");
   const cleanHashtag = (eventHashtag || "").trim().replace(/^#/, "");
   const igUrl = cleanHandle ? `https://instagram.com/${cleanHandle}` : "";
-  const qrTargetUrl = (albumUrl || "").trim() || igUrl;
+  const qrTargetUrl = isDemoAlbum
+    ? "https://photos.google.com"
+    : (albumUrl || "").trim() || igUrl;
   const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
 
   useEffect(() => {
@@ -119,23 +123,39 @@ export function CollaborativeAlbumSection({
       )}
 
       <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
-        {albumUrl && (
-          <a
-            href={albumUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`inline-flex min-h-[44px] items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90 ${
-              isNewspaper ? "rounded-none" : "rounded-full"
-            }`}
-            style={{
-              backgroundColor: buttonBg,
-              color: palette.accentText,
-            }}
-          >
-            <Camera className="h-4 w-4" />
-            Subir Fotos al Álbum
-          </a>
-        )}
+        {albumUrl &&
+          (isDemoAlbum ? (
+            <button
+              type="button"
+              onClick={() => setDemoNotice((v) => !v)}
+              className={`inline-flex min-h-[44px] items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90 ${
+                isNewspaper ? "rounded-none" : "rounded-full"
+              }`}
+              style={{
+                backgroundColor: buttonBg,
+                color: palette.accentText,
+              }}
+            >
+              <Camera className="h-4 w-4" />
+              Subir Fotos al Álbum
+            </button>
+          ) : (
+            <a
+              href={albumUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex min-h-[44px] items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90 ${
+                isNewspaper ? "rounded-none" : "rounded-full"
+              }`}
+              style={{
+                backgroundColor: buttonBg,
+                color: palette.accentText,
+              }}
+            >
+              <Camera className="h-4 w-4" />
+              Subir Fotos al Álbum
+            </a>
+          ))}
         {igUrl && (
           <a
             href={igUrl}
@@ -155,6 +175,19 @@ export function CollaborativeAlbumSection({
           </a>
         )}
       </div>
+
+      {demoNotice && (
+        <p
+          className="mt-3 rounded-xl border px-3 py-2 text-xs leading-relaxed"
+          style={{
+            backgroundColor: palette.bg,
+            borderColor: palette.border,
+            color: palette.textMuted,
+          }}
+        >
+          Vista de demostración: en tu invitación real este botón abrirá directamente tu álbum de Google Fotos o Drive para que los invitados suban sus fotos.
+        </p>
+      )}
 
       {cleanHashtag && (
         <p

@@ -20,15 +20,18 @@ import {
   ListChecks,
 } from "lucide-react";
 import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
+import { PaymentPendingBanner } from "./PaymentPendingBanner";
 
 interface OrganizerPanelClientProps {
   event: EventRecord;
   initialRsvps: RsvpRecord[];
+  mercadopagoConfigured?: boolean;
 }
 
 export function OrganizerPanelClient({
   event,
   initialRsvps,
+  mercadopagoConfigured = false,
 }: OrganizerPanelClientProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "yes" | "no" | "dietary">("all");
@@ -245,6 +248,11 @@ export function OrganizerPanelClient({
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 print:hidden">
+        <PaymentPendingBanner
+          event={event}
+          mercadopagoConfigured={mercadopagoConfigured}
+        />
+
         {/* Panel Opcional de Reporte PDF elegido por el organizador */}
         {!isEssentialPlan && showPdfPanel && (
           <section className="rounded-3xl border border-stone-300 bg-white p-6 shadow-sm">

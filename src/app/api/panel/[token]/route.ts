@@ -51,7 +51,10 @@ export async function PATCH(
           venue: body.venue,
           address: body.address,
           alias: body.alias,
+          giftBank: typeof body.giftBank === "string" ? body.giftBank.trim().slice(0, 80) : undefined,
+          giftHolder: typeof body.giftHolder === "string" ? body.giftHolder.trim().slice(0, 120) : undefined,
           dressCode: body.dressCode,
+          quote: typeof body.quote === "string" ? body.quote.trim() : undefined,
         }
       : {
           skinId: body.skinId,
@@ -61,6 +64,8 @@ export async function PATCH(
           venue: body.venue,
           address: body.address,
           alias: body.alias,
+          giftBank: typeof body.giftBank === "string" ? body.giftBank.trim().slice(0, 80) : undefined,
+          giftHolder: typeof body.giftHolder === "string" ? body.giftHolder.trim().slice(0, 120) : undefined,
           dressCode: body.dressCode,
           quote: body.quote,
           parentsOrHosts: body.parentsOrHosts,

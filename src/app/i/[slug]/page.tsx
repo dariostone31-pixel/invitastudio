@@ -1,6 +1,5 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventBySlug, listRsvpsForSlug } from "@/lib/db";
 import { getSkinById } from "@/templates/catalog";
@@ -90,55 +89,49 @@ export default async function PublicInvitationPage({
   const allowDjSongs = event.planId !== "esencial";
 
   return (
-    <>
-      {event.status !== "publicada" && (
-        <div className="sticky top-0 z-40 border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">
-          <strong>Borrador ({event.orderCode}):</strong> Esta invitación está en preparación.{" "}
-          <Link href={`/panel/${event.panelToken}`} className="font-semibold underline">
-            Ir al Panel del Organizador
-          </Link>
-        </div>
-      )}
-      <InvitationRenderer
-        skin={skin}
-        eventSlug={event.slug}
-        guestName={sp.nombre || undefined}
-        passes={passes}
-        table={sp.mesa || undefined}
-        customTitle={event.eventTitle}
-        customDateDisplay={event.dateDisplay}
-        customTimeDisplay={event.timeDisplay}
-        customDateISO={event.dateISO}
-        customVenue={event.venue}
-        customAddress={event.address}
-        customAlias={event.alias || undefined}
-        customDressCode={event.dressCode || undefined}
-        customQuote={event.quote || undefined}
-        customParentsOrHosts={event.parentsOrHosts || undefined}
-        customStoryTitle={event.storyTitle || undefined}
-        customStoryText={event.storyText || undefined}
-        customSchedule={event.schedule || undefined}
-        customHeroImage={event.heroImageUrl || undefined}
-        customHeroOverlay={event.heroOverlayOverride || undefined}
-        customGallery={event.galleryImages || undefined}
-        customFont={event.fontOverride || undefined}
-        customAccent={event.accentOverride || undefined}
-        customAudioUrl={allowDjSongs ? event.audioOverride || undefined : undefined}
-        memoryMode={Boolean(event.memoryMode)}
-        planId={event.planId}
-        wishesList={wishes}
-        allowDjSongs={allowDjSongs}
-        initialDjPlaylist={allowDjSongs ? combinedDjPlaylist : []}
-        triviaTitle={event.triviaTitle}
-        triviaQuestions={allowDjSongs ? event.triviaQuestions || [] : []}
-        initialTriviaScores={allowDjSongs ? event.triviaScores || [] : []}
-        albumUrl={allowDjSongs ? event.albumUrl : undefined}
-        instagramHandle={allowDjSongs ? event.instagramHandle : undefined}
-        eventHashtag={allowDjSongs ? event.eventHashtag : undefined}
-        guestList={allowDjSongs ? event.guestList || [] : []}
-        enabledSections={event.enabledSections || undefined}
-        showPreviewChrome={false}
-      />
-    </>
+    <InvitationRenderer
+      skin={skin}
+      eventSlug={event.slug}
+      guestName={sp.nombre || undefined}
+      passes={passes}
+      table={sp.mesa || undefined}
+      customTitle={event.eventTitle}
+      customDateDisplay={event.dateDisplay}
+      customTimeDisplay={event.timeDisplay}
+      customDateISO={event.dateISO}
+      customVenue={event.venue}
+      customAddress={event.address}
+      customAlias={event.alias || undefined}
+      customGiftBank={event.giftBank || undefined}
+      customGiftHolder={event.giftHolder || undefined}
+      customDressCode={event.dressCode || undefined}
+      customQuote={event.quote || undefined}
+      customParentsOrHosts={event.parentsOrHosts || undefined}
+      customStoryTitle={event.storyTitle || undefined}
+      customStoryText={event.storyText || undefined}
+      customSchedule={event.schedule || undefined}
+      customHeroImage={event.heroImageUrl || undefined}
+      customHeroOverlay={event.heroOverlayOverride || undefined}
+      customGallery={event.galleryImages || undefined}
+      customFont={event.fontOverride || undefined}
+      customAccent={event.accentOverride || undefined}
+      customAudioUrl={allowDjSongs ? event.audioOverride || undefined : undefined}
+      memoryMode={Boolean(event.memoryMode)}
+      planId={event.planId}
+      wishesList={wishes}
+      allowDjSongs={allowDjSongs}
+      initialDjPlaylist={allowDjSongs ? combinedDjPlaylist : []}
+      triviaTitle={event.triviaTitle}
+      triviaQuestions={allowDjSongs ? event.triviaQuestions || [] : []}
+      initialTriviaScores={allowDjSongs ? event.triviaScores || [] : []}
+      albumUrl={allowDjSongs ? event.albumUrl : undefined}
+      instagramHandle={allowDjSongs ? event.instagramHandle : undefined}
+      eventHashtag={allowDjSongs ? event.eventHashtag : undefined}
+      guestList={allowDjSongs ? event.guestList || [] : []}
+      enabledSections={event.enabledSections || undefined}
+      isDraftPreview={event.paymentStatus !== "pagado" || event.status !== "publicada"}
+      panelUrl={`/panel/${event.panelToken}`}
+      showPreviewChrome={false}
+    />
   );
 }

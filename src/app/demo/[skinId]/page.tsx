@@ -130,7 +130,7 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
           createdAt: "2026-11-20T13:00:00.000Z",
         },
       ]}
-      albumUrl={`https://invitastudio-vert.vercel.app/demo/${skin.id}`}
+      albumUrl="#demo-album"
       eventHashtag={skin.category === "xv" ? "MisXVSoñados" : "NuestraFiesta"}
       enabledSections={{
         countdown: true,

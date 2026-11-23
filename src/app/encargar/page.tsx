@@ -123,11 +123,22 @@ function EncargarForm() {
   // Datos básicos del evento
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
-  const [eventTime, setEventTime] = useState("");
+  const [eventTimeStart, setEventTimeStart] = useState("21:00");
+  const [eventTimeEnd, setEventTimeEnd] = useState("05:00");
   const [venue, setVenue] = useState("");
   const [address, setAddress] = useState("");
   const [alias, setAlias] = useState("");
+  const [giftBank, setGiftBank] = useState("Mercado Pago");
+  const [giftHolder, setGiftHolder] = useState("");
   const [dressCode, setDressCode] = useState("");
+  const [mercadopagoConfigured, setMercadopagoConfigured] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((d) => setMercadopagoConfigured(Boolean(d?.mercadopagoConfigured)))
+      .catch(() => {});
+  }, []);
 
   // Contacto y aceptación legal
   const [contactName, setContactName] = useState("");
@@ -197,10 +208,16 @@ function EncargarForm() {
     if (submitting) return;
     setErrorMsg(null);
 
+    const formattedEventTime = eventTimeEnd.trim()
+      ? `${eventTimeStart.trim()} a ${eventTimeEnd.trim()} hs`
+      : eventTimeStart.trim()
+      ? `${eventTimeStart.trim()} hs`
+      : "";
+
     const missing: string[] = [];
     if (!eventTitle.trim()) missing.push("Título o nombres en portada");
     if (!eventDate.trim()) missing.push("Fecha del evento");
-    if (!eventTime.trim()) missing.push("Horario");
+    if (!eventTimeStart.trim()) missing.push("Horario desde");
     if (!venue.trim()) missing.push("Nombre del salón o lugar");
     if (!address.trim()) missing.push("Dirección y localidad");
     if (!contactName.trim()) missing.push("Tu nombre");
@@ -230,14 +247,16 @@ function EncargarForm() {
           planId: selectedPlan,
           eventTitle: eventTitle.trim(),
           eventDate: eventDate.trim(),
-          eventTime: eventTime.trim(),
+          eventTime: formattedEventTime,
           venue: venue.trim(),
           address: address.trim(),
           alias: alias.trim(),
+          giftBank: giftBank.trim(),
+          giftHolder: giftHolder.trim(),
           dressCode: dressCode.trim(),
+          quote: quote.trim(),
           ...(isAdvancedPlan
             ? {
-                quote,
                 parentsOrHosts,
                 storyTitle,
                 storyText,
@@ -439,41 +458,43 @@ function EncargarForm() {
           </Link>
         </div>
 
-        {/* Opción 1: Mercado Pago Checkout Pro */}
-        <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50/70 p-4 text-left text-xs text-stone-800">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <span className="font-bold text-sky-950">
-                Pagar online con Mercado Pago (Tarjetas / Débito / Cuotas)
-              </span>
-              <span className="mt-0.5 block text-[11px] text-sky-800">
-                Acreditación automática · Precio de lista: {orderPlanObj.listPrice} ARS
-              </span>
+        {/* Opción 1: Mercado Pago Checkout Pro (solo visible cuando MP está configurado) */}
+        {mercadopagoConfigured && (
+          <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50/70 p-4 text-left text-xs text-stone-800">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <span className="font-bold text-sky-950">
+                  Pagar online con Mercado Pago (Tarjetas / Débito / Cuotas)
+                </span>
+                <span className="mt-0.5 block text-[11px] text-sky-800">
+                  Acreditación automática · Precio de lista: {orderPlanObj.listPrice} ARS
+                </span>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={startMercadoPagoCheckout}
+              disabled={mpLoading}
+              className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] px-5 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#0086C3] disabled:opacity-60"
+            >
+              <CreditCard className="h-4 w-4" />
+              {mpLoading
+                ? "Conectando con Mercado Pago..."
+                : `Pagar ${orderPlanObj.listPrice} con Mercado Pago`}
+            </button>
+            {mpNotice && (
+              <p className="mt-2 rounded-xl border border-sky-200 bg-white px-3 py-2 text-[11px] text-sky-900">
+                {mpNotice}
+              </p>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={startMercadoPagoCheckout}
-            disabled={mpLoading}
-            className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] px-5 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#0086C3] disabled:opacity-60"
-          >
-            <CreditCard className="h-4 w-4" />
-            {mpLoading
-              ? "Conectando con Mercado Pago..."
-              : `Pagar ${orderPlanObj.listPrice} con Mercado Pago`}
-          </button>
-          {mpNotice && (
-            <p className="mt-2 rounded-xl border border-sky-200 bg-white px-3 py-2 text-[11px] text-sky-900">
-              {mpNotice}
-            </p>
-          )}
-        </div>
+        )}
 
-        {/* Opción 2: Datos Transferencia 25% OFF */}
-        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-left text-xs text-stone-800">
+        {/* Transferencia Bancaria Directa */}
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-left text-xs text-stone-800">
           <div className="flex items-center justify-between">
             <span className="font-bold text-amber-900">
-              Abonar con 25% OFF (Transferencia): {orderPlanObj.transferPrice} ARS
+              Abonar por Transferencia Bancaria: {orderPlanObj.transferPrice} ARS
             </span>
             <span className="text-[11px] text-stone-400 line-through">
               {orderPlanObj.listPrice}
@@ -883,20 +904,6 @@ function EncargarForm() {
                   </div>
                 </div>
 
-                {/* Frase de portada */}
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-stone-700">
-                    Frase / dedicatoria de portada
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={quote}
-                    onChange={(e) => setQuote(e.target.value)}
-                    placeholder="Ej. Hay momentos en la vida que son especiales por sí solos..."
-                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
-                  />
-                </div>
-
                 {/* Padres / Anfitriones (ej. bodas y XV) */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -1072,14 +1079,17 @@ function EncargarForm() {
                 {/* Fotos desde el celular con compresión automática */}
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-stone-700">
-                    Fotos propias (opcional — también podés subirlas después en tu Estudio)
+                    Foto Principal de Portada (1ª foto) & Galería (opcional)
                   </label>
+                  <p className="mb-2 text-[11px] text-stone-500">
+                    La primera foto que subas se mostrará como protagonista en la portada y en el sobre animado; las demás irán a tu galería.
+                  </p>
                   <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-5 text-center transition-colors hover:border-stone-500">
                     <Upload className="h-6 w-6 text-stone-500" />
                     <span className="mt-2 text-xs font-semibold text-stone-700">
                       {uploadingPhotos
                         ? "Optimizando y subiendo fotos..."
-                        : "Tocá acá para elegir tus fotos (hasta 6 · JPG, PNG o WebP)"}
+                        : "Tocá acá para elegir tu foto de portada y galería (hasta 6 · JPG, PNG o WebP)"}
                     </span>
                     <span className="mt-0.5 text-[11px] text-stone-400">
                       Las optimizamos automáticamente desde tu celular para que carguen rápido
@@ -1194,15 +1204,30 @@ function EncargarForm() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-stone-700">Horario *</label>
-            <input
-              type="text"
-              required
-              value={eventTime}
-              onChange={(e) => setEventTime(e.target.value)}
-              placeholder="Ej. 21:00 hs (o 16:00 a 19:00 hs)"
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
+              Horario (Desde / Hasta) *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-0.5 block text-[10px] font-medium text-stone-500">Desde *</span>
+                <input
+                  type="time"
+                  required
+                  value={eventTimeStart}
+                  onChange={(e) => setEventTimeStart(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <span className="mb-0.5 block text-[10px] font-medium text-stone-500">Hasta (opcional)</span>
+                <input
+                  type="time"
+                  value={eventTimeEnd}
+                  onChange={(e) => setEventTimeEnd(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">
@@ -1244,14 +1269,92 @@ function EncargarForm() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">
+              Entidad / Billetera de regalos (opcional)
+            </label>
+            <input
+              type="text"
+              value={giftBank}
+              onChange={(e) => setGiftBank(e.target.value)}
+              placeholder="Ej. Mercado Pago, Banco Macro..."
+              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {["Mercado Pago", "Banco Macro", "Banco Galicia", "Banco Nación", "Brubank", "Santander"].map(
+                (bank) => (
+                  <button
+                    key={bank}
+                    type="button"
+                    onClick={() => setGiftBank(bank)}
+                    className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                      giftBank === bank
+                        ? "border-stone-900 bg-stone-900 text-white"
+                        : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400"
+                    }`}
+                  >
+                    {bank}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
+              Titular de la cuenta (opcional)
+            </label>
+            <input
+              type="text"
+              value={giftHolder}
+              onChange={(e) => setGiftHolder(e.target.value)}
+              placeholder="Ej. Sofía Martínez"
+              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
               Código de vestimenta (opcional)
             </label>
             <input
               type="text"
               value={dressCode}
               onChange={(e) => setDressCode(e.target.value)}
-              placeholder="Ej. Elegante Sport / Cómodo para jugar"
+              placeholder="Ej. Elegante Sport / Formal"
               className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {[
+                "Elegante",
+                "Elegante Sport",
+                "Formal / Gala",
+                "Cocktail",
+                "De Blanco",
+                "Total Black",
+                "Cómodo",
+              ].map((dc) => (
+                <button
+                  key={dc}
+                  type="button"
+                  onClick={() => setDressCode(dc)}
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                    dressCode === dc
+                      ? "border-stone-900 bg-stone-900 text-white"
+                      : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400"
+                  }`}
+                >
+                  {dc}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
+              Frase o dedicatoria en portada (opcional)
+            </label>
+            <textarea
+              rows={2}
+              value={quote}
+              onChange={(e) => setQuote(e.target.value)}
+              placeholder="Ej. Te esperamos para compartir juntos una noche inolvidable."
+              className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
             />
           </div>
         </div>

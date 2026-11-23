@@ -67,6 +67,8 @@ interface InvitationRendererProps {
   customVenue?: string;
   customAddress?: string;
   customAlias?: string;
+  customGiftBank?: string;
+  customGiftHolder?: string;
   customDressCode?: string;
   customQuote?: string;
   customParentsOrHosts?: ParentsOrHostsGroup[];
@@ -92,6 +94,8 @@ interface InvitationRendererProps {
   eventHashtag?: string;
   guestList?: PreloadedGuest[];
   enabledSections?: EnabledSectionsConfig;
+  isDraftPreview?: boolean;
+  panelUrl?: string;
   skipGate?: boolean;
   showPreviewChrome?: boolean;
 }
@@ -165,6 +169,8 @@ export function InvitationRenderer({
   customVenue,
   customAddress,
   customAlias,
+  customGiftBank,
+  customGiftHolder,
   customDressCode,
   customQuote,
   customParentsOrHosts,
@@ -190,12 +196,15 @@ export function InvitationRenderer({
   eventHashtag,
   guestList = [],
   enabledSections,
+  isDraftPreview = false,
+  panelUrl,
   skipGate = false,
   showPreviewChrome = true,
 }: InvitationRendererProps) {
   const isEssentialPlan = planId === "esencial";
   const [isPlaying, setIsPlaying] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
+  const [giftsExpanded, setGiftsExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<"alias" | "cbu" | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [djSongs, setDjSongs] = useState<DjSongItem[]>(initialDjPlaylist);
@@ -394,6 +403,8 @@ export function InvitationRenderer({
   const quoteText = customQuote || sample.quote;
   const dressCodeLabel = customDressCode || sample.dressCode.label;
   const aliasText = customAlias || sample.gifts.alias;
+  const giftBankText = customGiftBank?.trim() || sample.gifts.bank;
+  const giftHolderText = customGiftHolder?.trim() || sample.gifts.holder;
 
   const locations = customVenue
     ? [
@@ -436,6 +447,9 @@ export function InvitationRenderer({
           passes={passes}
           table={table}
           customTitle={customTitle}
+          customHeroImage={heroImage}
+          customDateDisplay={dateDisplay}
+          customTimeDisplay={timeDisplay}
           fontDisplayClass={displayFont}
           onOpen={() => setIsPlaying(true)}
         />
@@ -466,6 +480,24 @@ export function InvitationRenderer({
         className="pointer-events-none fixed inset-0 hidden bg-cover bg-center opacity-15 blur-2xl md:block"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
+
+      {/* Barra de Modo Borrador (Pendiente de Pago) */}
+      {isDraftPreview && (
+        <div className="sticky top-0 z-30 border-b border-amber-300/80 bg-amber-50/95 px-4 py-2 text-center text-xs text-amber-950 backdrop-blur-md">
+          <span className="font-semibold">Modo Borrador · Pendiente de pago.</span>{" "}
+          <span className="hidden sm:inline">
+            Este aviso desaparece automáticamente al acreditar tu compra.
+          </span>{" "}
+          {panelUrl && (
+            <Link
+              href={panelUrl}
+              className="ml-1 inline-block rounded-full bg-amber-900 px-3 py-0.5 text-[11px] font-bold text-white hover:bg-amber-800"
+            >
+              Abonar / Activar
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Barra de Demo / Preview */}
       {showPreviewChrome && (
@@ -663,8 +695,8 @@ export function InvitationRenderer({
                 className="absolute inset-0"
                 style={{
                   background: palette.isDark
-                    ? `linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.45) 55%, ${palette.bg} 100%)`
-                    : `linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.18) 55%, ${palette.bg} 100%)`,
+                    ? `linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.25) 62%, ${palette.bg} 100%)`
+                    : `linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.16) 60%, ${palette.bg} 100%)`,
                 }}
               />
               <CornerOrnaments
@@ -1160,81 +1192,99 @@ export function InvitationRenderer({
               {sample.gifts.intro}
             </p>
 
-            <div
-              className={`mt-5 space-y-2.5 ${innerRadius} border p-4 text-left text-[14px]`}
+            <button
+              type="button"
+              onClick={() => setGiftsExpanded((prev) => !prev)}
+              aria-expanded={giftsExpanded}
+              className={`mt-5 inline-flex min-h-[44px] items-center justify-center gap-2 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-all hover:opacity-95 active:scale-95 ${
+                isNewspaper ? "rounded-none" : "rounded-full"
+              }`}
               style={{
-                backgroundColor: palette.bg,
-                borderColor: palette.border,
+                backgroundColor: giftsExpanded ? palette.bg : buttonBg,
+                border: giftsExpanded ? `1px solid ${palette.border}` : "none",
+                color: giftsExpanded ? palette.text : palette.accentText,
               }}
             >
-              <div className="flex justify-between gap-2">
-                <span style={{ color: palette.textMuted }}>Titular:</span>
-                <span className="break-words text-right font-semibold">{sample.gifts.holder}</span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span style={{ color: palette.textMuted }}>Entidad:</span>
-                <span className="break-words text-right font-semibold">{sample.gifts.bank}</span>
-              </div>
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <div className="min-w-0">
-                  <span className="block text-[11px]" style={{ color: palette.textMuted }}>
-                    ALIAS
-                  </span>
-                  <span className="break-all font-mono font-semibold">{aliasText}</span>
+              {giftsExpanded ? "Ocultar datos bancarios" : "Ver datos bancarios / Alias"}
+            </button>
+
+            {giftsExpanded && (
+              <div
+                className={`mt-4 space-y-2.5 ${innerRadius} border p-4 text-left text-[14px]`}
+                style={{
+                  backgroundColor: palette.bg,
+                  borderColor: palette.border,
+                }}
+              >
+                <div className="flex justify-between gap-2">
+                  <span style={{ color: palette.textMuted }}>Titular:</span>
+                  <span className="break-words text-right font-semibold">{giftHolderText}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(aliasText, "alias")}
-                  className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-all active:scale-95 ${
-                    isNewspaper ? "rounded-none" : "rounded-full"
-                  }`}
-                  style={{
-                    backgroundColor: buttonBg,
-                    color: palette.accentText,
-                  }}
-                >
-                  {copiedField === "alias" ? (
-                    <>
-                      <Check className="h-4 w-4" strokeWidth={1.75} />
-                      ¡Copiado!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" strokeWidth={1.75} />
-                      Copiar Alias
-                    </>
-                  )}
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-2 border-t pt-2.5" style={{ borderColor: palette.border }}>
-                <div className="min-w-0">
-                  <span className="block text-[11px]" style={{ color: palette.textMuted }}>
-                    CBU / CVU
-                  </span>
-                  <span className="block break-all font-mono text-[13px]">{sample.gifts.cbu}</span>
+                <div className="flex justify-between gap-2">
+                  <span style={{ color: palette.textMuted }}>Entidad:</span>
+                  <span className="break-words text-right font-semibold">{giftBankText}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(sample.gifts.cbu, "cbu")}
-                  className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 border px-3.5 py-2 text-[13px] font-medium ${
-                    isNewspaper ? "rounded-none" : "rounded-full"
-                  }`}
-                  style={{ borderColor: palette.border, color: palette.text }}
-                >
-                  {copiedField === "cbu" ? (
-                    <>
-                      <Check className="h-4 w-4" strokeWidth={1.75} />
-                      Copiado
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" strokeWidth={1.75} />
-                      CBU
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <div className="min-w-0">
+                    <span className="block text-[11px]" style={{ color: palette.textMuted }}>
+                      ALIAS
+                    </span>
+                    <span className="break-all font-mono font-semibold">{aliasText}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(aliasText, "alias")}
+                    className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-all active:scale-95 ${
+                      isNewspaper ? "rounded-none" : "rounded-full"
+                    }`}
+                    style={{
+                      backgroundColor: buttonBg,
+                      color: palette.accentText,
+                    }}
+                  >
+                    {copiedField === "alias" ? (
+                      <>
+                        <Check className="h-4 w-4" strokeWidth={1.75} />
+                        ¡Copiado!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" strokeWidth={1.75} />
+                        Copiar Alias
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-2 border-t pt-2.5" style={{ borderColor: palette.border }}>
+                  <div className="min-w-0">
+                    <span className="block text-[11px]" style={{ color: palette.textMuted }}>
+                      CBU / CVU
+                    </span>
+                    <span className="block break-all font-mono text-[13px]">{sample.gifts.cbu}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(sample.gifts.cbu, "cbu")}
+                    className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 border px-3.5 py-2 text-[13px] font-medium ${
+                      isNewspaper ? "rounded-none" : "rounded-full"
+                    }`}
+                    style={{ borderColor: palette.border, color: palette.text }}
+                  >
+                    {copiedField === "cbu" ? (
+                      <>
+                        <Check className="h-4 w-4" strokeWidth={1.75} />
+                        Copiado
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" strokeWidth={1.75} />
+                        CBU
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </section>
           </RevealSection>
           )}

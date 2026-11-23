@@ -22,6 +22,8 @@ create table if not exists public.events (
   address text not null default '',
   city text not null default 'Argentina',
   alias text not null default '',
+  gift_bank text,
+  gift_holder text,
   dress_code text not null default 'Elegante Sport',
   quote text not null default '',
   parents_or_hosts jsonb,

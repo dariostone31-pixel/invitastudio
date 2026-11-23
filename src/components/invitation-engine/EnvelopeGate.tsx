@@ -11,6 +11,9 @@ interface EnvelopeGateProps {
   passes?: number;
   table?: string;
   customTitle?: string;
+  customHeroImage?: string;
+  customDateDisplay?: string;
+  customTimeDisplay?: string;
   fontDisplayClass: string;
   onOpen: () => void;
 }
@@ -21,13 +24,19 @@ export function EnvelopeGate({
   passes,
   table,
   customTitle,
+  customHeroImage,
+  customDateDisplay,
+  customTimeDisplay,
   fontDisplayClass,
   onOpen,
 }: EnvelopeGateProps) {
   const [opening, setOpening] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [gone, setGone] = useState(false);
-  const { palette, layoutId, sample, heroImage } = skin;
+  const { palette, layoutId, sample } = skin;
+  const heroImage = customHeroImage || skin.heroImage;
+  const dateDisplay = customDateDisplay || sample.dateDisplay;
+  const timeDisplay = customTimeDisplay || sample.timeDisplay;
   const title = customTitle || sample.title;
   const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
   const textAccentOnSurface = ensureContrast(palette.accent, palette.surface, 4.6);
@@ -157,7 +166,7 @@ export function EnvelopeGate({
                 <img
                   src={heroImage}
                   alt={title}
-                  className={`h-full w-full object-cover opacity-55 ${
+                  className={`h-full w-full object-cover opacity-90 ${
                     skin.imageFilter ?? ""
                   }`}
                 />
@@ -245,7 +254,7 @@ export function EnvelopeGate({
                 {title}
               </h1>
               <p className="mt-1.5 text-[13px] tracking-wide" style={{ color: palette.textMuted }}>
-                {sample.dateDisplay}
+                {dateDisplay}
               </p>
               {guestPill}
               <button
@@ -298,7 +307,7 @@ export function EnvelopeGate({
                 {title}
               </h1>
               <p className="mt-2 text-xs uppercase tracking-[0.22em] text-white/85">
-                {sample.dateDisplay}
+                {dateDisplay}
               </p>
               {guestName && (
                 <div className="mt-4 rounded-2xl border border-white/30 bg-black/50 px-5 py-2.5 backdrop-blur-md">
@@ -371,7 +380,7 @@ export function EnvelopeGate({
             {title}
           </h1>
           <p className="mt-1.5 text-[13px] tracking-wider" style={{ color: palette.textMuted }}>
-            {sample.dateDisplay} · {sample.timeDisplay}
+            {dateDisplay} · {timeDisplay}
           </p>
           {guestPill}
           <button
@@ -515,7 +524,7 @@ export function EnvelopeGate({
             className="border-b py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em]"
             style={{ borderColor: palette.border }}
           >
-            {sample.dateDisplay}
+            {dateDisplay}
           </div>
 
           <div className="py-4 text-center">
@@ -598,7 +607,7 @@ export function EnvelopeGate({
               {title}
             </h1>
             <p className="mt-1 text-[13px] font-medium" style={{ color: palette.textMuted }}>
-              {sample.dateDisplay}
+              {dateDisplay}
             </p>
             {guestPill}
             <button

@@ -23,5 +23,12 @@ export default async function PersonalizePage({
     notFound();
   }
 
-  return <PersonalizerStudioClient event={event} />;
+  const mercadopagoConfigured = Boolean(process.env.MP_ACCESS_TOKEN);
+
+  return (
+    <PersonalizerStudioClient
+      event={event}
+      mercadopagoConfigured={mercadopagoConfigured}
+    />
+  );
 }

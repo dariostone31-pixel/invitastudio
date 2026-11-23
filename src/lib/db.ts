@@ -90,6 +90,8 @@ export interface EventRecord {
   address: string;
   city: string;
   alias: string;
+  giftBank?: string;
+  giftHolder?: string;
   dressCode: string;
   quote: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
@@ -334,6 +336,8 @@ async function ensurePgReady(): Promise<Pool> {
           address text not null default '',
           city text not null default 'Argentina',
           alias text not null default '',
+          gift_bank text,
+          gift_holder text,
           dress_code text not null default 'Elegante Sport',
           quote text not null default '',
           parents_or_hosts jsonb,
@@ -366,6 +370,9 @@ async function ensurePgReady(): Promise<Pool> {
           created_at timestamptz not null default now()
         );
         alter table public.events add column if not exists payment_status text not null default 'pendiente';
+        alter table public.events add column if not exists alias text not null default '';
+        alter table public.events add column if not exists gift_bank text;
+        alter table public.events add column if not exists gift_holder text;
         alter table public.events add column if not exists payment_method text;
         alter table public.events add column if not exists mp_preference_id text;
         alter table public.events add column if not exists mp_payment_id text;
@@ -445,6 +452,8 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     address: String(row.address ?? ""),
     city: String(row.city ?? "Argentina"),
     alias: String(row.alias ?? ""),
+    giftBank: row.gift_bank ? String(row.gift_bank) : undefined,
+    giftHolder: row.gift_holder ? String(row.gift_holder) : undefined,
     dressCode: String(row.dress_code ?? "Elegante Sport"),
     quote: String(row.quote ?? ""),
     parentsOrHosts: Array.isArray(row.parents_or_hosts)
@@ -518,7 +527,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       id, order_code, slug, panel_token, skin_id, plan_id, status,
       payment_status, payment_method, mp_preference_id, mp_payment_id, paid_amount,
       event_title, date_iso, date_display, time_display, venue, address, city,
-      alias, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
+      alias, gift_bank, gift_holder, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
       hero_image_url, hero_overlay_override, gallery_images,
       font_override, accent_override, audio_override, song_request, dj_playlist,
       trivia_title, trivia_questions, trivia_scores, album_url, instagram_handle, event_hashtag, guest_list,
@@ -527,7 +536,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53
     )`,
     [
       ev.id,
@@ -550,6 +559,8 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.address,
       ev.city,
       ev.alias,
+      ev.giftBank ?? null,
+      ev.giftHolder ?? null,
       ev.dressCode,
       ev.quote,
       ev.parentsOrHosts ? JSON.stringify(ev.parentsOrHosts) : null,
@@ -716,6 +727,8 @@ export async function createOrderEvent(input: {
   venue: string;
   address: string;
   alias: string;
+  giftBank?: string;
+  giftHolder?: string;
   dressCode: string;
   quote?: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
@@ -770,6 +783,8 @@ export async function createOrderEvent(input: {
     address: input.address,
     city: "Argentina",
     alias: input.alias,
+    giftBank: input.giftBank?.trim() || undefined,
+    giftHolder: input.giftHolder?.trim() || undefined,
     dressCode: input.dressCode || "Elegante Sport",
     quote:
       input.quote && input.quote.trim()
@@ -837,6 +852,8 @@ export type EventPatch = Partial<
     | "venue"
     | "address"
     | "alias"
+    | "giftBank"
+    | "giftHolder"
     | "dressCode"
     | "quote"
     | "parentsOrHosts"
@@ -878,6 +895,8 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   venue: { col: "venue" },
   address: { col: "address" },
   alias: { col: "alias" },
+  giftBank: { col: "gift_bank" },
+  giftHolder: { col: "gift_holder" },
   dressCode: { col: "dress_code" },
   quote: { col: "quote" },
   parentsOrHosts: { col: "parents_or_hosts", json: true },

@@ -24,6 +24,13 @@ export default async function OrganizerPanelPage({
   }
 
   const rsvps = await listRsvpsForSlug(event.slug);
+  const mercadopagoConfigured = Boolean(process.env.MP_ACCESS_TOKEN);
 
-  return <OrganizerPanelClient event={event} initialRsvps={rsvps} />;
+  return (
+    <OrganizerPanelClient
+      event={event}
+      initialRsvps={rsvps}
+      mercadopagoConfigured={mercadopagoConfigured}
+    />
+  );
 }
