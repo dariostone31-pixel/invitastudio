@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOrderEvent, listEvents, listRsvpsForSlug } from "@/lib/db";
+import { createOrderEvent, getDbMode, listEvents, listRsvpsForSlug } from "@/lib/db";
 import { verifyAdminPass } from "@/lib/adminAuth";
 import { LEGAL_VERSION } from "@/config/legal";
 
@@ -31,6 +31,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    if (process.env.VERCEL === "1" && getDbMode() !== "postgres") {
+      return NextResponse.json(
+        {
+          error:
+            "Este entorno en Vercel todavía no tiene configurada la base de datos PostgreSQL (DATABASE_URL). Cargá DATABASE_URL en Environment Variables y hacé Redeploy para guardar invitaciones sin errores 404.",
+        },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const {
       skinId,
@@ -48,10 +58,12 @@ export async function POST(req: Request) {
       storyText,
       schedule,
       heroImageUrl,
+      heroOverlayOverride,
       galleryImages,
       fontOverride,
       accentOverride,
       audioOverride,
+      songRequest,
       enabledSections,
       termsAccepted,
       contactName,
@@ -91,6 +103,20 @@ export async function POST(req: Request) {
     const validPlan =
       planId === "esencial" || planId === "pro" || planId === "asistido" ? planId : "pro";
     const allowFullCustom = validPlan === "pro" || validPlan === "asistido";
+    const CURATED_AUDIO = new Set([
+      "/audio/romantic-piano.wav",
+      "/audio/lounge-warm.wav",
+      "/audio/playful-celesta.wav",
+      "none",
+    ]);
+    const cleanAudio =
+      allowFullCustom && typeof audioOverride === "string" && CURATED_AUDIO.has(audioOverride)
+        ? audioOverride
+        : undefined;
+    const cleanSongRequest =
+      validPlan === "asistido" && typeof songRequest === "string" && songRequest.trim()
+        ? songRequest.trim().slice(0, 220)
+        : undefined;
 
     const cleanParents =
       allowFullCustom && Array.isArray(parentsOrHosts)
@@ -131,13 +157,16 @@ export async function POST(req: Request) {
       storyText: allowFullCustom && storyText ? String(storyText) : undefined,
       schedule: cleanSchedule,
       heroImageUrl: allowFullCustom && heroImageUrl ? String(heroImageUrl) : undefined,
+      heroOverlayOverride:
+        allowFullCustom && heroOverlayOverride ? heroOverlayOverride : undefined,
       galleryImages:
         allowFullCustom && Array.isArray(galleryImages)
           ? galleryImages.map(String).slice(0, 8)
           : undefined,
       fontOverride: allowFullCustom && fontOverride ? fontOverride : undefined,
       accentOverride: allowFullCustom && accentOverride ? String(accentOverride) : undefined,
-      audioOverride: allowFullCustom && audioOverride ? String(audioOverride) : undefined,
+      audioOverride: cleanAudio,
+      songRequest: cleanSongRequest,
       enabledSections: allowFullCustom && enabledSections ? enabledSections : undefined,
       termsAccepted: true,
       termsVersion: LEGAL_VERSION,

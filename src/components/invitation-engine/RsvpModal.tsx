@@ -14,6 +14,7 @@ interface RsvpModalProps {
   initialName?: string;
   maxPasses?: number;
   allowKidsMenu?: boolean;
+  allowSongField?: boolean;
 }
 
 const DIETARY_OPTIONS = [
@@ -32,6 +33,7 @@ export function RsvpModal({
   eventSlug,
   initialName = "",
   maxPasses = 5,
+  allowSongField = true,
 }: RsvpModalProps) {
   const [name, setName] = useState(initialName);
   const [attending, setAttending] = useState<boolean>(true);
@@ -263,6 +265,7 @@ export function RsvpModal({
                   </div>
                 </div>
 
+                {allowSongField && (
                 <div>
                   <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
                     ¿Qué tema no puede faltar en la pista?
@@ -280,6 +283,7 @@ export function RsvpModal({
                     }}
                   />
                 </div>
+                )}
               </>
             )}
 

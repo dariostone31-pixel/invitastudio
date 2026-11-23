@@ -14,6 +14,11 @@ const MIME_BY_EXT: Record<string, string> = {
   avif: "image/avif",
   heic: "image/heic",
   heif: "image/heif",
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  m4a: "audio/mp4",
+  ogg: "audio/ogg",
+  aac: "audio/aac",
 };
 
 export async function GET(

@@ -49,8 +49,23 @@ export async function GET(
       .join(",")
   );
 
+  const extraDjRows = (event.djPlaylist || []).map((item) =>
+    [
+      item.guestName,
+      "Sugerencia Playlist DJ",
+      "-",
+      "",
+      "",
+      item.song,
+      "",
+      new Date(item.createdAt).toLocaleString("es-AR"),
+    ]
+      .map(csvCell)
+      .join(",")
+  );
+
   // UTF-8 BOM for Microsoft Excel compatibility with Spanish accents
-  const csvContent = "\uFEFF" + [header, ...rows].join("\r\n");
+  const csvContent = "\uFEFF" + [header, ...rows, ...extraDjRows].join("\r\n");
 
   return new Response(csvContent, {
     status: 200,

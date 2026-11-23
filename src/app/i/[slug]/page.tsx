@@ -74,6 +74,18 @@ export default async function PublicInvitationPage({
       guestName: r.guestName,
       message: r.message,
     }));
+  const rsvpSongs = rsvps
+    .filter((r) => r.song && r.song.trim().length > 0)
+    .map((r) => ({
+      id: `rsvp-song-${r.id}`,
+      guestName: r.guestName,
+      song: r.song,
+      createdAt: r.createdAt,
+    }));
+  const combinedDjPlaylist = [...(event.djPlaylist || []), ...rsvpSongs].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  );
+  const allowDjSongs = event.planId !== "esencial";
 
   return (
     <>
@@ -105,12 +117,15 @@ export default async function PublicInvitationPage({
         customStoryText={event.storyText || undefined}
         customSchedule={event.schedule || undefined}
         customHeroImage={event.heroImageUrl || undefined}
+        customHeroOverlay={event.heroOverlayOverride || undefined}
         customGallery={event.galleryImages || undefined}
         customFont={event.fontOverride || undefined}
         customAccent={event.accentOverride || undefined}
-        customAudioUrl={event.audioOverride || undefined}
+        customAudioUrl={allowDjSongs ? event.audioOverride || undefined : undefined}
         memoryMode={Boolean(event.memoryMode)}
         wishesList={wishes}
+        allowDjSongs={allowDjSongs}
+        initialDjPlaylist={allowDjSongs ? combinedDjPlaylist : []}
         enabledSections={event.enabledSections || undefined}
         showPreviewChrome={false}
       />

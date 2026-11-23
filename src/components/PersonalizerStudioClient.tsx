@@ -22,6 +22,7 @@ import {
 import type {
   EventRecord,
   EnabledSectionsConfig,
+  HeroOverlayStyle,
   ParentsOrHostsGroup,
   ScheduleItem,
 } from "@/lib/db";
@@ -68,6 +69,14 @@ const AUDIO_OPTIONS = [
   { label: "Sin música de fondo", value: "none" },
 ];
 
+const HERO_OVERLAY_OPTIONS: { id: HeroOverlayStyle; label: string; desc: string }[] = [
+  { id: "natural", label: "Nítida natural", desc: "Foto original a color pleno" },
+  { id: "translucido-suave", label: "Translúcida profesional", desc: "Lámina suave integrada con el papel" },
+  { id: "velo-editorial", label: "Velo editorial", desc: "Tono luminoso tipo revista impresa" },
+  { id: "cinematico", label: "Cinemático", desc: "Contraste profundo elegante" },
+  { id: "bn-editorial", label: "B&N editorial", desc: "Blanco y negro atemporal" },
+];
+
 const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "countdown", label: "Cuenta Regresiva en vivo" },
   { key: "story", label: "Nuestra Historia" },
@@ -76,6 +85,7 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "dressCode", label: "Código de Vestimenta" },
   { key: "gifts", label: "Regalos / Copiar Alias" },
   { key: "wishes", label: "Muro de Buenos Deseos / Firmas" },
+  { key: "djSongs", label: "Playlist de la Fiesta (Invitados sugieren canción)" },
   { key: "rsvp", label: "Botón Confirmar Asistencia" },
 ];
 
@@ -121,7 +131,11 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
     event.accentOverride || selectedSkin.palette.accent
   );
   const [audioOverride, setAudioOverride] = useState<string>(event.audioOverride || "");
+  const [songRequest, setSongRequest] = useState<string>(event.songRequest || "");
   const [heroImageUrl, setHeroImageUrl] = useState<string>(event.heroImageUrl || "");
+  const [heroOverlayOverride, setHeroOverlayOverride] = useState<HeroOverlayStyle>(
+    event.heroOverlayOverride || "natural"
+  );
   const [galleryImages, setGalleryImages] = useState<string[]>(
     event.galleryImages || []
   );
@@ -135,6 +149,7 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
     dressCode: event.enabledSections?.dressCode ?? true,
     gifts: event.enabledSections?.gifts ?? true,
     wishes: event.enabledSections?.wishes ?? true,
+    djSongs: event.enabledSections?.djSongs ?? !isEssentialPlan,
     rsvp: event.enabledSections?.rsvp ?? true,
   });
 
@@ -229,10 +244,12 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           storyText,
           schedule,
           heroImageUrl,
+          heroOverlayOverride,
           galleryImages,
           fontOverride,
           accentOverride,
           audioOverride,
+          ...(event.planId === "asistido" ? { songRequest } : {}),
           memoryMode,
           enabledSections: sections,
         }),
@@ -811,6 +828,32 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
               </div>
 
               <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Acabado de Fotografía en Portada
+                </label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {HERO_OVERLAY_OPTIONS.map((opt) => {
+                    const active = heroOverlayOverride === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setHeroOverlayOverride(opt.id)}
+                        className={`rounded-2xl border p-3 text-left transition-all ${
+                          active
+                            ? "border-stone-900 bg-stone-900 text-white shadow-sm"
+                            : "border-stone-200 bg-stone-50 text-stone-800 hover:border-stone-400"
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{opt.label}</div>
+                        <div className="mt-0.5 text-[10px] opacity-75">{opt.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
                 <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
                   <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
                   Fotos de la Galería ({galleryImages.length})
@@ -867,7 +910,31 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                       {opt.label}
                     </option>
                   ))}
+                  {event.planId === "asistido" &&
+                    audioOverride &&
+                    !AUDIO_OPTIONS.some((o) => o.value === audioOverride) && (
+                      <option value={audioOverride}>
+                        Canción personalizada cargada por el estudio
+                      </option>
+                    )}
                 </select>
+                {event.planId === "asistido" && (
+                  <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5">
+                    <label className="mb-1 block text-xs font-bold text-amber-950">
+                      Canción a elección (Llave en Mano)
+                    </label>
+                    <input
+                      type="text"
+                      value={songRequest}
+                      onChange={(e) => setSongRequest(e.target.value)}
+                      placeholder="Ej. Perfect - Ed Sheeran (o link de referencia)"
+                      className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                    <p className="mt-1 text-[11px] text-amber-900">
+                      Nuestro equipo valida y carga tu audio definitivo desde producción para que suene sin cortes.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -956,11 +1023,16 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                 customStoryText={storyText}
                 customSchedule={schedule}
                 customHeroImage={heroImageUrl || undefined}
+                customHeroOverlay={heroOverlayOverride}
                 customGallery={galleryImages.length > 0 ? galleryImages : undefined}
                 customFont={fontOverride}
                 customAccent={accentOverride}
-                customAudioUrl={audioOverride || undefined}
+                customAudioUrl={
+                  !isEssentialPlan ? audioOverride || undefined : undefined
+                }
                 memoryMode={memoryMode}
+                allowDjSongs={!isEssentialPlan}
+                initialDjPlaylist={event.djPlaylist || []}
                 enabledSections={sections}
                 skipGate={true}
                 showPreviewChrome={false}

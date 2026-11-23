@@ -14,7 +14,15 @@ export interface EnabledSectionsConfig {
   dressCode: boolean;
   gifts: boolean;
   wishes?: boolean;
+  djSongs?: boolean;
   rsvp: boolean;
+}
+
+export interface DjSongItem {
+  id: string;
+  guestName: string;
+  song: string;
+  createdAt: string;
 }
 
 export interface ParentsOrHostsGroup {
@@ -27,6 +35,13 @@ export interface ScheduleItem {
   title: string;
   detail: string;
 }
+
+export type HeroOverlayStyle =
+  | "natural"
+  | "translucido-suave"
+  | "velo-editorial"
+  | "cinematico"
+  | "bn-editorial";
 
 export interface EventRecord {
   id: string;
@@ -56,6 +71,7 @@ export interface EventRecord {
   storyText?: string;
   schedule?: ScheduleItem[];
   heroImageUrl?: string;
+  heroOverlayOverride?: HeroOverlayStyle;
   galleryImages?: string[];
   fontOverride?:
     | "cormorant"
@@ -68,6 +84,8 @@ export interface EventRecord {
     | "playfair";
   accentOverride?: string;
   audioOverride?: string;
+  songRequest?: string;
+  djPlaylist?: DjSongItem[];
   memoryMode?: boolean;
   enabledSections?: EnabledSectionsConfig;
   termsAccepted?: boolean;
@@ -294,6 +312,8 @@ async function ensurePgReady(): Promise<Pool> {
           font_override text,
           accent_override text,
           audio_override text,
+          song_request text,
+          dj_playlist jsonb not null default '[]'::jsonb,
           memory_mode boolean not null default false,
           enabled_sections jsonb,
           terms_accepted boolean,
@@ -315,10 +335,13 @@ async function ensurePgReady(): Promise<Pool> {
         alter table public.events add column if not exists story_text text;
         alter table public.events add column if not exists schedule jsonb;
         alter table public.events add column if not exists hero_image_url text;
+        alter table public.events add column if not exists hero_overlay_override text;
         alter table public.events add column if not exists gallery_images jsonb;
         alter table public.events add column if not exists font_override text;
         alter table public.events add column if not exists accent_override text;
         alter table public.events add column if not exists audio_override text;
+        alter table public.events add column if not exists song_request text;
+        alter table public.events add column if not exists dj_playlist jsonb not null default '[]'::jsonb;
         alter table public.events add column if not exists memory_mode boolean not null default false;
         alter table public.events add column if not exists enabled_sections jsonb;
         alter table public.events add column if not exists terms_accepted boolean;
@@ -386,6 +409,9 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
       ? (row.schedule as ScheduleItem[])
       : undefined,
     heroImageUrl: row.hero_image_url ? String(row.hero_image_url) : undefined,
+    heroOverlayOverride: row.hero_overlay_override
+      ? (String(row.hero_overlay_override) as HeroOverlayStyle)
+      : undefined,
     galleryImages: Array.isArray(row.gallery_images)
       ? (row.gallery_images as string[])
       : undefined,
@@ -394,6 +420,10 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
       : undefined,
     accentOverride: row.accent_override ? String(row.accent_override) : undefined,
     audioOverride: row.audio_override ? String(row.audio_override) : undefined,
+    songRequest: row.song_request ? String(row.song_request) : undefined,
+    djPlaylist: Array.isArray(row.dj_playlist)
+      ? (row.dj_playlist as DjSongItem[])
+      : [],
     memoryMode: Boolean(row.memory_mode),
     enabledSections: (row.enabled_sections as EnabledSectionsConfig) || undefined,
     termsAccepted: typeof row.terms_accepted === "boolean" ? row.terms_accepted : undefined,
@@ -429,13 +459,13 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       payment_status, payment_method, mp_preference_id, mp_payment_id, paid_amount,
       event_title, date_iso, date_display, time_display, venue, address, city,
       alias, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
-      hero_image_url, gallery_images,
-      font_override, accent_override, audio_override, memory_mode, enabled_sections,
+      hero_image_url, hero_overlay_override, gallery_images,
+      font_override, accent_override, audio_override, song_request, dj_playlist, memory_mode, enabled_sections,
       terms_accepted, terms_version, terms_accepted_at_utc,
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44
     )`,
     [
       ev.id,
@@ -465,10 +495,13 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.storyText ?? null,
       ev.schedule ? JSON.stringify(ev.schedule) : null,
       ev.heroImageUrl ?? null,
+      ev.heroOverlayOverride ?? null,
       ev.galleryImages ? JSON.stringify(ev.galleryImages) : null,
       ev.fontOverride ?? null,
       ev.accentOverride ?? null,
       ev.audioOverride ?? null,
+      ev.songRequest ?? null,
+      JSON.stringify(ev.djPlaylist ?? []),
       Boolean(ev.memoryMode),
       ev.enabledSections ? JSON.stringify(ev.enabledSections) : null,
       typeof ev.termsAccepted === "boolean" ? ev.termsAccepted : null,
@@ -621,10 +654,12 @@ export async function createOrderEvent(input: {
   storyText?: string;
   schedule?: ScheduleItem[];
   heroImageUrl?: string;
+  heroOverlayOverride?: HeroOverlayStyle;
   galleryImages?: string[];
   fontOverride?: EventRecord["fontOverride"];
   accentOverride?: string;
   audioOverride?: string;
+  songRequest?: string;
   enabledSections?: EnabledSectionsConfig;
   termsAccepted: boolean;
   termsVersion: string;
@@ -677,11 +712,14 @@ export async function createOrderEvent(input: {
     schedule:
       input.schedule && input.schedule.length > 0 ? input.schedule : undefined,
     heroImageUrl: input.heroImageUrl || undefined,
+    heroOverlayOverride: input.heroOverlayOverride || undefined,
     galleryImages:
       input.galleryImages && input.galleryImages.length > 0 ? input.galleryImages : undefined,
     fontOverride: input.fontOverride || undefined,
     accentOverride: input.accentOverride || undefined,
     audioOverride: input.audioOverride || undefined,
+    songRequest: input.songRequest?.trim() || undefined,
+    djPlaylist: [],
     enabledSections: input.enabledSections || undefined,
     termsAccepted: input.termsAccepted,
     termsVersion: input.termsVersion,
@@ -729,10 +767,13 @@ export type EventPatch = Partial<
     | "storyText"
     | "schedule"
     | "heroImageUrl"
+    | "heroOverlayOverride"
     | "galleryImages"
     | "fontOverride"
     | "accentOverride"
     | "audioOverride"
+    | "songRequest"
+    | "djPlaylist"
     | "memoryMode"
     | "enabledSections"
   >
@@ -760,10 +801,13 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   storyText: { col: "story_text" },
   schedule: { col: "schedule", json: true },
   heroImageUrl: { col: "hero_image_url" },
+  heroOverlayOverride: { col: "hero_overlay_override" },
   galleryImages: { col: "gallery_images", json: true },
   fontOverride: { col: "font_override" },
   accentOverride: { col: "accent_override" },
   audioOverride: { col: "audio_override" },
+  songRequest: { col: "song_request" },
+  djPlaylist: { col: "dj_playlist", json: true },
   memoryMode: { col: "memory_mode" },
   enabledSections: { col: "enabled_sections", json: true },
 };
@@ -910,4 +954,41 @@ export async function addRsvp(input: {
   db.rsvps.push(record);
   saveLocalStore(db);
   return { rsvp: record, updated: false };
+}
+
+export async function addDjSongRequest(input: {
+  eventSlug: string;
+  guestName: string;
+  song: string;
+}): Promise<DjSongItem | null> {
+  const event = await getEventBySlug(input.eventSlug);
+  if (!event || event.planId === "esencial") {
+    return null;
+  }
+
+  const item: DjSongItem = {
+    id: `song-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    guestName: input.guestName.trim().slice(0, 80),
+    song: input.song.trim().slice(0, 140),
+    createdAt: new Date().toISOString(),
+  };
+
+  const current = Array.isArray(event.djPlaylist) ? event.djPlaylist : [];
+  const next = [item, ...current].slice(0, 100);
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      "update public.events set dj_playlist = $2::jsonb where slug = $1",
+      [input.eventSlug, JSON.stringify(next)]
+    );
+    return item;
+  }
+
+  const db = ensureLocalStore();
+  const idx = db.events.findIndex((e) => e.slug === input.eventSlug);
+  if (idx === -1) return null;
+  db.events[idx] = { ...db.events[idx], djPlaylist: next };
+  saveLocalStore(db);
+  return item;
 }

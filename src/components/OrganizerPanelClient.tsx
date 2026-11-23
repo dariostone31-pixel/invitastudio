@@ -43,7 +43,21 @@ export function OrganizerPanelClient({
     const noRows = initialRsvps.filter((r) => !r.attending);
     const totalPeople = yesRows.reduce((acc, r) => acc + r.passesUsed, 0);
     const dietaryRows = yesRows.filter((r) => r.dietary.length > 0);
-    const songs = yesRows.filter((r) => r.song.trim().length > 0);
+    const rsvpSongs = yesRows
+      .filter((r) => r.song.trim().length > 0)
+      .map((r) => ({
+        id: r.id,
+        song: r.song,
+        guestName: r.guestName,
+        source: "RSVP",
+      }));
+    const extraSongs = (event.djPlaylist || []).map((item) => ({
+      id: item.id,
+      song: item.song,
+      guestName: item.guestName,
+      source: "Playlist",
+    }));
+    const songs = [...extraSongs, ...rsvpSongs];
     return {
       confirmedGroups: yesRows.length,
       declinedGroups: noRows.length,
@@ -51,7 +65,7 @@ export function OrganizerPanelClient({
       dietaryCount: dietaryRows.length,
       songs,
     };
-  }, [initialRsvps]);
+  }, [initialRsvps, event.djPlaylist]);
 
   const filteredRsvps = useMemo(() => {
     return initialRsvps.filter((r) => {
@@ -454,27 +468,37 @@ export function OrganizerPanelClient({
             <div className="flex items-center gap-2">
               <Music className="h-5 w-5 text-amber-700" />
               <h2 className="font-cormorant text-2xl font-semibold text-stone-900">
-                Playlist para el DJ ({stats.songs.length})
+                Playlist para el DJ ({isEssentialPlan ? 0 : stats.songs.length})
               </h2>
             </div>
-            <p className="mt-1 text-xs text-stone-500">
-              Temas sugeridos automáticamente por tus invitados al confirmar asistencia.
-            </p>
-            <div className="mt-4 space-y-2.5">
-              {stats.songs.length === 0 ? (
-                <p className="text-xs text-stone-400">Aún no sugirieron canciones.</p>
-              ) : (
-                stats.songs.map((s) => (
-                  <div
-                    key={s.id}
-                    className="rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs"
-                  >
-                    <p className="font-semibold text-stone-900">{s.song}</p>
-                    <p className="text-[11px] text-stone-500">Por {s.guestName}</p>
-                  </div>
-                ))
-              )}
-            </div>
+            {isEssentialPlan ? (
+              <p className="mt-2 rounded-2xl border border-stone-200 bg-stone-50 p-3.5 text-xs leading-relaxed text-stone-500">
+                La solapa <strong>Playlist de la Fiesta</strong> para que tus invitados sugieran canciones al DJ está incluida en <strong>Plan PRO</strong> y <strong>Llave en Mano</strong>.
+              </p>
+            ) : (
+              <>
+                <p className="mt-1 text-xs text-stone-500">
+                  Temas sugeridos por tus invitados desde la solapa Playlist de la Fiesta o al confirmar asistencia.
+                </p>
+                <div className="mt-4 space-y-2.5">
+                  {stats.songs.length === 0 ? (
+                    <p className="text-xs text-stone-400">Aún no sugirieron canciones.</p>
+                  ) : (
+                    stats.songs.map((s) => (
+                      <div
+                        key={s.id}
+                        className="rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs"
+                      >
+                        <p className="font-semibold text-stone-900">{s.song}</p>
+                        <p className="text-[11px] text-stone-500">
+                          Por {s.guestName} · {s.source}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </section>
         </div>
       </main>

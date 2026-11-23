@@ -26,6 +26,22 @@ export async function PATCH(
 
     const body = await req.json();
     const isEssential = existing.planId === "esencial";
+    const isAsistido = existing.planId === "asistido";
+    const CURATED_AUDIO = new Set([
+      "",
+      "/audio/romantic-piano.wav",
+      "/audio/lounge-warm.wav",
+      "/audio/playful-celesta.wav",
+      "none",
+    ]);
+    const requestedAudio = typeof body.audioOverride === "string" ? body.audioOverride : undefined;
+    // PRO solo puede elegir del catálogo curado o mantener el actual; Llave en Mano mantiene el audio personalizado subido por admin si elige conservarlo
+    const safeAudio =
+      requestedAudio === undefined
+        ? undefined
+        : CURATED_AUDIO.has(requestedAudio) || (isAsistido && requestedAudio === existing.audioOverride)
+        ? requestedAudio
+        : existing.audioOverride;
 
     const patch = isEssential
       ? {
@@ -52,10 +68,14 @@ export async function PATCH(
           storyText: body.storyText,
           schedule: body.schedule,
           heroImageUrl: body.heroImageUrl,
+          heroOverlayOverride: body.heroOverlayOverride,
           galleryImages: body.galleryImages,
           fontOverride: body.fontOverride,
           accentOverride: body.accentOverride,
-          audioOverride: body.audioOverride,
+          audioOverride: safeAudio,
+          ...(isAsistido && typeof body.songRequest === "string"
+            ? { songRequest: body.songRequest.trim().slice(0, 220) }
+            : {}),
           memoryMode: body.memoryMode,
           enabledSections: body.enabledSections,
         };

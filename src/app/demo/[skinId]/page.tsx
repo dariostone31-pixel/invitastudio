@@ -52,6 +52,14 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
       guestName: r.guestName,
       message: r.message,
     }));
+  const demoSongs = allRsvps
+    .filter((r) => r.song && r.song.trim().length > 0)
+    .map((r) => ({
+      id: `demo-song-${r.id}`,
+      guestName: r.guestName,
+      song: r.song,
+      createdAt: r.createdAt,
+    }));
 
   return (
     <InvitationRenderer
@@ -63,6 +71,8 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
       customTitle={sp.evento || undefined}
       customDateDisplay={sp.fecha || undefined}
       wishesList={wishes}
+      allowDjSongs={true}
+      initialDjPlaylist={demoSongs}
       showPreviewChrome={true}
     />
   );

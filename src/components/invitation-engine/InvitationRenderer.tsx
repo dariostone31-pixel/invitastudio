@@ -13,10 +13,13 @@ import {
   ArrowLeft,
   Sparkles,
   Heart,
+  Music,
 } from "lucide-react";
 import { InvitationSkin } from "@/templates/catalog";
 import type {
+  DjSongItem,
   EnabledSectionsConfig,
+  HeroOverlayStyle,
   ParentsOrHostsGroup,
   ScheduleItem,
 } from "@/lib/db";
@@ -66,12 +69,15 @@ interface InvitationRendererProps {
   customStoryText?: string;
   customSchedule?: ScheduleItem[];
   customHeroImage?: string;
+  customHeroOverlay?: HeroOverlayStyle;
   customGallery?: string[];
   customFont?: InvitationSkin["fontDisplay"];
   customAccent?: string;
   customAudioUrl?: string;
   memoryMode?: boolean;
   wishesList?: PublicWish[];
+  allowDjSongs?: boolean;
+  initialDjPlaylist?: DjSongItem[];
   enabledSections?: EnabledSectionsConfig;
   skipGate?: boolean;
   showPreviewChrome?: boolean;
@@ -153,12 +159,15 @@ export function InvitationRenderer({
   customStoryText,
   customSchedule,
   customHeroImage,
+  customHeroOverlay = "natural",
   customGallery,
   customFont,
   customAccent,
   customAudioUrl,
   memoryMode = false,
   wishesList = [],
+  allowDjSongs = true,
+  initialDjPlaylist = [],
   enabledSections,
   skipGate = false,
   showPreviewChrome = true,
@@ -167,6 +176,11 @@ export function InvitationRenderer({
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<"alias" | "cbu" | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [djSongs, setDjSongs] = useState<DjSongItem[]>(initialDjPlaylist);
+  const [djGuestName, setDjGuestName] = useState(guestName || "");
+  const [djSongText, setDjSongText] = useState("");
+  const [djSubmitting, setDjSubmitting] = useState(false);
+  const [djFeedback, setDjFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const { sample, layoutId } = skin;
   const palette = customAccent ? { ...skin.palette, accent: customAccent } : skin.palette;
@@ -189,6 +203,24 @@ export function InvitationRenderer({
     skin.id === "nina-hadas-sobre" ||
     skin.id === "xv-mariposas-lila";
   const heroImage = customHeroImage || skin.heroImage;
+  const heroPhotoFilterClass =
+    customHeroOverlay === "translucido-suave"
+      ? "opacity-70 saturate-[0.88] blur-[0.5px]"
+      : customHeroOverlay === "velo-editorial"
+      ? "opacity-60 saturate-[0.78]"
+      : customHeroOverlay === "bn-editorial"
+      ? "grayscale contrast-[1.06] opacity-75"
+      : "";
+  const heroOverlayTint =
+    customHeroOverlay === "translucido-suave"
+      ? `${palette.bg}5E`
+      : customHeroOverlay === "velo-editorial"
+      ? `${palette.surface}78`
+      : customHeroOverlay === "bn-editorial"
+      ? `${palette.bg}3D`
+      : customHeroOverlay === "cinematico"
+      ? "rgba(18, 14, 12, 0.36)"
+      : "";
   const galleryList =
     customGallery && customGallery.length > 0 ? customGallery : sample.gallery;
   const audioSrc =
@@ -202,7 +234,63 @@ export function InvitationRenderer({
     dressCode: enabledSections?.dressCode ?? true,
     gifts: enabledSections?.gifts ?? true,
     wishes: enabledSections?.wishes ?? true,
+    djSongs: enabledSections?.djSongs ?? true,
     rsvp: enabledSections?.rsvp ?? true,
+  };
+
+  const handleAddDjSong = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (djSubmitting) return;
+    if (!djGuestName.trim() || !djSongText.trim()) {
+      setDjFeedback({ ok: false, msg: "Escribí tu nombre y la canción o artista." });
+      return;
+    }
+    setDjSubmitting(true);
+    setDjFeedback(null);
+
+    if (eventSlug) {
+      try {
+        const res = await fetch("/api/songs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventSlug,
+            guestName: djGuestName.trim(),
+            song: djSongText.trim(),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || "No se pudo sumar la canción.");
+        }
+        if (data.item) {
+          setDjSongs((prev) => [data.item as DjSongItem, ...prev]);
+        }
+        setDjSongText("");
+        setDjFeedback({ ok: true, msg: "¡Temazo sumado a la playlist del DJ!" });
+      } catch (err) {
+        setDjFeedback({
+          ok: false,
+          msg: err instanceof Error ? err.message : "No se pudo enviar la canción.",
+        });
+      } finally {
+        setDjSubmitting(false);
+      }
+      return;
+    }
+
+    setDjSongs((prev) => [
+      {
+        id: `preview-${Date.now()}`,
+        guestName: djGuestName.trim(),
+        song: djSongText.trim(),
+        createdAt: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+    setDjSongText("");
+    setDjFeedback({ ok: true, msg: "¡Agregada en vista previa!" });
+    setDjSubmitting(false);
   };
 
   // 3-layer typographic system:
@@ -353,8 +441,15 @@ export function InvitationRenderer({
               <img
                 src={heroImage}
                 alt={eventTitle}
-                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""}`}
+                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
               />
+              {heroOverlayTint && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{ backgroundColor: heroOverlayTint }}
+                />
+              )}
               {!isEditorialPaper && (
                 <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/70" />
               )}
@@ -485,8 +580,15 @@ export function InvitationRenderer({
               <img
                 src={heroImage}
                 alt={eventTitle}
-                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""}`}
+                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
               />
+              {heroOverlayTint && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{ backgroundColor: heroOverlayTint }}
+                />
+              )}
               <div
                 className="absolute inset-0"
                 style={{
@@ -1179,6 +1281,125 @@ export function InvitationRenderer({
             </RevealSection>
           )}
 
+          {/* ================= MÚSICA PARA LA FIESTA / PLAYLIST DJ (PRO & LLAVE EN MANO) ================= */}
+          {allowDjSongs && sections.djSongs && !memoryMode && (
+          <RevealSection>
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <section
+              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
+              style={{
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+              }}
+            >
+              <div
+                className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border"
+                style={{
+                  backgroundColor: palette.surfaceAlt,
+                  borderColor: palette.border,
+                  color: textAccentOnSurface,
+                }}
+              >
+                <Music className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <p
+                className="font-ui-jost mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                style={{ color: textAccentOnSurface }}
+              >
+                Playlist de la Fiesta
+              </p>
+              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                ¿Qué tema no puede faltar?
+              </h2>
+              <p className="mt-2 text-[14px] leading-relaxed" style={{ color: palette.textMuted }}>
+                Agregá la canción que querés escuchar o bailar en la pista para que la reciba nuestro DJ.
+              </p>
+
+              <form onSubmit={handleAddDjSong} className="mt-4 space-y-2.5 text-left">
+                <input
+                  type="text"
+                  value={djGuestName}
+                  onChange={(e) => setDjGuestName(e.target.value)}
+                  placeholder="Tu nombre (ej. Martín)"
+                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-sm outline-none`}
+                  style={{
+                    backgroundColor: palette.bg,
+                    borderColor: palette.border,
+                    color: palette.text,
+                  }}
+                />
+                <input
+                  type="text"
+                  value={djSongText}
+                  onChange={(e) => setDjSongText(e.target.value)}
+                  placeholder="Canción y artista (ej. Don't Stop Me Now - Queen)"
+                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-sm outline-none`}
+                  style={{
+                    backgroundColor: palette.bg,
+                    borderColor: palette.border,
+                    color: palette.text,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={djSubmitting}
+                  className={`min-h-[44px] w-full px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90 disabled:opacity-60 ${
+                    isNewspaper ? "rounded-none" : "rounded-full"
+                  }`}
+                  style={{
+                    backgroundColor: buttonBg,
+                    color: palette.accentText,
+                  }}
+                >
+                  {djSubmitting ? "Sumando..." : "Sugerir Canción"}
+                </button>
+              </form>
+
+              {djFeedback && (
+                <p
+                  className="mt-3 rounded-xl px-3 py-2 text-xs font-medium"
+                  style={{
+                    backgroundColor: palette.surfaceAlt,
+                    color: djFeedback.ok ? textAccentOnAlt : palette.text,
+                  }}
+                >
+                  {djFeedback.msg}
+                </p>
+              )}
+
+              {djSongs.length > 0 && (
+                <div className="mt-5 space-y-2 text-left">
+                  <p
+                    className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: palette.textMuted }}
+                  >
+                    Últimas sugerencias ({djSongs.length})
+                  </p>
+                  <div className="max-h-44 space-y-1.5 overflow-y-auto pr-1">
+                    {djSongs.slice(0, 8).map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs"
+                        style={{
+                          backgroundColor: palette.bg,
+                          borderColor: palette.border,
+                        }}
+                      >
+                        <span className="min-w-0 break-words font-medium" style={{ color: palette.text }}>
+                          🎵 {item.song}
+                        </span>
+                        <span className="flex-shrink-0 text-[11px]" style={{ color: palette.textMuted }}>
+                          {item.guestName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          </RevealSection>
+          )}
+
           {/* ================= CONFIRMAR ASISTENCIA (RSVP NATIVO) ================= */}
           {sections.rsvp && !memoryMode && (
           <RevealSection>
@@ -1272,6 +1493,7 @@ export function InvitationRenderer({
         eventSlug={eventSlug}
         initialName={guestName}
         maxPasses={passes ?? 5}
+        allowSongField={allowDjSongs}
       />
 
       {/* Lightbox Galería */}

@@ -19,11 +19,47 @@ import {
   AlertCircle,
   Sliders,
 } from "lucide-react";
-import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById } from "@/templates/catalog";
+import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } from "@/templates/catalog";
 import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 import { LEGAL_VERSION } from "@/config/legal";
 import { prepareImageForUpload } from "@/lib/imageUpload";
-import type { EventRecord, ParentsOrHostsGroup, ScheduleItem } from "@/lib/db";
+import type { EventRecord, HeroOverlayStyle, ParentsOrHostsGroup, ScheduleItem } from "@/lib/db";
+
+const FONT_CHOICES: { id: InvitationSkin["fontDisplay"]; label: string }[] = [
+  { id: "pinyon", label: "Caligrafía Boutique" },
+  { id: "script", label: "Caligrafía Romántica" },
+  { id: "cormorant", label: "Clásica Editorial" },
+  { id: "fraunces", label: "Editorial Moderna" },
+  { id: "cinzel", label: "Imperial Lujo" },
+  { id: "playfair", label: "Revista / Diario" },
+  { id: "oswald", label: "Urbana / VIP" },
+  { id: "fredoka", label: "Alegre / Infantil" },
+];
+
+const ACCENT_CHOICES = [
+  { name: "Oro Champán", hex: "#B89352" },
+  { name: "Rosa Imperial", hex: "#C86D8E" },
+  { name: "Borgoña Alma", hex: "#6B1E30" },
+  { name: "Verde Salvia", hex: "#5F7D5B" },
+  { name: "Terracota Boho", hex: "#B86B4B" },
+  { name: "Dorado VIP", hex: "#D4AF37" },
+];
+
+const HERO_OVERLAY_CHOICES: { id: HeroOverlayStyle; label: string; desc: string }[] = [
+  { id: "natural", label: "Nítida natural", desc: "Color pleno" },
+  { id: "translucido-suave", label: "Translúcida profesional", desc: "Lámina suave" },
+  { id: "velo-editorial", label: "Velo editorial", desc: "Estilo revista" },
+  { id: "cinematico", label: "Cinemático", desc: "Contraste profundo" },
+  { id: "bn-editorial", label: "B&N editorial", desc: "Blanco y negro" },
+];
+
+const AUDIO_CHOICES = [
+  { label: "Música predeterminada del modelo", value: "" },
+  { label: "Piano Romántico (Instrumental)", value: "/audio/romantic-piano.wav" },
+  { label: "Lounge Cálido (Eventos & Hombres)", value: "/audio/lounge-warm.wav" },
+  { label: "Celesta Alegre (Infantil & Bebé)", value: "/audio/playful-celesta.wav" },
+  { label: "Sin música de fondo", value: "none" },
+];
 
 function EncargarForm() {
   const searchParams = useSearchParams();
@@ -50,6 +86,15 @@ function EncargarForm() {
 
   // Personalización inicial (habilitada en PRO y Llave en Mano)
   const [showCustomDetails, setShowCustomDetails] = useState(true);
+  const [fontOverride, setFontOverride] = useState<InvitationSkin["fontDisplay"]>(
+    skinObj.fontDisplay
+  );
+  const [accentOverride, setAccentOverride] = useState<string>(skinObj.palette.accent);
+  const [heroOverlayOverride, setHeroOverlayOverride] = useState<HeroOverlayStyle>(
+    "translucido-suave"
+  );
+  const [audioOverride, setAudioOverride] = useState<string>("");
+  const [songRequest, setSongRequest] = useState<string>("");
   const [quote, setQuote] = useState(skinObj.sample.quote);
   const [parentsOrHosts, setParentsOrHosts] = useState<ParentsOrHostsGroup[]>(
     skinObj.sample.parentsOrHosts || []
@@ -63,6 +108,8 @@ function EncargarForm() {
   // Sincronizar sugerencias editables al cambiar modelo si el usuario aún no cargó pedido
   useEffect(() => {
     const s = getSkinById(selectedSkin);
+    setFontOverride(s.fontDisplay);
+    setAccentOverride(s.palette.accent);
     setQuote(s.sample.quote);
     setParentsOrHosts(s.sample.parentsOrHosts ? structuredClone(s.sample.parentsOrHosts) : []);
     setStoryTitle(s.sample.storyTitle || "Nuestra Historia");
@@ -193,7 +240,14 @@ function EncargarForm() {
                 storyText,
                 schedule,
                 heroImageUrl: uploadedUrls[0],
+                heroOverlayOverride,
                 galleryImages: uploadedUrls,
+                fontOverride,
+                accentOverride,
+                audioOverride,
+                ...(selectedPlan === "asistido" && songRequest.trim()
+                  ? { songRequest: songRequest.trim() }
+                  : {}),
               }
             : {}),
           termsAccepted: true,
@@ -353,7 +407,7 @@ function EncargarForm() {
           enlaces o sacales captura).
         </p>
 
-        {/* Acceso inmediato al borrador, personalizador y panel */}
+        {/* Acceso inmediato a la invitación, panel y ajuste opcional */}
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link
             href={`/i/${createdOrder.slug}`}
@@ -361,14 +415,7 @@ function EncargarForm() {
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-stone-900 bg-stone-900 px-3 py-3 text-xs font-semibold text-white hover:bg-stone-800"
           >
             <ExternalLink className="h-4 w-4" />
-            Ver Borrador
-          </Link>
-          <Link
-            href={`/personalizar/${createdOrder.panelToken}`}
-            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-3 text-xs font-semibold text-amber-900 hover:bg-amber-100"
-          >
-            <Sparkles className="h-4 w-4 text-amber-600" />
-            {createdOrder.planId === "esencial" ? "Editar Datos Básicos" : "Personalizar en Vivo"}
+            Ver Invitación en Vivo
           </Link>
           <Link
             href={`/panel/${createdOrder.panelToken}`}
@@ -376,6 +423,13 @@ function EncargarForm() {
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-stone-300 bg-white px-3 py-3 text-xs font-semibold text-stone-900 hover:bg-stone-50"
           >
             Panel Invitados
+          </Link>
+          <Link
+            href={`/personalizar/${createdOrder.panelToken}`}
+            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-3 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            <Sparkles className="h-4 w-4 text-amber-600" />
+            {createdOrder.planId === "esencial" ? "Editar Datos Básicos" : "Ajustar Diseño (Opcional)"}
           </Link>
         </div>
 
@@ -588,6 +642,19 @@ function EncargarForm() {
           </div>
         </div>
 
+        {/* Aviso de alcance para Plan Esencial */}
+        {!isAdvancedPlan && (
+          <div className="mt-5 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4 text-xs text-stone-600">
+            <p className="font-semibold text-stone-900">
+              Plan Esencial · Diseño y música genérica predeterminada
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed">
+              Este plan mantiene la tipografía, paleta y música instrumental genérica predeterminada del modelo elegido (no incluye la solapa de Playlist DJ para invitados ni cambios visuales). Si querés personalizar fuentes, colores, acabado translúcido o pedir canción propia, elegí{" "}
+              <strong>Plan PRO</strong> o <strong>Llave en Mano</strong> arriba.
+            </p>
+          </div>
+        )}
+
         {/* Bloque de personalización temprana solo para Plan PRO y Llave en Mano */}
         {isAdvancedPlan && (
           <div className="mt-6 border-t border-stone-200 pt-5">
@@ -614,6 +681,202 @@ function EncargarForm() {
 
             {showCustomDetails && (
               <div className="mt-4 space-y-5">
+                {/* Tipografía + Color de acento + Música + Acabado de Portada con vista rápida */}
+                <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4 sm:grid-cols-12">
+                  <div className="space-y-4 sm:col-span-7">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-stone-700">
+                        Tipografía del Título Principal
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {FONT_CHOICES.map((f) => {
+                          const active = fontOverride === f.id;
+                          return (
+                            <button
+                              key={f.id}
+                              type="button"
+                              onClick={() => setFontOverride(f.id)}
+                              className={`rounded-xl border px-3 py-2 text-left transition-all ${
+                                active
+                                  ? "border-stone-900 bg-stone-900 text-white"
+                                  : "border-stone-200 bg-white text-stone-800 hover:border-stone-400"
+                              }`}
+                            >
+                              <span className={`font-display-${f.id} block text-base leading-tight`}>
+                                {f.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-stone-700">
+                        Color de Acento y Botones
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {ACCENT_CHOICES.map((sw) => {
+                          const active = accentOverride.toLowerCase() === sw.hex.toLowerCase();
+                          return (
+                            <button
+                              key={sw.hex}
+                              type="button"
+                              onClick={() => setAccentOverride(sw.hex)}
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+                                active
+                                  ? "border-stone-900 bg-stone-900 text-white"
+                                  : "border-stone-200 bg-white text-stone-700"
+                              }`}
+                            >
+                              <span
+                                className="h-3 w-3 rounded-full border border-black/15"
+                                style={{ backgroundColor: sw.hex }}
+                              />
+                              {sw.name}
+                            </button>
+                          );
+                        })}
+                        <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-700">
+                          <span>Otro</span>
+                          <input
+                            type="color"
+                            value={accentOverride}
+                            onChange={(e) => setAccentOverride(e.target.value)}
+                            className="h-4 w-4 cursor-pointer border-0 bg-transparent p-0"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-stone-700">
+                        Acabado de Fotografía en Portada
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {HERO_OVERLAY_CHOICES.map((ov) => {
+                          const active = heroOverlayOverride === ov.id;
+                          return (
+                            <button
+                              key={ov.id}
+                              type="button"
+                              onClick={() => setHeroOverlayOverride(ov.id)}
+                              className={`rounded-xl border px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
+                                active
+                                  ? "border-stone-900 bg-stone-900 text-white"
+                                  : "border-stone-200 bg-white text-stone-700 hover:border-stone-400"
+                              }`}
+                            >
+                              {ov.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold text-stone-700">
+                        Música de Fondo
+                      </label>
+                      <select
+                        value={audioOverride}
+                        onChange={(e) => setAudioOverride(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                      >
+                        {AUDIO_CHOICES.map((opt) => (
+                          <option key={opt.label} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedPlan === "asistido" && (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                        <label className="mb-1 block text-xs font-bold text-amber-950">
+                          Canción de fondo a tu elección (incluida en Llave en Mano)
+                        </label>
+                        <input
+                          type="text"
+                          value={songRequest}
+                          onChange={(e) => setSongRequest(e.target.value)}
+                          placeholder="Ej. Perfect - Ed Sheeran (o link de YouTube/Spotify)"
+                          className="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                        />
+                        <p className="mt-1 text-[10px] leading-relaxed text-amber-900">
+                          Nuestro equipo la optimiza, valida el audio y la deja sonando en tu invitación antes de entregarla. Además, tus invitados tendrán la solapa <strong>Playlist DJ</strong> para sugerir temas para la fiesta.
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedPlan === "pro" && (
+                      <p className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
+                        <strong>Incluido en Plan PRO:</strong> catálogo musical curado + solapa{" "}
+                        <strong>Playlist de la Fiesta</strong> para que tus invitados sugieran canciones al DJ.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Mini preview visual instantáneo de portada */}
+                  <div className="flex flex-col justify-center sm:col-span-5">
+                    <span className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                      Vista rápida de tu portada
+                    </span>
+                    <div
+                      className="relative mx-auto h-64 w-full max-w-[230px] overflow-hidden rounded-3xl border shadow-md"
+                      style={{
+                        backgroundColor: skinObj.palette.bg,
+                        borderColor: skinObj.palette.border,
+                      }}
+                    >
+                      <img
+                        src={uploadedUrls[0] || skinObj.heroImage}
+                        alt="Vista rápida portada"
+                        className={`h-full w-full object-cover ${
+                          heroOverlayOverride === "translucido-suave"
+                            ? "opacity-70 saturate-[0.88] blur-[0.5px]"
+                            : heroOverlayOverride === "velo-editorial"
+                            ? "opacity-60 saturate-[0.78]"
+                            : heroOverlayOverride === "bn-editorial"
+                            ? "grayscale contrast-[1.06] opacity-75"
+                            : ""
+                        }`}
+                      />
+                      {heroOverlayOverride === "cinematico" && (
+                        <div className="absolute inset-0 bg-black/35" />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <div
+                          className="w-full rounded-2xl border px-3 py-4 text-center shadow-sm backdrop-blur-[2px]"
+                          style={{
+                            backgroundColor: `${skinObj.palette.surface}EB`,
+                            borderColor: accentOverride,
+                            color: skinObj.palette.text,
+                          }}
+                        >
+                          <p
+                            className="text-[9px] font-semibold uppercase tracking-[0.2em]"
+                            style={{ color: accentOverride }}
+                          >
+                            {skinObj.sample.eyebrow}
+                          </p>
+                          <p
+                            className={`font-display-${fontOverride} mt-1.5 break-words text-2xl font-semibold leading-tight`}
+                          >
+                            {eventTitle.trim() || skinObj.sample.title}
+                          </p>
+                          <span
+                            className="mt-2.5 inline-block rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-white"
+                            style={{ backgroundColor: accentOverride }}
+                          >
+                            Confirmar
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Frase de portada */}
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-stone-700">

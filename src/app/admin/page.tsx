@@ -13,6 +13,8 @@ import {
   Save,
   ArrowLeft,
   Sparkles,
+  Music,
+  Upload,
 } from "lucide-react";
 import type { EventRecord, OrderStatus } from "@/lib/db";
 import { INVITATION_SKINS } from "@/templates/catalog";
@@ -35,6 +37,8 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<EventRecord>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [uploadingAudioId, setUploadingAudioId] = useState<string | null>(null);
+  const [audioUploadMsg, setAudioUploadMsg] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loadOrders = async (pass: string) => {
@@ -61,6 +65,7 @@ export default function AdminPage() {
 
   const startEdit = (row: AdminEventRow) => {
     setEditingId(row.id);
+    setAudioUploadMsg(null);
     setEditForm({
       status: row.status,
       skinId: row.skinId,
@@ -71,7 +76,40 @@ export default function AdminPage() {
       address: row.address,
       alias: row.alias,
       dressCode: row.dressCode,
+      audioOverride: row.audioOverride || "",
     });
+  };
+
+  const handleUploadAudioForOrder = async (
+    orderId: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAudioId(orderId);
+    setAudioUploadMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload-audio", {
+        method: "POST",
+        headers: { "x-admin-pass": passcode },
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "No se pudo subir el audio.");
+      }
+      if (data.url) {
+        setEditForm((prev) => ({ ...prev, audioOverride: data.url }));
+        setAudioUploadMsg("Audio subido. Hacé clic en Guardar Cambios para activarlo.");
+      }
+    } catch (err) {
+      setAudioUploadMsg(err instanceof Error ? err.message : "Error subiendo audio.");
+    } finally {
+      setUploadingAudioId(null);
+      e.target.value = "";
+    }
   };
 
   const saveEdit = async (id: string) => {
@@ -246,6 +284,12 @@ export default function AdminPage() {
                   <p className="mt-0.5 text-xs text-stone-500">
                     {row.dateDisplay} ({row.timeDisplay}) · {row.venue} · Confirmaciones: <strong>{row.rsvpCount}</strong>
                   </p>
+                  {row.songRequest && (
+                    <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-950">
+                      <Music className="h-3 w-3" />
+                      Canción pedida (Llave en Mano): {row.songRequest}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -396,6 +440,43 @@ export default function AdminPage() {
                       onChange={(e) => setEditForm({ ...editForm, alias: e.target.value })}
                       className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs"
                     />
+                  </div>
+
+                  {/* Control de Audio / Música Llave en Mano */}
+                  <div className="sm:col-span-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                        <Music className="h-3.5 w-3.5" />
+                        Audio de Fondo Asignado (Control del Estudio)
+                      </span>
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800">
+                        <Upload className="h-3 w-3" />
+                        {uploadingAudioId === row.id
+                          ? "Subiendo audio..."
+                          : "Subir MP3 / WAV / M4A"}
+                        <input
+                          type="file"
+                          accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac"
+                          disabled={uploadingAudioId === row.id}
+                          onChange={(e) => handleUploadAudioForOrder(row.id, e)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    <input
+                      type="text"
+                      value={editForm.audioOverride || ""}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, audioOverride: e.target.value })
+                      }
+                      placeholder="URL del audio (/audio/romantic-piano.wav o URL subida)"
+                      className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 font-mono text-[11px]"
+                    />
+                    {audioUploadMsg && (
+                      <p className="mt-1.5 text-[11px] font-medium text-amber-900">
+                        {audioUploadMsg}
+                      </p>
+                    )}
                   </div>
 
                   <div className="sm:col-span-3 flex justify-end">
