@@ -15,14 +15,23 @@ import {
   Upload,
   Sparkles,
   FileText,
+  Plus,
+  Trash2,
+  AlertCircle,
 } from "lucide-react";
-import type { EventRecord, EnabledSectionsConfig } from "@/lib/db";
+import type {
+  EventRecord,
+  EnabledSectionsConfig,
+  ParentsOrHostsGroup,
+  ScheduleItem,
+} from "@/lib/db";
 import {
   INVITATION_SKINS,
   CATEGORY_LABELS,
   getSkinById,
   InvitationSkin,
 } from "@/templates/catalog";
+import { prepareImageForUpload } from "@/lib/imageUpload";
 import { InvitationRenderer } from "./invitation-engine/InvitationRenderer";
 
 interface PersonalizerStudioClientProps {
@@ -71,9 +80,10 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
 ];
 
 export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProps) {
+  const isEssentialPlan = event.planId === "esencial";
   const [activeTab, setActiveTab] = useState<
     "estilo" | "textos" | "fotos" | "modulos"
-  >("estilo");
+  >(isEssentialPlan ? "textos" : "estilo");
 
   const [skinId, setSkinId] = useState(event.skinId);
   const [eventTitle, setEventTitle] = useState(event.eventTitle);
@@ -86,6 +96,23 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
   const [quote, setQuote] = useState(event.quote);
 
   const selectedSkin = getSkinById(skinId);
+
+  const [parentsOrHosts, setParentsOrHosts] = useState<ParentsOrHostsGroup[]>(
+    event.parentsOrHosts && event.parentsOrHosts.length > 0
+      ? event.parentsOrHosts
+      : selectedSkin.sample.parentsOrHosts || []
+  );
+  const [storyTitle, setStoryTitle] = useState(
+    event.storyTitle || selectedSkin.sample.storyTitle || "Nuestra Historia"
+  );
+  const [storyText, setStoryText] = useState(
+    event.storyText || selectedSkin.sample.storyText || ""
+  );
+  const [schedule, setSchedule] = useState<ScheduleItem[]>(
+    event.schedule && event.schedule.length > 0
+      ? event.schedule
+      : selectedSkin.sample.schedule || []
+  );
 
   const [fontOverride, setFontOverride] = useState<InvitationSkin["fontDisplay"]>(
     event.fontOverride || selectedSkin.fontDisplay
@@ -112,7 +139,9 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
   });
 
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [savedToast, setSavedToast] = useState(false);
 
   const handleSkinChange = (newSkinId: string) => {
@@ -126,16 +155,26 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(true);
+    setUploadError(null);
     try {
+      const prepared = await prepareImageForUpload(files[0]);
       const fd = new FormData();
-      fd.append("files", files[0]);
+      fd.append("files", prepared);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok && data.urls?.[0]) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "No se pudo subir la foto de portada.");
+      }
+      if (data.urls?.[0]) {
         setHeroImageUrl(data.urls[0]);
       }
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "Error subiendo la imagen."
+      );
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -143,23 +182,34 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(true);
+    setUploadError(null);
     try {
+      const preparedList = await Promise.all(
+        Array.from(files).slice(0, 6).map((f) => prepareImageForUpload(f))
+      );
       const fd = new FormData();
-      Array.from(files)
-        .slice(0, 6)
-        .forEach((f) => fd.append("files", f));
+      preparedList.forEach((f) => fd.append("files", f));
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.urls)) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "No se pudieron subir las fotos de galería.");
+      }
+      if (Array.isArray(data.urls)) {
         setGalleryImages((prev) => [...prev, ...data.urls].slice(0, 8));
       }
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "Error subiendo imágenes."
+      );
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const res = await fetch(`/api/panel/${event.panelToken}`, {
         method: "PATCH",
@@ -174,6 +224,10 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           alias,
           dressCode,
           quote,
+          parentsOrHosts,
+          storyTitle,
+          storyText,
+          schedule,
           heroImageUrl,
           galleryImages,
           fontOverride,
@@ -183,10 +237,14 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           enabledSections: sections,
         }),
       });
-      if (res.ok) {
-        setSavedToast(true);
-        setTimeout(() => setSavedToast(false), 2600);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "No se pudieron guardar los cambios.");
       }
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 2600);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Error guardando cambios.");
     } finally {
       setSaving(false);
     }
@@ -251,6 +309,23 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-6 sm:px-6 lg:grid-cols-12">
         {/* Left Controls */}
         <div className="space-y-5 lg:col-span-6">
+          {saveError && (
+            <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <span>{saveError}</span>
+            </div>
+          )}
+
+          {isEssentialPlan && (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950">
+              <strong>Tu pedido actual es Plan Esencial:</strong> podés editar los datos básicos del
+              evento (título, fecha, horario, lugar, dirección, alias y dress code). El Estudio de
+              Personalización completo (fotos propias, colores, tipografías, historia, itinerario y
+              pases por familia) corresponde a <strong>Plan PRO</strong> y{" "}
+              <strong>Llave en Mano</strong>.
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="grid grid-cols-4 gap-2 rounded-2xl border border-stone-200 bg-white p-1.5 shadow-sm">
             {(
@@ -262,14 +337,19 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
               ] as const
             ).map(([id, label, Icon]) => {
               const active = activeTab === id;
+              const locked = isEssentialPlan && id !== "textos";
               return (
                 <button
                   key={id}
                   type="button"
+                  disabled={locked}
                   onClick={() => setActiveTab(id)}
+                  title={locked ? "Disponible en Plan PRO y Llave en Mano" : label}
                   className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all ${
                     active
                       ? "bg-stone-900 text-white shadow-sm"
+                      : locked
+                      ? "cursor-not-allowed text-stone-300"
                       : "text-stone-600 hover:bg-stone-100"
                   }`}
                 >
@@ -281,7 +361,7 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           </div>
 
           {/* Panel: Estilo & Tipografía */}
-          {activeTab === "estilo" && (
+          {activeTab === "estilo" && !isEssentialPlan && (
             <div className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
               <div>
                 <label className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-700">
@@ -495,16 +575,206 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                 <textarea
                   rows={2}
                   value={quote}
+                  disabled={isEssentialPlan}
                   onChange={(e) => setQuote(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900 disabled:bg-stone-100"
                 />
               </div>
+
+              {!isEssentialPlan && (
+                <>
+                  {/* Padres / Anfitriones */}
+                  <div className="sm:col-span-2 space-y-3 border-t border-stone-200 pt-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                        Padres / Anfitriones (Con la bendición de)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setParentsOrHosts((prev) => [
+                            ...prev,
+                            { label: "Padrinos / Anfitriones", names: ["Nombre 1", "Nombre 2"] },
+                          ])
+                        }
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-300 px-2.5 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        <Plus className="h-3 w-3" /> Agregar grupo
+                      </button>
+                    </div>
+                    {parentsOrHosts.length === 0 && (
+                      <p className="text-xs text-stone-500">
+                        Este diseño no incluye bloque de padres/padrinos, pero podés agregar uno arriba si querés mostrarlo.
+                      </p>
+                    )}
+                    {parentsOrHosts.map((grp, gIdx) => (
+                      <div
+                        key={gIdx}
+                        className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50 p-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={grp.label}
+                            placeholder="Ej. Padres de la Novia"
+                            onChange={(e) =>
+                              setParentsOrHosts((prev) =>
+                                prev.map((item, i) =>
+                                  i === gIdx ? { ...item, label: e.target.value } : item
+                                )
+                              )
+                            }
+                            className="flex-1 rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                          />
+                          <button
+                            type="button"
+                            aria-label="Quitar grupo"
+                            onClick={() =>
+                              setParentsOrHosts((prev) => prev.filter((_, i) => i !== gIdx))
+                            }
+                            className="rounded-lg p-1.5 text-stone-400 hover:bg-white hover:text-red-600"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={grp.names.join(", ")}
+                          placeholder="Nombres separados por coma (ej. Roberto Martínez, Laura Pereyra)"
+                          onChange={(e) =>
+                            setParentsOrHosts((prev) =>
+                              prev.map((item, i) =>
+                                i === gIdx
+                                  ? {
+                                      ...item,
+                                      names: e.target.value
+                                        .split(",")
+                                        .map((n) => n.trim())
+                                        .filter(Boolean),
+                                    }
+                                  : item
+                              )
+                            )
+                          }
+                          className="w-full rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Nuestra Historia */}
+                  <div className="sm:col-span-2 space-y-2.5 border-t border-stone-200 pt-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                      Nuestra Historia / Mensaje Especial
+                    </label>
+                    <input
+                      type="text"
+                      value={storyTitle}
+                      onChange={(e) => setStoryTitle(e.target.value)}
+                      placeholder="Título (ej. Nuestra Historia)"
+                      className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                    />
+                    <textarea
+                      rows={3}
+                      value={storyText}
+                      onChange={(e) => setStoryText(e.target.value)}
+                      placeholder="Contá brevemente cómo empezó todo o un mensaje para tus invitados..."
+                      className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                    />
+                  </div>
+
+                  {/* Itinerario / Programa */}
+                  <div className="sm:col-span-2 space-y-3 border-t border-stone-200 pt-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                        Itinerario / Programa del Día
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSchedule((prev) => [
+                            ...prev,
+                            { time: "22:00", title: "Nuevo momento", detail: "Descripción breve" },
+                          ])
+                        }
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-300 px-2.5 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        <Plus className="h-3 w-3" /> Agregar horario
+                      </button>
+                    </div>
+                    <div className="space-y-2.5">
+                      {schedule.map((row, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-12 gap-2 rounded-2xl border border-stone-200 bg-stone-50 p-3"
+                        >
+                          <input
+                            type="text"
+                            value={row.time}
+                            placeholder="19:30"
+                            onChange={(e) =>
+                              setSchedule((prev) =>
+                                prev.map((it, i) =>
+                                  i === idx ? { ...it, time: e.target.value } : it
+                                )
+                              )
+                            }
+                            className="col-span-3 rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                          />
+                          <input
+                            type="text"
+                            value={row.title}
+                            placeholder="Momento (ej. Ceremonia)"
+                            onChange={(e) =>
+                              setSchedule((prev) =>
+                                prev.map((it, i) =>
+                                  i === idx ? { ...it, title: e.target.value } : it
+                                )
+                              )
+                            }
+                            className="col-span-8 rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                          />
+                          <button
+                            type="button"
+                            aria-label="Eliminar horario"
+                            onClick={() =>
+                              setSchedule((prev) => prev.filter((_, i) => i !== idx))
+                            }
+                            className="col-span-1 flex items-center justify-center rounded-lg text-stone-400 hover:bg-white hover:text-red-600"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                          <input
+                            type="text"
+                            value={row.detail}
+                            placeholder="Detalle breve (ej. Jardín principal)"
+                            onChange={(e) =>
+                              setSchedule((prev) =>
+                                prev.map((it, i) =>
+                                  i === idx ? { ...it, detail: e.target.value } : it
+                                )
+                              )
+                            }
+                            className="col-span-12 rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {/* Panel: Fotos & Música */}
-          {activeTab === "fotos" && (
+          {activeTab === "fotos" && !isEssentialPlan && (
             <div className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+              {uploadError && (
+                <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
               <div>
                 <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
                   <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
@@ -603,7 +873,7 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           )}
 
           {/* Panel: Módulos On/Off */}
-          {activeTab === "modulos" && (
+          {activeTab === "modulos" && !isEssentialPlan && (
             <div className="space-y-3 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
               <p className="text-xs text-stone-500">
                 Encendé o apagá las secciones que quieras mostrar en tu invitación:
@@ -613,11 +883,18 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                 return (
                   <label
                     key={item.key}
-                    className="flex cursor-pointer items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3"
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3"
                   >
-                    <span className="text-sm font-semibold text-stone-800">
-                      {item.label}
-                    </span>
+                    <div>
+                      <span className="block text-sm font-semibold text-stone-800">
+                        {item.label}
+                      </span>
+                      {item.key === "wishes" && (
+                        <span className="block text-[11px] text-stone-500">
+                          Se llena automáticamente con los saludos que dejan tus invitados en el botón Confirmar Asistencia.
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="checkbox"
                       checked={enabled}
@@ -674,6 +951,10 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                 customAlias={alias}
                 customDressCode={dressCode}
                 customQuote={quote}
+                customParentsOrHosts={parentsOrHosts}
+                customStoryTitle={storyTitle}
+                customStoryText={storyText}
+                customSchedule={schedule}
                 customHeroImage={heroImageUrl || undefined}
                 customGallery={galleryImages.length > 0 ? galleryImages : undefined}
                 customFont={fontOverride}

@@ -133,6 +133,10 @@ export function RsvpModal({
                 Confirmación de Asistencia
               </p>
               <h3 className="mt-1 text-xl font-semibold">{eventTitle}</h3>
+              <p className="mt-1 text-[11px] leading-relaxed" style={{ color: palette.textMuted }}>
+                Tu respuesta llega directamente al organizador del evento para organizar mesas y
+                catering. No se utiliza para publicidad.
+              </p>
             </div>
 
             <div>
@@ -231,9 +235,12 @@ export function RsvpModal({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
+                  <label className="mb-1 block text-xs font-medium" style={{ color: palette.textMuted }}>
                     Restricciones alimentarias / Menú especial (opcional)
                   </label>
+                  <p className="mb-1.5 text-[11px]" style={{ color: palette.textMuted }}>
+                    Solo visible para el organizador para coordinar el menú; no se publica en la invitación.
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {DIETARY_OPTIONS.map((opt) => {
                       const active = dietary.includes(opt);
@@ -277,14 +284,17 @@ export function RsvpModal({
             )}
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
-                Mensaje o saludos (opcional)
+              <label className="mb-1 block text-xs font-medium" style={{ color: palette.textMuted }}>
+                Mensaje para el Muro de Buenos Deseos (opcional)
               </label>
+              <p className="mb-1.5 text-[11px]" style={{ color: palette.textMuted }}>
+                Si escribís unas palabras, aparecerán firmadas con tu nombre en la sección Buenos Deseos de esta invitación.
+              </p>
               <textarea
                 rows={2}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Dejá unas lindas palabras..."
+                placeholder="Dejá unas lindas palabras (opcional)..."
                 className="w-full rounded-xl border px-3.5 py-2 text-sm outline-none"
                 style={{
                   backgroundColor: palette.bg,
@@ -311,6 +321,19 @@ export function RsvpModal({
             >
               {submitting ? "Guardando..." : "Enviar Confirmación"}
             </button>
+
+            <p className="text-center text-[11px]" style={{ color: palette.textMuted }}>
+              Los campos opcionales no son obligatorios para confirmar.{" "}
+              <a
+                href="/privacidad"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ color: textAccent }}
+              >
+                Privacidad
+              </a>
+            </p>
           </form>
         ) : (
           <div className="py-4 text-center">

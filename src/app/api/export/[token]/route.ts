@@ -1,7 +1,12 @@
 import { getEventByPanelToken, listRsvpsForSlug } from "@/lib/db";
 
 function csvCell(val: string | number | boolean): string {
-  const s = String(val ?? "").replace(/"/g, '""');
+  let raw = String(val ?? "");
+  // Protege contra CSV/Spreadsheet Formula Injection si empieza con =, +, -, @, tab o CR
+  if (/^[=+\-@\t\r]/.test(raw)) {
+    raw = `'${raw}`;
+  }
+  const s = raw.replace(/"/g, '""');
   return `"${s}"`;
 }
 
@@ -52,6 +57,7 @@ export async function GET(
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="invitados-${event.slug}.csv"`,
+      "X-Robots-Tag": "noindex, nofollow",
     },
   });
 }

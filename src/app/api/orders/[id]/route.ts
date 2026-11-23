@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import { updateEventRecord } from "@/lib/db";
-import { BUSINESS_CONFIG } from "@/config/business";
+import { verifyAdminPass } from "@/lib/adminAuth";
 
 export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const pass = req.headers.get("x-admin-pass");
-  if (pass !== BUSINESS_CONFIG.adminPasscode) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const auth = verifyAdminPass(pass);
+  if (!auth.ok) {
+    return NextResponse.json(
+      {
+        error:
+          auth.reason === "unconfigured"
+            ? "Panel de administración no configurado en este entorno."
+            : "No autorizado",
+      },
+      { status: auth.reason === "unconfigured" ? 503 : 401 }
+    );
   }
 
   const { id } = await context.params;

@@ -1,13 +1,18 @@
 import React from "react";
 import { MessageCircle } from "lucide-react";
-import { BUSINESS_CONFIG } from "@/config/business";
+import { BUSINESS_CONFIG, getWhatsAppHref } from "@/config/business";
 
 export function WhatsAppFloat() {
+  const href = getWhatsAppHref(
+    `¡Hola ${BUSINESS_CONFIG.brandName}! Quiero consultar por una invitación digital.`
+  );
+  if (!href) {
+    return null;
+  }
+
   return (
     <a
-      href={`https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(
-        "¡Hola InvitaStudio! Quiero consultar por una invitación digital."
-      )}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Consultar por WhatsApp"

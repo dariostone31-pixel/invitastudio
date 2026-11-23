@@ -1,11 +1,39 @@
+const rawWhatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
+const isPlaceholderWhatsapp =
+  !rawWhatsapp || rawWhatsapp === "5493884000000" || rawWhatsapp === "5491100000000";
+
+const rawSupportEmail = (process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "").trim();
+const rawLegalHolder = (process.env.NEXT_PUBLIC_LEGAL_HOLDER || "").trim();
+const rawTaxId = (process.env.NEXT_PUBLIC_TAX_ID || "").trim();
+const rawSupportHours = (process.env.NEXT_PUBLIC_SUPPORT_HOURS || "").trim();
+const rawBankAlias = (process.env.NEXT_PUBLIC_BANK_ALIAS || "").trim();
+
 export const BUSINESS_CONFIG = {
-  brandName: "InvitaStudio",
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5493884000000",
-  bankAlias: process.env.NEXT_PUBLIC_BANK_ALIAS || "INVITA.STUDIO.AR",
-  bankHolder: "InvitaStudio Argentina",
+  brandName: "Invita con Alma",
+  brandShortFirst: "Invita",
+  brandShortSecond: "con Alma",
+  tagline: "Invitaciones digitales interactivas con alma",
+  whatsappNumber: isPlaceholderWhatsapp ? "" : rawWhatsapp,
+  whatsappConfigured: !isPlaceholderWhatsapp,
+  supportEmail: rawSupportEmail,
+  legalHolderName: rawLegalHolder,
+  taxId: rawTaxId,
+  supportHours: rawSupportHours,
+  bankAlias: rawBankAlias,
+  bankAliasConfigured: Boolean(rawBankAlias && rawBankAlias !== "INVITA.STUDIO.AR"),
+  bankHolder: rawLegalHolder || "Titular pendiente de confirmación",
   bankName: "Mercado Pago / Transferencia Bancaria",
-  adminPasscode: process.env.ADMIN_PASSCODE || "INVITA2026",
+  hasVerifiedProviderData: Boolean(
+    rawLegalHolder && (rawSupportEmail || !isPlaceholderWhatsapp)
+  ),
 };
+
+export function getWhatsAppHref(message: string): string | null {
+  if (!BUSINESS_CONFIG.whatsappConfigured || !BUSINESS_CONFIG.whatsappNumber) {
+    return null;
+  }
+  return `https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
 
 export interface PlanPricing {
   id: "esencial" | "pro" | "asistido";
@@ -16,6 +44,9 @@ export interface PlanPricing {
   listPrice: string;
   transferPrice: string;
   shortDesc: string;
+  includesPersonalizer: boolean;
+  includesFamilyLinks: boolean;
+  includesAssistedLoad: boolean;
   features: string[];
   highlight?: boolean;
 }
@@ -24,61 +55,70 @@ export const PRICING_PLANS: PlanPricing[] = [
   {
     id: "esencial",
     name: "Plan Esencial",
-    badge: "Ideal cumpleaños & bautismos",
-    listPriceNum: 29900,
-    transferPriceNum: 22400,
-    listPrice: "$29.900",
-    transferPrice: "$22.400",
+    badge: "Simple y rápido · 1 link único",
+    listPriceNum: 33332,
+    transferPriceNum: 24999,
+    listPrice: "$33.332",
+    transferPrice: "$24.999",
     shortDesc:
-      "Link único para compartir, sobre animado, música, mapa, CBU y confirmaciones.",
+      "Un link único con diseño elegido, música predeterminada, mapa, CBU y confirmaciones.",
+    includesPersonalizer: false,
+    includesFamilyLinks: false,
+    includesAssistedLoad: false,
     features: [
-      "Link web único para enviar por WhatsApp",
-      "Sobre o apertura animada + música integrada",
-      "Cuenta regresiva en tiempo real",
-      "Mapa Google Maps + Agendar en Calendario",
-      "Botón copiar Alias / CBU en 1 toque",
-      "Confirmación de asistencia (RSVP) ilimitada",
-      "Lista en menos de 24 horas hábiles",
+      "1 link web único para compartir por WhatsApp",
+      "Diseño y música predeterminada del modelo elegido",
+      "Datos básicos del evento (título, fecha, lugar, dress code)",
+      "Cuenta regresiva + Mapa Google Maps + Calendario",
+      "Botón para copiar Alias / CBU en 1 toque",
+      "Confirmación de asistencia (RSVP) en el panel",
+      "Borrador inmediato + activación < 24 hs hábiles",
     ],
   },
   {
     id: "pro",
     name: "Plan PRO",
-    badge: "Más elegido para Bodas y XV",
-    listPriceNum: 44900,
-    transferPriceNum: 33600,
-    listPrice: "$44.900",
-    transferPrice: "$33.600",
+    badge: "Personalización completa + Pases",
+    listPriceNum: 39999,
+    transferPriceNum: 29999,
+    listPrice: "$39.999",
+    transferPrice: "$29.999",
     shortDesc:
-      "Suma enlaces personalizados por familia con pases, menús Sin TACC y Excel.",
+      "Habilita el Estudio de Personalización en vivo, fotos propias, historia/itinerario, links por familia y Excel.",
+    includesPersonalizer: true,
+    includesFamilyLinks: true,
+    includesAssistedLoad: false,
     highlight: true,
     features: [
       "Todo lo del Plan Esencial incluido",
-      "Links personalizados con nombre de cada familia",
-      "Control de pases asignados (ej. 2 o 4 lugares)",
-      "Menús especiales (Sin TACC / Vegano / Infantil)",
-      "Sugerencia de canciones para el DJ",
-      "Galería interactiva con fotos en alta calidad",
-      "Planilla Excel / CSV lista para el salón",
+      "Estudio de Personalización en vivo (fotos, colores y letras)",
+      "Edición de frase, padres/anfitriones, historia e itinerario",
+      "Links personalizados por familia con lugares y mesa",
+      "Menús especiales (Sin TACC / Vegano) + canciones DJ",
+      "Muro de Buenos Deseos con mensajes de invitados",
+      "Descarga de planilla Excel (.csv) lista para el salón",
     ],
   },
   {
     id: "asistido",
     name: "Llave en Mano",
-    badge: "Nos encargamos de absolutamente todo",
-    listPriceNum: 64900,
-    transferPriceNum: 48600,
-    listPrice: "$64.900",
-    transferPrice: "$48.600",
+    badge: "Lo cargamos por vos + Cambios asistidos",
+    listPriceNum: 46665,
+    transferPriceNum: 34999,
+    listPrice: "$46.665",
+    transferPrice: "$34.999",
     shortDesc:
-      "Todo PRO + nosotros cargamos tus fotos, textos y lista. Lista en <24 hs.",
+      "Todo PRO + nuestro equipo carga tus fotos, textos e itinerario, más recordatorio listo para enviar por WhatsApp.",
+    includesPersonalizer: true,
+    includesFamilyLinks: true,
+    includesAssistedLoad: true,
     features: [
-      "Todo lo del Plan PRO incluido",
-      "Carga integral de tus textos, fotos e itinerario",
-      "Generamos todos tus links personalizados por invitado",
-      "Cambios ilimitados hasta el día del evento",
-      "Asistencia prioritaria por WhatsApp",
-      "Recordatorio a invitados 7 días antes",
+      "Todo lo del Plan PRO incluido (y acceso al Estudio)",
+      "Carga asistida de tus fotos, textos, padres e itinerario",
+      "Armado de pases personalizados por familia/invitado",
+      "Cambios asistidos previos al evento por canal de soporte",
+      "Plantilla de recordatorio lista para enviar por WhatsApp",
+      "Prioridad de revisión y publicación < 24 hs hábiles",
     ],
   },
 ];

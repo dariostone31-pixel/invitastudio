@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
+const PRIMARY_UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
+const TMP_UPLOAD_DIR = "/tmp/invita-con-alma-uploads";
 const MAX_SIZE_BYTES = 4 * 1024 * 1024; // 4 MB
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -10,6 +11,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/png",
   "image/webp",
   "image/avif",
+  "image/heic",
+  "image/heif",
 ]);
 
 function getSupabaseStorageConfig() {
@@ -20,6 +23,21 @@ function getSupabaseStorageConfig() {
     return { url, serviceKey, bucket };
   }
   return null;
+}
+
+function resolveUploadDir(): { dir: string; ephemeral: boolean } {
+  try {
+    if (!fs.existsSync(PRIMARY_UPLOAD_DIR)) {
+      fs.mkdirSync(PRIMARY_UPLOAD_DIR, { recursive: true });
+    }
+    fs.accessSync(PRIMARY_UPLOAD_DIR, fs.constants.W_OK);
+    return { dir: PRIMARY_UPLOAD_DIR, ephemeral: false };
+  } catch {
+    if (!fs.existsSync(TMP_UPLOAD_DIR)) {
+      fs.mkdirSync(TMP_UPLOAD_DIR, { recursive: true });
+    }
+    return { dir: TMP_UPLOAD_DIR, ephemeral: true };
+  }
 }
 
 export async function POST(req: Request) {
@@ -33,9 +51,12 @@ export async function POST(req: Request) {
 
     const supa = getSupabaseStorageConfig();
     const savedUrls: string[] = [];
+    let usedEphemeralTmp = false;
 
-    for (const file of files.slice(0, 6)) {
-      if (!ALLOWED_MIME_TYPES.has(file.type.toLowerCase())) {
+    for (const file of files.slice(0, 8)) {
+      const mimeLower = (file.type || "").toLowerCase();
+      const hasValidExt = /\.(jpe?g|png|webp|avif|heic|heif)$/i.test(file.name);
+      if (!ALLOWED_MIME_TYPES.has(mimeLower) && !hasValidExt) {
         return NextResponse.json(
           {
             error: `Formato no compatible (${file.name}). Usá JPG, PNG, WebP o AVIF.`,
@@ -46,7 +67,7 @@ export async function POST(req: Request) {
 
       if (file.size > MAX_SIZE_BYTES) {
         return NextResponse.json(
-          { error: `La imagen ${file.name} supera los 4 MB permitidos` },
+          { error: `La imagen ${file.name} supera los 4 MB permitidos.` },
           { status: 400 }
         );
       }
@@ -64,7 +85,7 @@ export async function POST(req: Request) {
             headers: {
               Authorization: `Bearer ${supa.serviceKey}`,
               apikey: supa.serviceKey,
-              "Content-Type": file.type,
+              "Content-Type": file.type || "image/jpeg",
               "x-upsert": "true",
             },
             body: buffer,
@@ -87,10 +108,9 @@ export async function POST(req: Request) {
           `${supa.url}/storage/v1/object/public/${supa.bucket}/${objectPath}`
         );
       } else {
-        if (!fs.existsSync(UPLOAD_DIR)) {
-          fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-        }
-        fs.writeFileSync(path.join(UPLOAD_DIR, safeName), buffer);
+        const target = resolveUploadDir();
+        usedEphemeralTmp = target.ephemeral;
+        fs.writeFileSync(path.join(target.dir, safeName), buffer);
         savedUrls.push(`/api/uploads/${safeName}`);
       }
     }
@@ -98,7 +118,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         ok: true,
-        storageMode: supa ? "supabase" : "local",
+        storageMode: supa ? "supabase" : usedEphemeralTmp ? "tmp-ephemeral" : "local",
         urls: savedUrls,
       },
       { status: 201 }

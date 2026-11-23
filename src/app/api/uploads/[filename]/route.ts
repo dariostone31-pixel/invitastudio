@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 
 const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
+const TMP_UPLOAD_DIR = "/tmp/invita-con-alma-uploads";
 const LEGACY_PUBLIC_DIR = path.join(process.cwd(), "public", "uploads", "events");
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -11,6 +12,8 @@ const MIME_BY_EXT: Record<string, string> = {
   png: "image/png",
   webp: "image/webp",
   avif: "image/avif",
+  heic: "image/heic",
+  heif: "image/heif",
 };
 
 export async function GET(
@@ -24,9 +27,12 @@ export async function GET(
   }
 
   const primaryPath = path.join(UPLOAD_DIR, filename);
+  const tmpPath = path.join(TMP_UPLOAD_DIR, filename);
   const legacyPath = path.join(LEGACY_PUBLIC_DIR, filename);
   const targetPath = fs.existsSync(primaryPath)
     ? primaryPath
+    : fs.existsSync(tmpPath)
+    ? tmpPath
     : fs.existsSync(legacyPath)
     ? legacyPath
     : null;

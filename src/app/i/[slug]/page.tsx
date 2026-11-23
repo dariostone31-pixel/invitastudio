@@ -25,7 +25,7 @@ export async function generateMetadata({
   const sp = await searchParams;
   const event = await getEventBySlug(slug);
   if (!event) {
-    return { title: "Invitación Digital — InvitaStudio" };
+    return { title: "Invitación Digital — Invita con Alma", robots: { index: false, follow: false } };
   }
 
   const skin = getSkinById(event.skinId);
@@ -35,6 +35,7 @@ export async function generateMetadata({
   return {
     title: `${event.eventTitle}${guestSuffix}`,
     description: `${event.dateDisplay} · ${event.timeDisplay} en ${event.venue}. Abrí tu invitación digital interactiva.`,
+    robots: { index: false, follow: false },
     openGraph: {
       title: `${event.eventTitle}${guestSuffix}`,
       description: `${event.dateDisplay} · ${event.venue}. Tocá para abrir el sobre y confirmar asistencia.`,
@@ -99,6 +100,10 @@ export default async function PublicInvitationPage({
         customAlias={event.alias || undefined}
         customDressCode={event.dressCode || undefined}
         customQuote={event.quote || undefined}
+        customParentsOrHosts={event.parentsOrHosts || undefined}
+        customStoryTitle={event.storyTitle || undefined}
+        customStoryText={event.storyText || undefined}
+        customSchedule={event.schedule || undefined}
         customHeroImage={event.heroImageUrl || undefined}
         customGallery={event.galleryImages || undefined}
         customFont={event.fontOverride || undefined}

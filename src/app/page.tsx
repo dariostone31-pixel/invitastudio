@@ -21,55 +21,68 @@ import { HeroFan } from "@/components/HeroFan";
 import { MiniTester } from "@/components/MiniTester";
 import { CatalogShowcase } from "@/components/CatalogShowcase";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
-import { BUSINESS_CONFIG, PRICING_PLANS } from "@/config/business";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 
 const FAQS = [
   {
-    q: "¿Cuánto demoran en entregar mi invitación?",
-    a: "Entregamos en menos de 24 horas hábiles desde que recibimos tus datos y fotos. Apenas enviás tu pedido ya podés abrir el borrador y personalizar textos y fotos en vivo.",
+    q: "¿Cuándo comienza el plazo de entrega y cuánto demora?",
+    a: "El plazo estimado de entrega (< 24 horas hábiles) comienza una vez recibido tu pedido con los datos del evento y confirmado el pago o comprobante. Apenas enviás el pedido ya podés ver un borrador técnico para revisar antes de compartir.",
+  },
+  {
+    q: "¿Qué necesito enviar para armar mi invitación?",
+    a: "Los datos básicos (título, fecha, horario, salón y dirección). Si elegís Plan PRO o Llave en Mano, también podés editar frase de portada, nombres de padres/anfitriones, historia, itinerario y subir tus fotos propias.",
+  },
+  {
+    q: "¿Qué puedo modificar según el plan y cuántos cambios incluye?",
+    a: "En Plan Esencial podés editar los datos básicos del evento con un link único. En Plan PRO podés personalizar todo en vivo desde tu Estudio (tipografía, color, fotos, música, padres, historia, itinerario y módulos). En Llave en Mano el equipo realiza la carga inicial y los cambios previos al evento.",
   },
   {
     q: "¿Mis invitados tienen que descargar una app o iniciar sesión?",
-    a: "Para nada. Se abre directo en el navegador del celular desde WhatsApp, sin logins ni registros previos. Además protegemos los colores para que el modo oscuro del teléfono no arruine el diseño.",
+    a: "No. Se abre directo en el navegador del celular desde WhatsApp, sin cuentas ni descargas. Además fijamos la paleta de diseño para mantener la legibilidad aunque el teléfono tenga modo oscuro.",
   },
   {
     q: "¿Puedo enviar enlaces personalizados con el nombre de cada familia?",
-    a: "Sí. En tu Panel Privado podés generar enlaces únicos del tipo «Familia Gómez — 3 lugares · Mesa 4». Al abrir el sobre, el invitado ve su nombre y sus pases asignados.",
+    a: "Sí, en Plan PRO y Llave en Mano. Desde tu Panel Privado generás enlaces con el nombre de cada invitado o familia y la cantidad de lugares reservados o mesa asignada.",
   },
   {
-    q: "¿Puedo actualizar la hora, el salón o la música si algo cambia?",
-    a: "Sí. Al ser una invitación web real y no una imagen estática, actualizás el dato desde tu estudio o por WhatsApp y el mismo link que ya enviaste refleja el cambio al instante.",
+    q: "¿Cuánto tiempo estará publicada la invitación y qué pasa después?",
+    a: "La invitación permanece publicada durante la organización del evento y hasta que decidas cerrarla o activar el Modo Recuerdo desde tu panel (el plazo definitivo de conservación post-evento está sujeto a definición operativa; podés solicitar su baja en cualquier momento).",
   },
   {
-    q: "¿Qué pasa después de la fiesta con mi invitación?",
-    a: "Podés activar el Modo Recuerdo con un clic: la cuenta regresiva se transforma en una tarjeta conmemorativa junto a la galería de fotos y el Muro de Buenos Deseos de tus invitados.",
+    q: "¿Qué datos reciben los organizadores y qué pasa con las fotos y respuestas?",
+    a: "El organizador ve en su Panel Privado quién confirmó, cantidad de lugares, acompañantes, restricciones alimentarias opcionales (Sin TACC, vegetariano, alergias), canción sugerida y mensajes. Solo los deseos del libro de firmas se muestran en la invitación si ese módulo está activo.",
+  },
+  {
+    q: "¿Cómo solicito ayuda o qué pasa si cambia la fecha o cancelo?",
+    a: "Si cambia la fecha, horario o salón, actualizamos los datos sobre el mismo enlace sin recargo por reprogramación. Para soporte, reclamos o cancelaciones conforme la normativa argentina de defensa del consumidor, consultá Política de Privacidad y Condiciones del Servicio.",
   },
   {
     q: "¿Cómo se paga desde Argentina?",
-    a: "Podés abonar por Transferencia Bancaria con 25% OFF automático, o con tarjetas, débito y dinero en cuenta a través de Mercado Pago Checkout Pro.",
+    a: "Podés abonar por Transferencia Bancaria con el valor promocional (25% OFF respecto al precio de lista) o con tarjetas, débito y dinero en cuenta mediante Mercado Pago Checkout Pro.",
   },
 ];
 
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Elegís el estilo",
-    desc: "Explorá 42 diseños en vivo para Bodas, XV, 18 años varón, Niños, Niñas y Bautismos.",
+    title: "Elegís plan y diseño",
+    desc: "Explorá 42 modelos en vivo y elegí entre Esencial, PRO o Llave en Mano según cuánto quieras personalizar.",
   },
   {
     step: "02",
-    title: "Personalizamos",
-    desc: "Cargás fecha, mapa, CBU, fotos y música en 2 minutos desde /encargar o en nuestro estudio en vivo.",
+    title: "Cargás los datos",
+    desc: "Completás los 4 pasos en pocos minutos (en PRO y Llave en Mano ya podés ajustar textos, padres, historia, itinerario y fotos).",
   },
   {
     step: "03",
-    title: "Revisás antes de enviar",
-    desc: "Probás el sobre animado, el audio y la vista exacta en celular en tu borrador antes de compartir.",
+    title: "Revisás tu borrador",
+    desc: "Al instante obtenés tu borrador y tu Panel Privado para revisar todo en tu celular antes de compartirlo.",
   },
   {
     step: "04",
-    title: "Compartís por WhatsApp",
-    desc: "Enviás tu link con tarjeta OpenGraph y seguís confirmaciones, alergias y canciones en Excel.",
+    title: "Compartís y organizás",
+    desc: "Enviás el link por WhatsApp y seguís confirmaciones, menús especiales y música en tu panel.",
   },
 ];
 
@@ -77,42 +90,42 @@ const MORE_THAN_INVITE = [
   {
     icon: Camera,
     title: "Galería & Recuerdos",
-    desc: "Álbum interactivo con lightbox táctil y Modo Recuerdo post-fiesta.",
+    desc: "Galería cargada por el organizador y Modo Recuerdo para agradecer después del evento.",
   },
   {
     icon: MapPin,
     title: "Ubicación 1 Toque",
-    desc: "Botón directo a Google Maps + agendar en Google Calendar o iPhone.",
+    desc: "Botón directo a Google Maps + agendar en Google Calendar o iPhone (.ics).",
   },
   {
     icon: CheckCircle2,
     title: "RSVP + Pases + Sin TACC",
-    desc: "Confirmación inteligente por familia, alergias y canciones para el DJ.",
+    desc: "Confirmación de asistencia, lugares reservados, menús especiales y tema sugerido.",
   },
   {
     icon: Users,
     title: "Panel & Planilla Excel",
-    desc: "Links con nombre por invitado y descarga CSV lista para el salón.",
+    desc: "Links con nombre por familia (PRO / Llave en Mano) y descarga CSV para el salón.",
   },
   {
     icon: Music,
     title: "Música Integrada",
-    desc: "Suena al abrir el sobre sin salir a YouTube, con botón flotante.",
+    desc: "Suena al abrir el sobre con control flotante de silencio y reproducción.",
   },
 ];
 
 const GUARANTEES = [
   {
-    title: "Entrega real en menos de 24 hs",
-    desc: "Cargás los datos en 2 minutos sin cuentas de Google y tenés tu link listo para compartir por WhatsApp.",
+    title: "Proceso claro sin apps ni cuentas",
+    desc: "Ni vos ni tus invitados necesitan descargar aplicaciones ni crear contraseñas para abrir o confirmar.",
   },
   {
-    title: "Personalización y cambios incluidos",
-    desc: "Si cambia el horario, el salón o querés ajustar la música o tipografía, se actualiza al instante sobre el mismo link.",
+    title: "Precios y alcance transparentes",
+    desc: "Elegís Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999) sabiendo exactamente qué incluye cada modalidad.",
   },
   {
-    title: "Colores protegidos en modo oscuro",
-    desc: "Bloqueamos la paleta original para que el modo oscuro del teléfono nunca arruine las letras ni los fondos.",
+    title: "Privacidad de tus invitados",
+    desc: "Acompañantes y alergias son privados del organizador en su panel y las páginas del evento llevan etiqueta noindex.",
   },
 ];
 
@@ -140,12 +153,12 @@ export default function HomePage() {
       {/* ================= HEADER BLUR EDITORIAL ================= */}
       <header className="sticky top-0 z-40 border-b border-[#2A121B]/12 bg-[#FFFBFA]/90 backdrop-blur-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <Link href="/" className="flex items-center gap-0.5">
-            <span className="font-display-cormorant text-[28px] font-semibold italic tracking-tight text-[#6B1E30]">
+          <Link href="/" className="flex items-center gap-1.5">
+            <span className="font-display-cormorant text-[26px] font-semibold italic tracking-tight text-[#6B1E30] sm:text-[28px]">
               Invita
             </span>
-            <span className="font-display-cormorant text-[28px] font-semibold italic tracking-tight text-[#B78A4E]">
-              Studio
+            <span className="font-display-cormorant text-[26px] font-semibold italic tracking-tight text-[#B78A4E] sm:text-[28px]">
+              con Alma
             </span>
           </Link>
 
@@ -368,7 +381,7 @@ export default function HomePage() {
             Elegí tu plan <span className="italic text-[#6B1E30]">sin letras chicas</span>
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-[#7A5A62]">
-            Pagás una sola vez por evento. Todos los planes incluyen acceso hasta 30 días después de la fiesta y{" "}
+            Pagás una sola vez por evento. Incluye borrador inmediato para revisar, activación en &lt; 24 hs hábiles y{" "}
             <strong className="text-[#2A121B]">25% OFF pagando por transferencia</strong>.
           </p>
         </div>
@@ -433,7 +446,7 @@ export default function HomePage() {
               </div>
 
               <Link
-                href="/encargar"
+                href={`/encargar?plan=${plan.id}`}
                 className={`mt-8 block w-full rounded-full py-3.5 text-center text-xs font-bold uppercase tracking-[0.18em] transition-transform hover:scale-[1.02] ${
                   plan.highlight
                     ? "bg-[#E7AFC0] text-[#2A121B]"
@@ -446,6 +459,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ================= RESEÑAS AUTÉNTICAS (OCULTA SI NO HAY AUTORIZADAS) ================= */}
+      <TestimonialsSection />
 
       {/* ================= FAQ ACORDEÓN ================= */}
       <section id="faq" className="border-t border-[#2A121B]/12 bg-[#FFFBFA] py-16">
@@ -491,40 +507,65 @@ export default function HomePage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/encargar"
-                className="inline-flex items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] hover:bg-[#f1c4d2]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] hover:bg-[#f1c4d2]"
               >
                 Encargar Mi Invitación
               </Link>
-              <a
-                href={`https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(
-                  "¡Hola InvitaStudio! Quiero cotizar una invitación digital."
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white hover:border-[#E7AFC0]"
-              >
-                <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
-                Cotizar a Medida por WhatsApp
-              </a>
+              {(() => {
+                const waUrl = getWhatsAppHref(
+                  `¡Hola ${BUSINESS_CONFIG.brandName}! Quiero consultar por una invitación digital.`
+                );
+                return waUrl ? (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white hover:border-[#E7AFC0]"
+                  >
+                    <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
+                    Consultar por WhatsApp
+                  </a>
+                ) : null;
+              })()}
             </div>
           </div>
         </div>
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t border-[#2A121B]/12 bg-[#FBF1EE] py-8 text-center text-xs text-[#7A5A62]">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
-          <div className="flex items-center gap-2 font-semibold text-[#2A121B]">
-            <ShieldCheck className="h-4 w-4 text-[#6B1E30]" strokeWidth={1.5} />
-            {BUSINESS_CONFIG.brandName} · Invitaciones Digitales de Autor (Argentina)
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/panel/demo-boda" className="hover:text-[#6B1E30]">
-              Panel Demo
-            </Link>
-            <Link href="/admin" className="hover:text-[#6B1E30]">
-              Admin Estudio
-            </Link>
+      <footer className="border-t border-[#2A121B]/12 bg-[#FBF1EE] py-8 text-xs text-[#7A5A62]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 sm:px-6">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <div className="flex items-center gap-2 font-semibold text-[#2A121B]">
+                <ShieldCheck className="h-4 w-4 text-[#6B1E30]" strokeWidth={1.5} />
+                {BUSINESS_CONFIG.brandName} · {BUSINESS_CONFIG.tagline} (Argentina)
+              </div>
+              <p className="mt-1 text-[11px] text-[#7A5A62]">
+                Responsable: {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación"} ·{" "}
+                Soporte:{" "}
+                {BUSINESS_CONFIG.supportEmail ||
+                  (BUSINESS_CONFIG.whatsappConfigured
+                    ? `WhatsApp +${BUSINESS_CONFIG.whatsappNumber}`
+                    : "Canal de soporte pendiente de configuración")}{" "}
+                · Horario: {BUSINESS_CONFIG.supportHours || "Pendiente de confirmación"}
+              </p>
+            </div>
+
+            <nav aria-label="Enlaces legales y demos" className="flex flex-wrap items-center gap-4 font-medium">
+              <Link href="/privacidad" className="py-1 underline hover:text-[#6B1E30]">
+                Política de Privacidad
+              </Link>
+              <Link href="/condiciones" className="py-1 underline hover:text-[#6B1E30]">
+                Condiciones del Servicio
+              </Link>
+              <Link href="/panel/demo-boda" className="py-1 hover:text-[#6B1E30]">
+                Panel Demo
+              </Link>
+              <Link href="/admin" className="py-1 hover:text-[#6B1E30]">
+                Admin
+              </Link>
+            </nav>
           </div>
         </div>
       </footer>

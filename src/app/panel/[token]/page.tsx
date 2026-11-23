@@ -1,9 +1,15 @@
 import React from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getEventByPanelToken, listRsvpsForSlug } from "@/lib/db";
 import { OrganizerPanelClient } from "@/components/OrganizerPanelClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Panel del Organizador — Invita con Alma",
+  robots: { index: false, follow: false },
+};
 
 export default async function OrganizerPanelPage({
   params,

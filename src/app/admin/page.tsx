@@ -43,7 +43,10 @@ export default function AdminPage() {
       headers: { "x-admin-pass": pass },
     });
     if (!res.ok) {
-      setAuthError("Clave incorrecta. Para probar en demo usá: INVITA2026");
+      const errData = await res.json().catch(() => ({}));
+      setAuthError(
+        errData.error || "Clave incorrecta. Verificá tu clave de administrador."
+      );
       return;
     }
     const data = await res.json();
@@ -145,7 +148,7 @@ export default function AdminPage() {
                 className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
               />
               <p className="mt-1.5 text-[11px] text-stone-400">
-                Clave de prueba local: <code className="font-mono font-bold text-stone-600">INVITA2026</code>
+                Acceso restringido al equipo de producción mediante variable <code className="font-mono">ADMIN_PASSCODE</code>.
               </p>
             </div>
 
@@ -188,7 +191,7 @@ export default function AdminPage() {
             </Link>
             <h1 className="mt-1 flex items-center gap-2 font-cormorant text-3xl font-bold">
               <Sparkles className="h-5 w-5 text-amber-700" />
-              Admin InvitaStudio · Entregas &lt;24 hs
+              Admin Invita con Alma · Entregas &lt;24 hs
             </h1>
           </div>
           <span className="rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white">

@@ -36,6 +36,7 @@ export function OrganizerPanelClient({
   const [guestPasses, setGuestPasses] = useState("3");
   const [guestTable, setGuestTable] = useState("5");
   const [copiedLink, setCopiedLink] = useState(false);
+  const isEssentialPlan = event.planId === "esencial";
 
   const stats = useMemo(() => {
     const yesRows = initialRsvps.filter((r) => r.attending);
@@ -111,7 +112,7 @@ export function OrganizerPanelClient({
               className="inline-flex items-center gap-1 text-xs font-semibold text-stone-500 hover:text-stone-900"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Volver a InvitaStudio
+              Volver a Invita con Alma
             </Link>
             <div className="mt-1 flex items-center gap-2.5">
               <h1 className="font-cormorant text-3xl font-bold text-stone-900">
@@ -132,7 +133,7 @@ export function OrganizerPanelClient({
               className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-              Personalizar Diseño y Fotos
+              {isEssentialPlan ? "Editar Datos Básicos" : "Personalizar Diseño y Fotos"}
             </Link>
             <Link
               href={`/i/${event.slug}`}
@@ -142,13 +143,15 @@ export function OrganizerPanelClient({
               <ExternalLink className="h-3.5 w-3.5" />
               Ver Invitación en Vivo
             </Link>
-            <a
-              href={`/api/export/${event.panelToken}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Descargar Excel (.csv)
-            </a>
+            {!isEssentialPlan && (
+              <a
+                href={`/api/export/${event.panelToken}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Descargar Excel (.csv)
+              </a>
+            )}
           </div>
         </div>
       </header>
@@ -197,7 +200,45 @@ export function OrganizerPanelClient({
           </div>
         </section>
 
-        {/* Generador de Links Personalizados por Familia */}
+        {/* Link único (Esencial) o Generador de Links Personalizados (PRO / Llave en Mano) */}
+        {isEssentialPlan ? (
+          <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
+              Plan Esencial · Link único para compartir
+            </span>
+            <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">
+              Tu enlace único de invitación
+            </h2>
+            <p className="mt-1 text-xs text-stone-600">
+              Compartí este link general por WhatsApp con todos tus invitados. Los pases individuales por familia y la descarga en Excel corresponden a Plan PRO y Llave en Mano.
+            </p>
+            <div className="mt-4 flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:flex-row sm:items-center">
+              <code className="truncate text-xs text-stone-700">{`/i/${event.slug}`}</code>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/i/${event.slug}`}
+                  target="_blank"
+                  className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Abrir
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(`${origin}/i/${event.slug}`).catch(() => {});
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2000);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                >
+                  {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedLink ? "¡Copiado!" : "Copiar Link"}
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
         <section className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-md">
@@ -289,11 +330,12 @@ export function OrganizerPanelClient({
                 className="inline-flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
-                Recordatorio
+                Recordatorio manual
               </a>
             </div>
           </div>
         </section>
+        )}
 
         {/* Tabla de Confirmaciones + Playlist DJ */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

@@ -15,7 +15,11 @@ import {
   Heart,
 } from "lucide-react";
 import { InvitationSkin } from "@/templates/catalog";
-import type { EnabledSectionsConfig } from "@/lib/db";
+import type {
+  EnabledSectionsConfig,
+  ParentsOrHostsGroup,
+  ScheduleItem,
+} from "@/lib/db";
 import { EnvelopeGate } from "./EnvelopeGate";
 import { AudioPlayerFloat } from "./AudioPlayerFloat";
 import { CountdownTimer } from "./CountdownTimer";
@@ -57,6 +61,10 @@ interface InvitationRendererProps {
   customAlias?: string;
   customDressCode?: string;
   customQuote?: string;
+  customParentsOrHosts?: ParentsOrHostsGroup[];
+  customStoryTitle?: string;
+  customStoryText?: string;
+  customSchedule?: ScheduleItem[];
   customHeroImage?: string;
   customGallery?: string[];
   customFont?: InvitationSkin["fontDisplay"];
@@ -103,7 +111,7 @@ function downloadIcsFile(title: string, dateISO: string, location: string, detai
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//InvitaStudio//ES",
+    "PRODID:-//Invita con Alma//ES",
     "BEGIN:VEVENT",
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
@@ -140,6 +148,10 @@ export function InvitationRenderer({
   customAlias,
   customDressCode,
   customQuote,
+  customParentsOrHosts,
+  customStoryTitle,
+  customStoryText,
+  customSchedule,
   customHeroImage,
   customGallery,
   customFont,
@@ -212,6 +224,14 @@ export function InvitationRenderer({
   const eventTitle = customTitle || sample.title;
   const dateDisplay = customDateDisplay || sample.dateDisplay;
   const timeDisplay = customTimeDisplay || sample.timeDisplay;
+  const parentsList =
+    customParentsOrHosts && customParentsOrHosts.length > 0
+      ? customParentsOrHosts
+      : sample.parentsOrHosts;
+  const storyHeading = customStoryTitle?.trim() || sample.storyTitle || "Nuestra Historia";
+  const storyBody = customStoryText?.trim() || sample.storyText;
+  const scheduleList =
+    customSchedule && customSchedule.length > 0 ? customSchedule : sample.schedule;
   const dateISO = customDateISO || sample.dateISO;
   const quoteText = customQuote || sample.quote;
   const dressCodeLabel = customDressCode || sample.dressCode.label;
@@ -596,7 +616,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= PADRES / PADRINOS (Bloque narrativo abierto) ================= */}
-          {sample.parentsOrHosts && (
+          {parentsList && parentsList.length > 0 && (
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section className="text-center">
@@ -608,7 +628,7 @@ export function InvitationRenderer({
                   className="mt-5 grid grid-cols-1 gap-5 border-y py-5 sm:grid-cols-2 sm:gap-4"
                   style={{ borderColor: palette.border }}
                 >
-                  {sample.parentsOrHosts.map((group) => (
+                  {parentsList.map((group) => (
                     <div key={group.label} className="px-2">
                       <p
                         className="text-[11px] font-semibold uppercase tracking-[0.18em]"
@@ -629,7 +649,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= HISTORIA (Bloque narrativo abierto sobre tono suave) ================= */}
-          {sections.story && sample.storyText && (
+          {sections.story && storyBody && (
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section
@@ -640,10 +660,10 @@ export function InvitationRenderer({
               >
                 <CelebrationToastIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnAlt }} />
                 <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
-                  {sample.storyTitle || "Nuestra Historia"}
+                  {storyHeading}
                 </h2>
-                <p className="mx-auto mt-2.5 max-w-sm text-[15px] leading-[1.7]" style={{ color: palette.textMuted }}>
-                  {sample.storyText}
+                <p className="mx-auto mt-2.5 max-w-sm break-words text-[15px] leading-[1.7]" style={{ color: palette.textMuted }}>
+                  {storyBody}
                 </p>
               </section>
             </RevealSection>
@@ -761,7 +781,7 @@ export function InvitationRenderer({
           </RevealSection>
 
           {/* ================= ITINERARIO ================= */}
-          {sections.schedule && sample.schedule.length > 0 && (
+          {sections.schedule && scheduleList.length > 0 && (
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section>
@@ -781,7 +801,7 @@ export function InvitationRenderer({
                     className="absolute bottom-2 left-[11px] top-2 w-[1.5px] sm:left-1/2 sm:-translate-x-1/2"
                     style={{ backgroundColor: palette.border }}
                   />
-                  {sample.schedule.map((item, idx) => {
+                  {scheduleList.map((item, idx) => {
                     const isLeft = idx % 2 === 0;
                     return (
                       <div
@@ -1048,7 +1068,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= MURO DE BUENOS DESEOS / FIRMAS ================= */}
-          {sections.wishes && wishesList.length > 0 && (
+          {sections.wishes && (
           <RevealSection>
             <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section className="space-y-3.5">
@@ -1063,26 +1083,44 @@ export function InvitationRenderer({
                 <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Buenos Deseos
                 </h2>
+                <p className="mx-auto mt-1 max-w-xs text-xs" style={{ color: palette.textMuted }}>
+                  Mensajes escritos por nuestros invitados al confirmar su asistencia.
+                </p>
               </div>
-              <div className="space-y-3">
-                {wishesList.slice(0, 6).map((w) => (
-                  <div
-                    key={w.id}
-                    className={`${cardRadius} border p-5 ${cardShadow}`}
-                    style={{
-                      backgroundColor: palette.surface,
-                      borderColor: palette.border,
-                    }}
-                  >
-                    <p className="text-[15px] italic leading-[1.6]" style={{ color: palette.textMuted }}>
-                      &ldquo;{w.message}&rdquo;
-                    </p>
-                    <p className="font-ui-jost mt-2 text-[12px] font-semibold" style={{ color: textAccentOnSurface }}>
-                      — {w.guestName}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {wishesList.length > 0 ? (
+                <div className="space-y-3">
+                  {wishesList.slice(0, 6).map((w) => (
+                    <div
+                      key={w.id}
+                      className={`${cardRadius} border p-5 ${cardShadow}`}
+                      style={{
+                        backgroundColor: palette.surface,
+                        borderColor: palette.border,
+                      }}
+                    >
+                      <p className="break-words text-[15px] italic leading-[1.6]" style={{ color: palette.textMuted }}>
+                        &ldquo;{w.message}&rdquo;
+                      </p>
+                      <p className="font-ui-jost mt-2 text-[12px] font-semibold" style={{ color: textAccentOnSurface }}>
+                        — {w.guestName}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={`${cardRadius} border border-dashed p-5 text-center`}
+                  style={{
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border,
+                  }}
+                >
+                  <p className="text-[13px] leading-relaxed" style={{ color: palette.textMuted }}>
+                    Todavía no hay mensajes publicados. Cuando tus invitados confirmen asistencia en
+                    el botón de abajo y dejen un saludo, aparecerá firmado acá.
+                  </p>
+                </div>
+              )}
             </section>
           </RevealSection>
           )}
@@ -1218,7 +1256,7 @@ export function InvitationRenderer({
             >
               <Sparkles className="h-3.5 w-3.5" style={{ color: textAccentOnSurface }} />
               <span>
-                Creado con <strong style={{ color: textAccentOnSurface }}>InvitaStudio</strong> · Creá la tuya
+                Creado con <strong style={{ color: textAccentOnSurface }}>Invita con Alma</strong> · Creá la tuya
               </span>
             </Link>
           </footer>

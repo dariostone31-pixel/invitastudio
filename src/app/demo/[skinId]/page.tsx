@@ -25,7 +25,7 @@ export async function generateMetadata({
   const title = sp.evento || skin.sample.title;
 
   return {
-    title: `${title} — Demo ${skin.name} | InvitaStudio`,
+    title: `${title} — Demo ${skin.name} | Invita con Alma`,
     description: `${skin.sample.dateDisplay} · ${skin.subtitle}. Abrí el sobre animado y probá la confirmación de asistencia.`,
     openGraph: {
       title: `${title} · Invitación Interactiva`,

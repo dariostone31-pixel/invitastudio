@@ -17,6 +17,17 @@ export interface EnabledSectionsConfig {
   rsvp: boolean;
 }
 
+export interface ParentsOrHostsGroup {
+  label: string;
+  names: string[];
+}
+
+export interface ScheduleItem {
+  time: string;
+  title: string;
+  detail: string;
+}
+
 export interface EventRecord {
   id: string;
   orderCode: string;
@@ -40,6 +51,10 @@ export interface EventRecord {
   alias: string;
   dressCode: string;
   quote: string;
+  parentsOrHosts?: ParentsOrHostsGroup[];
+  storyTitle?: string;
+  storyText?: string;
+  schedule?: ScheduleItem[];
   heroImageUrl?: string;
   galleryImages?: string[];
   fontOverride?:
@@ -55,6 +70,9 @@ export interface EventRecord {
   audioOverride?: string;
   memoryMode?: boolean;
   enabledSections?: EnabledSectionsConfig;
+  termsAccepted?: boolean;
+  termsVersion?: string;
+  termsAcceptedAtUtc?: string;
   contactName: string;
   whatsapp: string;
   email: string;
@@ -81,7 +99,26 @@ interface DatabaseShape {
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_PATH = path.join(DATA_DIR, "store.json");
+const TMP_DATA_DIR = "/tmp/invita-con-alma-data";
+
+function resolveWritableDataDir(): string {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.accessSync(DATA_DIR, fs.constants.W_OK);
+    return DATA_DIR;
+  } catch {
+    if (!fs.existsSync(TMP_DATA_DIR)) {
+      fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
+    }
+    return TMP_DATA_DIR;
+  }
+}
+
+function getStorePath(): string {
+  return path.join(resolveWritableDataDir(), "store.json");
+}
 
 const INITIAL_SEED: DatabaseShape = {
   events: [
@@ -95,7 +132,7 @@ const INITIAL_SEED: DatabaseShape = {
       status: "publicada",
       paymentStatus: "pagado",
       paymentMethod: "transferencia",
-      paidAmount: 33600,
+      paidAmount: 29999,
       eventTitle: "Sofía & Lucas",
       dateISO: "2027-04-17T19:30:00-03:00",
       dateDisplay: "Sábado 17 de Abril de 2027",
@@ -123,7 +160,7 @@ const INITIAL_SEED: DatabaseShape = {
       status: "publicada",
       paymentStatus: "pagado",
       paymentMethod: "mercadopago",
-      paidAmount: 64900,
+      paidAmount: 46665,
       eventTitle: "Mis XV Valentina",
       dateISO: "2027-05-22T21:00:00-03:00",
       dateDisplay: "Sábado 22 de Mayo de 2027",
@@ -248,6 +285,10 @@ async function ensurePgReady(): Promise<Pool> {
           alias text not null default '',
           dress_code text not null default 'Elegante Sport',
           quote text not null default '',
+          parents_or_hosts jsonb,
+          story_title text,
+          story_text text,
+          schedule jsonb,
           hero_image_url text,
           gallery_images jsonb,
           font_override text,
@@ -255,12 +296,34 @@ async function ensurePgReady(): Promise<Pool> {
           audio_override text,
           memory_mode boolean not null default false,
           enabled_sections jsonb,
+          terms_accepted boolean,
+          terms_version text,
+          terms_accepted_at_utc text,
           contact_name text not null,
           whatsapp text not null,
           email text not null,
           notes text not null default '',
           created_at timestamptz not null default now()
         );
+        alter table public.events add column if not exists payment_status text not null default 'pendiente';
+        alter table public.events add column if not exists payment_method text;
+        alter table public.events add column if not exists mp_preference_id text;
+        alter table public.events add column if not exists mp_payment_id text;
+        alter table public.events add column if not exists paid_amount integer;
+        alter table public.events add column if not exists parents_or_hosts jsonb;
+        alter table public.events add column if not exists story_title text;
+        alter table public.events add column if not exists story_text text;
+        alter table public.events add column if not exists schedule jsonb;
+        alter table public.events add column if not exists hero_image_url text;
+        alter table public.events add column if not exists gallery_images jsonb;
+        alter table public.events add column if not exists font_override text;
+        alter table public.events add column if not exists accent_override text;
+        alter table public.events add column if not exists audio_override text;
+        alter table public.events add column if not exists memory_mode boolean not null default false;
+        alter table public.events add column if not exists enabled_sections jsonb;
+        alter table public.events add column if not exists terms_accepted boolean;
+        alter table public.events add column if not exists terms_version text;
+        alter table public.events add column if not exists terms_accepted_at_utc text;
         create table if not exists public.rsvps (
           id text primary key,
           event_slug text not null references public.events(slug) on delete cascade,
@@ -314,6 +377,14 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     alias: String(row.alias ?? ""),
     dressCode: String(row.dress_code ?? "Elegante Sport"),
     quote: String(row.quote ?? ""),
+    parentsOrHosts: Array.isArray(row.parents_or_hosts)
+      ? (row.parents_or_hosts as ParentsOrHostsGroup[])
+      : undefined,
+    storyTitle: row.story_title ? String(row.story_title) : undefined,
+    storyText: row.story_text ? String(row.story_text) : undefined,
+    schedule: Array.isArray(row.schedule)
+      ? (row.schedule as ScheduleItem[])
+      : undefined,
     heroImageUrl: row.hero_image_url ? String(row.hero_image_url) : undefined,
     galleryImages: Array.isArray(row.gallery_images)
       ? (row.gallery_images as string[])
@@ -325,6 +396,9 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     audioOverride: row.audio_override ? String(row.audio_override) : undefined,
     memoryMode: Boolean(row.memory_mode),
     enabledSections: (row.enabled_sections as EnabledSectionsConfig) || undefined,
+    termsAccepted: typeof row.terms_accepted === "boolean" ? row.terms_accepted : undefined,
+    termsVersion: row.terms_version ? String(row.terms_version) : undefined,
+    termsAcceptedAtUtc: row.terms_accepted_at_utc ? String(row.terms_accepted_at_utc) : undefined,
     contactName: String(row.contact_name),
     whatsapp: String(row.whatsapp),
     email: String(row.email),
@@ -354,12 +428,14 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       id, order_code, slug, panel_token, skin_id, plan_id, status,
       payment_status, payment_method, mp_preference_id, mp_payment_id, paid_amount,
       event_title, date_iso, date_display, time_display, venue, address, city,
-      alias, dress_code, quote, hero_image_url, gallery_images,
+      alias, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
+      hero_image_url, gallery_images,
       font_override, accent_override, audio_override, memory_mode, enabled_sections,
+      terms_accepted, terms_version, terms_accepted_at_utc,
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41
     )`,
     [
       ev.id,
@@ -384,6 +460,10 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.alias,
       ev.dressCode,
       ev.quote,
+      ev.parentsOrHosts ? JSON.stringify(ev.parentsOrHosts) : null,
+      ev.storyTitle ?? null,
+      ev.storyText ?? null,
+      ev.schedule ? JSON.stringify(ev.schedule) : null,
       ev.heroImageUrl ?? null,
       ev.galleryImages ? JSON.stringify(ev.galleryImages) : null,
       ev.fontOverride ?? null,
@@ -391,6 +471,9 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.audioOverride ?? null,
       Boolean(ev.memoryMode),
       ev.enabledSections ? JSON.stringify(ev.enabledSections) : null,
+      typeof ev.termsAccepted === "boolean" ? ev.termsAccepted : null,
+      ev.termsVersion ?? null,
+      ev.termsAcceptedAtUtc ?? null,
       ev.contactName,
       ev.whatsapp,
       ev.email,
@@ -423,27 +506,23 @@ async function insertRsvpPg(pool: Pool, r: RsvpRecord) {
 // ================= LOCAL JSON FALLBACK =================
 
 function ensureLocalStore(): DatabaseShape {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(STORE_PATH)) {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
+  const storePath = getStorePath();
+  if (!fs.existsSync(storePath)) {
+    fs.writeFileSync(storePath, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
     return structuredClone(INITIAL_SEED);
   }
   try {
-    const raw = fs.readFileSync(STORE_PATH, "utf-8");
+    const raw = fs.readFileSync(storePath, "utf-8");
     return JSON.parse(raw) as DatabaseShape;
   } catch {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
+    fs.writeFileSync(storePath, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
     return structuredClone(INITIAL_SEED);
   }
 }
 
 function saveLocalStore(data: DatabaseShape) {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), "utf-8");
+  const storePath = getStorePath();
+  fs.writeFileSync(storePath, JSON.stringify(data, null, 2), "utf-8");
 }
 
 // ================= HELPERS =================
@@ -536,8 +615,20 @@ export async function createOrderEvent(input: {
   address: string;
   alias: string;
   dressCode: string;
+  quote?: string;
+  parentsOrHosts?: ParentsOrHostsGroup[];
+  storyTitle?: string;
+  storyText?: string;
+  schedule?: ScheduleItem[];
   heroImageUrl?: string;
   galleryImages?: string[];
+  fontOverride?: EventRecord["fontOverride"];
+  accentOverride?: string;
+  audioOverride?: string;
+  enabledSections?: EnabledSectionsConfig;
+  termsAccepted: boolean;
+  termsVersion: string;
+  termsAcceptedAtUtc: string;
   contactName: string;
   whatsapp: string;
   email: string;
@@ -573,10 +664,28 @@ export async function createOrderEvent(input: {
     city: "Argentina",
     alias: input.alias,
     dressCode: input.dressCode || "Elegante Sport",
-    quote: "Te esperamos para compartir juntos un momento único e inolvidable.",
+    quote:
+      input.quote && input.quote.trim()
+        ? input.quote.trim()
+        : "Te esperamos para compartir juntos un momento único e inolvidable.",
+    parentsOrHosts:
+      input.parentsOrHosts && input.parentsOrHosts.length > 0
+        ? input.parentsOrHosts
+        : undefined,
+    storyTitle: input.storyTitle?.trim() || undefined,
+    storyText: input.storyText?.trim() || undefined,
+    schedule:
+      input.schedule && input.schedule.length > 0 ? input.schedule : undefined,
     heroImageUrl: input.heroImageUrl || undefined,
     galleryImages:
       input.galleryImages && input.galleryImages.length > 0 ? input.galleryImages : undefined,
+    fontOverride: input.fontOverride || undefined,
+    accentOverride: input.accentOverride || undefined,
+    audioOverride: input.audioOverride || undefined,
+    enabledSections: input.enabledSections || undefined,
+    termsAccepted: input.termsAccepted,
+    termsVersion: input.termsVersion,
+    termsAcceptedAtUtc: input.termsAcceptedAtUtc,
     contactName: input.contactName,
     whatsapp: input.whatsapp,
     email: input.email,
@@ -615,6 +724,10 @@ export type EventPatch = Partial<
     | "alias"
     | "dressCode"
     | "quote"
+    | "parentsOrHosts"
+    | "storyTitle"
+    | "storyText"
+    | "schedule"
     | "heroImageUrl"
     | "galleryImages"
     | "fontOverride"
@@ -642,6 +755,10 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   alias: { col: "alias" },
   dressCode: { col: "dress_code" },
   quote: { col: "quote" },
+  parentsOrHosts: { col: "parents_or_hosts", json: true },
+  storyTitle: { col: "story_title" },
+  storyText: { col: "story_text" },
+  schedule: { col: "schedule", json: true },
   heroImageUrl: { col: "hero_image_url" },
   galleryImages: { col: "gallery_images", json: true },
   fontOverride: { col: "font_override" },
