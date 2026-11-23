@@ -15,6 +15,9 @@ export interface EnabledSectionsConfig {
   gifts: boolean;
   wishes?: boolean;
   djSongs?: boolean;
+  djVoting?: boolean;
+  trivia?: boolean;
+  collaborativeAlbum?: boolean;
   rsvp: boolean;
 }
 
@@ -22,7 +25,30 @@ export interface DjSongItem {
   id: string;
   guestName: string;
   song: string;
+  votes?: number;
   createdAt: string;
+}
+
+export interface TriviaQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface TriviaScore {
+  id: string;
+  guestName: string;
+  score: number;
+  total: number;
+  createdAt: string;
+}
+
+export interface PreloadedGuest {
+  id: string;
+  name: string;
+  maxPasses: number;
+  table?: string;
 }
 
 export interface ParentsOrHostsGroup {
@@ -86,6 +112,13 @@ export interface EventRecord {
   audioOverride?: string;
   songRequest?: string;
   djPlaylist?: DjSongItem[];
+  triviaTitle?: string;
+  triviaQuestions?: TriviaQuestion[];
+  triviaScores?: TriviaScore[];
+  albumUrl?: string;
+  instagramHandle?: string;
+  eventHashtag?: string;
+  guestList?: PreloadedGuest[];
   memoryMode?: boolean;
   enabledSections?: EnabledSectionsConfig;
   termsAccepted?: boolean;
@@ -314,6 +347,13 @@ async function ensurePgReady(): Promise<Pool> {
           audio_override text,
           song_request text,
           dj_playlist jsonb not null default '[]'::jsonb,
+          trivia_title text,
+          trivia_questions jsonb,
+          trivia_scores jsonb not null default '[]'::jsonb,
+          album_url text,
+          instagram_handle text,
+          event_hashtag text,
+          guest_list jsonb not null default '[]'::jsonb,
           memory_mode boolean not null default false,
           enabled_sections jsonb,
           terms_accepted boolean,
@@ -342,6 +382,13 @@ async function ensurePgReady(): Promise<Pool> {
         alter table public.events add column if not exists audio_override text;
         alter table public.events add column if not exists song_request text;
         alter table public.events add column if not exists dj_playlist jsonb not null default '[]'::jsonb;
+        alter table public.events add column if not exists trivia_title text;
+        alter table public.events add column if not exists trivia_questions jsonb;
+        alter table public.events add column if not exists trivia_scores jsonb not null default '[]'::jsonb;
+        alter table public.events add column if not exists album_url text;
+        alter table public.events add column if not exists instagram_handle text;
+        alter table public.events add column if not exists event_hashtag text;
+        alter table public.events add column if not exists guest_list jsonb not null default '[]'::jsonb;
         alter table public.events add column if not exists memory_mode boolean not null default false;
         alter table public.events add column if not exists enabled_sections jsonb;
         alter table public.events add column if not exists terms_accepted boolean;
@@ -424,6 +471,19 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     djPlaylist: Array.isArray(row.dj_playlist)
       ? (row.dj_playlist as DjSongItem[])
       : [],
+    triviaTitle: row.trivia_title ? String(row.trivia_title) : undefined,
+    triviaQuestions: Array.isArray(row.trivia_questions)
+      ? (row.trivia_questions as TriviaQuestion[])
+      : undefined,
+    triviaScores: Array.isArray(row.trivia_scores)
+      ? (row.trivia_scores as TriviaScore[])
+      : [],
+    albumUrl: row.album_url ? String(row.album_url) : undefined,
+    instagramHandle: row.instagram_handle ? String(row.instagram_handle) : undefined,
+    eventHashtag: row.event_hashtag ? String(row.event_hashtag) : undefined,
+    guestList: Array.isArray(row.guest_list)
+      ? (row.guest_list as PreloadedGuest[])
+      : [],
     memoryMode: Boolean(row.memory_mode),
     enabledSections: (row.enabled_sections as EnabledSectionsConfig) || undefined,
     termsAccepted: typeof row.terms_accepted === "boolean" ? row.terms_accepted : undefined,
@@ -460,12 +520,14 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       event_title, date_iso, date_display, time_display, venue, address, city,
       alias, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
       hero_image_url, hero_overlay_override, gallery_images,
-      font_override, accent_override, audio_override, song_request, dj_playlist, memory_mode, enabled_sections,
+      font_override, accent_override, audio_override, song_request, dj_playlist,
+      trivia_title, trivia_questions, trivia_scores, album_url, instagram_handle, event_hashtag, guest_list,
+      memory_mode, enabled_sections,
       terms_accepted, terms_version, terms_accepted_at_utc,
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51
     )`,
     [
       ev.id,
@@ -502,6 +564,13 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.audioOverride ?? null,
       ev.songRequest ?? null,
       JSON.stringify(ev.djPlaylist ?? []),
+      ev.triviaTitle ?? null,
+      ev.triviaQuestions ? JSON.stringify(ev.triviaQuestions) : null,
+      JSON.stringify(ev.triviaScores ?? []),
+      ev.albumUrl ?? null,
+      ev.instagramHandle ?? null,
+      ev.eventHashtag ?? null,
+      JSON.stringify(ev.guestList ?? []),
       Boolean(ev.memoryMode),
       ev.enabledSections ? JSON.stringify(ev.enabledSections) : null,
       typeof ev.termsAccepted === "boolean" ? ev.termsAccepted : null,
@@ -660,6 +729,9 @@ export async function createOrderEvent(input: {
   accentOverride?: string;
   audioOverride?: string;
   songRequest?: string;
+  albumUrl?: string;
+  instagramHandle?: string;
+  eventHashtag?: string;
   enabledSections?: EnabledSectionsConfig;
   termsAccepted: boolean;
   termsVersion: string;
@@ -720,6 +792,11 @@ export async function createOrderEvent(input: {
     audioOverride: input.audioOverride || undefined,
     songRequest: input.songRequest?.trim() || undefined,
     djPlaylist: [],
+    triviaScores: [],
+    albumUrl: input.albumUrl?.trim() || undefined,
+    instagramHandle: input.instagramHandle?.trim() || undefined,
+    eventHashtag: input.eventHashtag?.trim() || undefined,
+    guestList: [],
     enabledSections: input.enabledSections || undefined,
     termsAccepted: input.termsAccepted,
     termsVersion: input.termsVersion,
@@ -774,6 +851,13 @@ export type EventPatch = Partial<
     | "audioOverride"
     | "songRequest"
     | "djPlaylist"
+    | "triviaTitle"
+    | "triviaQuestions"
+    | "triviaScores"
+    | "albumUrl"
+    | "instagramHandle"
+    | "eventHashtag"
+    | "guestList"
     | "memoryMode"
     | "enabledSections"
   >
@@ -808,6 +892,13 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   audioOverride: { col: "audio_override" },
   songRequest: { col: "song_request" },
   djPlaylist: { col: "dj_playlist", json: true },
+  triviaTitle: { col: "trivia_title" },
+  triviaQuestions: { col: "trivia_questions", json: true },
+  triviaScores: { col: "trivia_scores", json: true },
+  albumUrl: { col: "album_url" },
+  instagramHandle: { col: "instagram_handle" },
+  eventHashtag: { col: "event_hashtag" },
+  guestList: { col: "guest_list", json: true },
   memoryMode: { col: "memory_mode" },
   enabledSections: { col: "enabled_sections", json: true },
 };
@@ -839,6 +930,14 @@ async function patchPgWhere(whereCol: "id" | "panel_token", whereVal: string, pa
   return res.rows[0] ? rowToEvent(res.rows[0]) : null;
 }
 
+function stripUndefined(patch: EventPatch): EventPatch {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(patch)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out as EventPatch;
+}
+
 export async function updateEventRecord(id: string, patch: EventPatch): Promise<EventRecord | null> {
   if (getDbMode() === "postgres") {
     return patchPgWhere("id", id, patch);
@@ -846,7 +945,7 @@ export async function updateEventRecord(id: string, patch: EventPatch): Promise<
   const db = ensureLocalStore();
   const idx = db.events.findIndex((e) => e.id === id);
   if (idx === -1) return null;
-  db.events[idx] = { ...db.events[idx], ...patch };
+  db.events[idx] = { ...db.events[idx], ...stripUndefined(patch) };
   saveLocalStore(db);
   return db.events[idx];
 }
@@ -861,7 +960,7 @@ export async function updateEventByPanelToken(
   const db = ensureLocalStore();
   const idx = db.events.findIndex((e) => e.panelToken === token);
   if (idx === -1) return null;
-  db.events[idx] = { ...db.events[idx], ...patch };
+  db.events[idx] = { ...db.events[idx], ...stripUndefined(patch) };
   saveLocalStore(db);
   return db.events[idx];
 }
@@ -970,6 +1069,7 @@ export async function addDjSongRequest(input: {
     id: `song-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     guestName: input.guestName.trim().slice(0, 80),
     song: input.song.trim().slice(0, 140),
+    votes: 1,
     createdAt: new Date().toISOString(),
   };
 
@@ -989,6 +1089,95 @@ export async function addDjSongRequest(input: {
   const idx = db.events.findIndex((e) => e.slug === input.eventSlug);
   if (idx === -1) return null;
   db.events[idx] = { ...db.events[idx], djPlaylist: next };
+  saveLocalStore(db);
+  return item;
+}
+
+export async function voteDjSongRequest(input: {
+  eventSlug: string;
+  songId: string;
+  fallbackSong?: string;
+  fallbackGuest?: string;
+}): Promise<DjSongItem | null> {
+  const event = await getEventBySlug(input.eventSlug);
+  if (!event || event.planId === "esencial") return null;
+
+  const current = Array.isArray(event.djPlaylist) ? [...event.djPlaylist] : [];
+  const idx = current.findIndex((s) => s.id === input.songId);
+  let updatedItem: DjSongItem;
+
+  if (idx !== -1) {
+    updatedItem = {
+      ...current[idx],
+      votes: (current[idx].votes ?? 1) + 1,
+    };
+    current[idx] = updatedItem;
+  } else if (input.fallbackSong) {
+    // Promueve una canción proveniente de RSVP al ranking de votos sin duplicar su id
+    updatedItem = {
+      id: input.songId,
+      guestName: (input.fallbackGuest || "Invitado").slice(0, 80),
+      song: input.fallbackSong.slice(0, 140),
+      votes: 2,
+      createdAt: new Date().toISOString(),
+    };
+    current.unshift(updatedItem);
+  } else {
+    return null;
+  }
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      "update public.events set dj_playlist = $2::jsonb where slug = $1",
+      [input.eventSlug, JSON.stringify(current)]
+    );
+    return updatedItem;
+  }
+
+  const db = ensureLocalStore();
+  const evIdx = db.events.findIndex((e) => e.slug === input.eventSlug);
+  if (evIdx === -1) return null;
+  db.events[evIdx] = { ...db.events[evIdx], djPlaylist: current };
+  saveLocalStore(db);
+  return updatedItem;
+}
+
+export async function addTriviaScore(input: {
+  eventSlug: string;
+  guestName: string;
+  score: number;
+  total: number;
+}): Promise<TriviaScore | null> {
+  const event = await getEventBySlug(input.eventSlug);
+  if (!event || event.planId === "esencial") return null;
+
+  const item: TriviaScore = {
+    id: `tr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    guestName: input.guestName.trim().slice(0, 60),
+    score: Math.max(0, Math.min(20, Math.round(input.score))),
+    total: Math.max(1, Math.min(20, Math.round(input.total))),
+    createdAt: new Date().toISOString(),
+  };
+
+  const current = Array.isArray(event.triviaScores) ? [...event.triviaScores] : [];
+  current.push(item);
+  current.sort((a, b) => b.score - a.score || a.createdAt.localeCompare(b.createdAt));
+  const top = current.slice(0, 30);
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      "update public.events set trivia_scores = $2::jsonb where slug = $1",
+      [input.eventSlug, JSON.stringify(top)]
+    );
+    return item;
+  }
+
+  const db = ensureLocalStore();
+  const evIdx = db.events.findIndex((e) => e.slug === input.eventSlug);
+  if (evIdx === -1) return null;
+  db.events[evIdx] = { ...db.events[evIdx], triviaScores: top };
   saveLocalStore(db);
   return item;
 }

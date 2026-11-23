@@ -25,6 +25,7 @@ import type {
   HeroOverlayStyle,
   ParentsOrHostsGroup,
   ScheduleItem,
+  TriviaQuestion,
 } from "@/lib/db";
 import {
   INVITATION_SKINS,
@@ -86,7 +87,31 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "gifts", label: "Regalos / Copiar Alias" },
   { key: "wishes", label: "Muro de Buenos Deseos / Firmas" },
   { key: "djSongs", label: "Playlist de la Fiesta (Invitados sugieren canción)" },
+  { key: "djVoting", label: "Votación 🔥 en Playlist (Las más pedidas)" },
+  { key: "trivia", label: "Mini-Trivia con Podio (Juego interactivo)" },
+  { key: "collaborativeAlbum", label: "Álbum Colaborativo QR & Hashtag" },
   { key: "rsvp", label: "Botón Confirmar Asistencia" },
+];
+
+const DEFAULT_TRIVIA_PRESET: TriviaQuestion[] = [
+  {
+    id: "q1",
+    question: "¿Cuál es nuestra comida favorita para pedir juntos?",
+    options: ["Pizza", "Sushi", "Asado / Milanesas", "Pastas"],
+    correctIndex: 0,
+  },
+  {
+    id: "q2",
+    question: "¿Qué estilo de música no puede faltar en la pista?",
+    options: ["Cumbia & Cuarteto", "Reggaeton / Pop", "Rock Nacional", "De todo un poco"],
+    correctIndex: 3,
+  },
+  {
+    id: "q3",
+    question: "¿En qué año empezó esta historia?",
+    options: ["2020", "2022", "2024", "2025"],
+    correctIndex: 1,
+  },
 ];
 
 export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProps) {
@@ -139,6 +164,17 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
   const [galleryImages, setGalleryImages] = useState<string[]>(
     event.galleryImages || []
   );
+  const [albumUrl, setAlbumUrl] = useState<string>(event.albumUrl || "");
+  const [instagramHandle, setInstagramHandle] = useState<string>(event.instagramHandle || "");
+  const [eventHashtag, setEventHashtag] = useState<string>(event.eventHashtag || "");
+  const [triviaTitle, setTriviaTitle] = useState<string>(
+    event.triviaTitle || `¿Cuánto conocés a ${event.eventTitle}?`
+  );
+  const [triviaQuestions, setTriviaQuestions] = useState<TriviaQuestion[]>(
+    event.triviaQuestions && event.triviaQuestions.length > 0
+      ? event.triviaQuestions
+      : DEFAULT_TRIVIA_PRESET
+  );
   const [memoryMode, setMemoryMode] = useState<boolean>(Boolean(event.memoryMode));
 
   const [sections, setSections] = useState<EnabledSectionsConfig>({
@@ -150,6 +186,9 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
     gifts: event.enabledSections?.gifts ?? true,
     wishes: event.enabledSections?.wishes ?? true,
     djSongs: event.enabledSections?.djSongs ?? !isEssentialPlan,
+    djVoting: event.enabledSections?.djVoting ?? !isEssentialPlan,
+    trivia: event.enabledSections?.trivia ?? false,
+    collaborativeAlbum: event.enabledSections?.collaborativeAlbum ?? !isEssentialPlan,
     rsvp: event.enabledSections?.rsvp ?? true,
   });
 
@@ -250,6 +289,11 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
           accentOverride,
           audioOverride,
           ...(event.planId === "asistido" ? { songRequest } : {}),
+          albumUrl,
+          instagramHandle,
+          eventHashtag,
+          triviaTitle,
+          triviaQuestions,
           memoryMode,
           enabledSections: sections,
         }),
@@ -936,6 +980,55 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                   </div>
                 )}
               </div>
+
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 space-y-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                    Álbum Colaborativo QR & Redes (opcional)
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-stone-500">
+                    Pegá el link de Google Fotos o Drive y el QR se genera solo para que tus invitados suban fotos.
+                  </p>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                    Link del Álbum Compartido (Google Fotos / Drive)
+                  </label>
+                  <input
+                    type="url"
+                    value={albumUrl}
+                    onChange={(e) => setAlbumUrl(e.target.value)}
+                    placeholder="https://photos.app.goo.gl/..."
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                      Instagram (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={instagramHandle}
+                      onChange={(e) => setInstagramHandle(e.target.value)}
+                      placeholder="@sofiaylucas"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                      #Hashtag del evento
+                    </label>
+                    <input
+                      type="text"
+                      value={eventHashtag}
+                      onChange={(e) => setEventHashtag(e.target.value)}
+                      placeholder="#SofiYLucas2026"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -976,6 +1069,128 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                   </label>
                 );
               })}
+
+              {Boolean(sections.trivia) && (
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                        Preguntas de la Mini-Trivia
+                      </p>
+                      <p className="text-[11px] text-stone-500">
+                        Editá tus preguntas o agregá hasta 6. Marcá el círculo de la respuesta correcta.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (triviaQuestions.length < 6) {
+                          setTriviaQuestions((prev) => [
+                            ...prev,
+                            {
+                              id: `q-${Date.now()}`,
+                              question: "Nueva pregunta para los invitados",
+                              options: ["Opción A", "Opción B", "Opción C"],
+                              correctIndex: 0,
+                            },
+                          ]);
+                        }
+                      }}
+                      className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                    >
+                      + Agregar pregunta
+                    </button>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                      Título del juego
+                    </label>
+                    <input
+                      type="text"
+                      value={triviaTitle}
+                      onChange={(e) => setTriviaTitle(e.target.value)}
+                      placeholder="¿Cuánto conocés a Sofía y Lucas?"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    {triviaQuestions.map((q, qIdx) => (
+                      <div
+                        key={q.id}
+                        className="rounded-xl border border-stone-200 bg-white p-3 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold text-stone-500">
+                            Pregunta {qIdx + 1}
+                          </span>
+                          {triviaQuestions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTriviaQuestions((prev) => prev.filter((_, idx) => idx !== qIdx))
+                              }
+                              className="text-[11px] font-semibold text-red-600 hover:underline"
+                            >
+                              Quitar
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={q.question}
+                          onChange={(e) =>
+                            setTriviaQuestions((prev) =>
+                              prev.map((item, idx) =>
+                                idx === qIdx ? { ...item, question: e.target.value } : item
+                              )
+                            )
+                          }
+                          className="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-medium outline-none"
+                        />
+                        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                          {q.options.map((opt, optIdx) => (
+                            <div key={optIdx} className="flex items-center gap-1.5">
+                              <input
+                                type="radio"
+                                name={`correct-${q.id}`}
+                                checked={q.correctIndex === optIdx}
+                                onChange={() =>
+                                  setTriviaQuestions((prev) =>
+                                    prev.map((item, idx) =>
+                                      idx === qIdx ? { ...item, correctIndex: optIdx } : item
+                                    )
+                                  )
+                                }
+                                title="Marcar como correcta"
+                                className="h-3.5 w-3.5 accent-emerald-700"
+                              />
+                              <input
+                                type="text"
+                                value={opt}
+                                onChange={(e) =>
+                                  setTriviaQuestions((prev) =>
+                                    prev.map((item, idx) =>
+                                      idx === qIdx
+                                        ? {
+                                            ...item,
+                                            options: item.options.map((o, oI) =>
+                                              oI === optIdx ? e.target.value : o
+                                            ),
+                                          }
+                                        : item
+                                    )
+                                  )
+                                }
+                                className="w-full rounded-lg border border-stone-200 px-2 py-1 text-[11px] outline-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="pt-2">
                 <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3.5">
@@ -1031,8 +1246,15 @@ export function PersonalizerStudioClient({ event }: PersonalizerStudioClientProp
                   !isEssentialPlan ? audioOverride || undefined : undefined
                 }
                 memoryMode={memoryMode}
+                planId={event.planId}
                 allowDjSongs={!isEssentialPlan}
                 initialDjPlaylist={event.djPlaylist || []}
+                triviaTitle={triviaTitle}
+                triviaQuestions={triviaQuestions}
+                initialTriviaScores={event.triviaScores || []}
+                albumUrl={albumUrl || undefined}
+                instagramHandle={instagramHandle || undefined}
+                eventHashtag={eventHashtag || undefined}
                 enabledSections={sections}
                 skipGate={true}
                 showPreviewChrome={false}

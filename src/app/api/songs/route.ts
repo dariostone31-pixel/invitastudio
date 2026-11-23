@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addDjSongRequest, getEventBySlug } from "@/lib/db";
+import { addDjSongRequest, getEventBySlug, voteDjSongRequest } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -40,5 +40,35 @@ export async function POST(req: Request) {
       { error: "Error procesando sugerencia musical" },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const eventSlug = String(body.eventSlug || "").trim();
+    const songId = String(body.songId || "").trim();
+    const fallbackSong = body.fallbackSong ? String(body.fallbackSong) : undefined;
+    const fallbackGuest = body.fallbackGuest ? String(body.fallbackGuest) : undefined;
+
+    if (!eventSlug || !songId) {
+      return NextResponse.json({ error: "Faltan datos para votar." }, { status: 400 });
+    }
+
+    const updated = await voteDjSongRequest({
+      eventSlug,
+      songId,
+      fallbackSong,
+      fallbackGuest,
+    });
+    if (!updated) {
+      return NextResponse.json(
+        { error: "No se pudo registrar el voto." },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ ok: true, item: updated }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: "Error votando canción" }, { status: 500 });
   }
 }

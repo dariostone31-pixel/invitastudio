@@ -95,6 +95,9 @@ function EncargarForm() {
   );
   const [audioOverride, setAudioOverride] = useState<string>("");
   const [songRequest, setSongRequest] = useState<string>("");
+  const [albumUrl, setAlbumUrl] = useState<string>("");
+  const [instagramHandle, setInstagramHandle] = useState<string>("");
+  const [eventHashtag, setEventHashtag] = useState<string>("");
   const [quote, setQuote] = useState(skinObj.sample.quote);
   const [parentsOrHosts, setParentsOrHosts] = useState<ParentsOrHostsGroup[]>(
     skinObj.sample.parentsOrHosts || []
@@ -245,6 +248,9 @@ function EncargarForm() {
                 fontOverride,
                 accentOverride,
                 audioOverride,
+                ...(albumUrl.trim() ? { albumUrl: albumUrl.trim() } : {}),
+                ...(instagramHandle.trim() ? { instagramHandle: instagramHandle.trim() } : {}),
+                ...(eventHashtag.trim() ? { eventHashtag: eventHashtag.trim() } : {}),
                 ...(selectedPlan === "asistido" && songRequest.trim()
                   ? { songRequest: songRequest.trim() }
                   : {}),
@@ -1116,6 +1122,41 @@ function EncargarForm() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Álbum Colaborativo QR & Hashtag (opcional) */}
+                <div className="rounded-2xl border border-stone-200 bg-white p-3.5 space-y-2.5">
+                  <div>
+                    <p className="text-xs font-semibold text-stone-800">
+                      Álbum Colaborativo QR & Hashtag (opcional)
+                    </p>
+                    <p className="text-[11px] text-stone-500">
+                      Si ya tenés un álbum en Google Fotos/Drive o un #hashtag, se genera un QR automático en la invitación.
+                    </p>
+                  </div>
+                  <input
+                    type="url"
+                    value={albumUrl}
+                    onChange={(e) => setAlbumUrl(e.target.value)}
+                    placeholder="Link del álbum compartido (https://photos.app.goo.gl/...)"
+                    className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs outline-none focus:border-stone-900"
+                  />
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      value={instagramHandle}
+                      onChange={(e) => setInstagramHandle(e.target.value)}
+                      placeholder="Instagram (ej. @sofiaylucas)"
+                      className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                    <input
+                      type="text"
+                      value={eventHashtag}
+                      onChange={(e) => setEventHashtag(e.target.value)}
+                      placeholder="#Hashtag (ej. #SofiYLucas)"
+                      className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                  </div>
                 </div>
               </div>
             )}

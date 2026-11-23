@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, CheckCircle2, HeartHandshake } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { X, CheckCircle2, HeartHandshake, Search } from "lucide-react";
 import { SkinPalette } from "@/templates/catalog";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
+import type { PreloadedGuest } from "@/lib/db";
 
 interface RsvpModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface RsvpModalProps {
   maxPasses?: number;
   allowKidsMenu?: boolean;
   allowSongField?: boolean;
+  guestList?: PreloadedGuest[];
 }
 
 const DIETARY_OPTIONS = [
@@ -34,10 +36,21 @@ export function RsvpModal({
   initialName = "",
   maxPasses = 5,
   allowSongField = true,
+  guestList = [],
 }: RsvpModalProps) {
   const [name, setName] = useState(initialName);
+  const [guestSearch, setGuestSearch] = useState("");
+  const [selectedMaxPasses, setSelectedMaxPasses] = useState<number>(maxPasses);
   const [attending, setAttending] = useState<boolean>(true);
   const [passesUsed, setPassesUsed] = useState<number>(Math.min(1, maxPasses));
+
+  const matchingGuests = useMemo(() => {
+    const q = guestSearch.trim().toLowerCase();
+    if (q.length < 2 || guestList.length === 0) return [];
+    return guestList.filter((g) => g.name.toLowerCase().includes(q)).slice(0, 5);
+  }, [guestSearch, guestList]);
+
+  const effectiveMaxPasses = selectedMaxPasses || maxPasses;
   const [companions, setCompanions] = useState("");
   const [dietary, setDietary] = useState<string[]>([]);
   const [song, setSong] = useState("");
@@ -141,6 +154,64 @@ export function RsvpModal({
               </p>
             </div>
 
+            {guestList.length > 0 && !initialName && (
+              <div
+                className="rounded-2xl border p-3"
+                style={{
+                  backgroundColor: palette.bg,
+                  borderColor: palette.border,
+                }}
+              >
+                <label
+                  className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold"
+                  style={{ color: textAccent }}
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  ¿Querés encontrarte rápido en la lista?
+                </label>
+                <input
+                  type="text"
+                  value={guestSearch}
+                  onChange={(e) => setGuestSearch(e.target.value)}
+                  placeholder="Escribí 2 o más letras de tu nombre..."
+                  className="w-full rounded-xl border px-3 py-2 text-xs outline-none"
+                  style={{
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border,
+                    color: palette.text,
+                  }}
+                />
+                {matchingGuests.length > 0 && (
+                  <div className="mt-2 space-y-1.5">
+                    {matchingGuests.map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => {
+                          setName(g.name);
+                          setSelectedMaxPasses(g.maxPasses || 1);
+                          setPassesUsed(g.maxPasses || 1);
+                          setGuestSearch("");
+                        }}
+                        className="flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-xs font-medium transition-opacity hover:opacity-85"
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: palette.border,
+                          color: palette.text,
+                        }}
+                      >
+                        <span>{g.name}</span>
+                        <span className="text-[11px] font-semibold" style={{ color: textAccent }}>
+                          {g.maxPasses} {g.maxPasses === 1 ? "lugar" : "lugares"}
+                          {g.table ? ` · Mesa ${g.table}` : ""}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
                 Tu Nombre y Apellido *
@@ -197,7 +268,7 @@ export function RsvpModal({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-xs font-medium" style={{ color: palette.textMuted }}>
-                      Cantidad de lugares (máx. {maxPasses})
+                      Cantidad de lugares (máx. {effectiveMaxPasses})
                     </label>
                     <select
                       value={passesUsed}
@@ -209,7 +280,7 @@ export function RsvpModal({
                         color: palette.text,
                       }}
                     >
-                      {Array.from({ length: maxPasses }, (_, idx) => idx + 1).map((n) => (
+                      {Array.from({ length: effectiveMaxPasses }, (_, idx) => idx + 1).map((n) => (
                         <option key={n} value={n}>
                           {n} {n === 1 ? "persona" : "personas"}
                         </option>

@@ -16,8 +16,10 @@ import {
   Search,
   Sparkles,
   ArrowLeft,
+  Printer,
+  ListChecks,
 } from "lucide-react";
-import type { EventRecord, RsvpRecord } from "@/lib/db";
+import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
 
 interface OrganizerPanelClientProps {
   event: EventRecord;
@@ -38,27 +40,89 @@ export function OrganizerPanelClient({
   const [copiedLink, setCopiedLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
 
+  // Optional preloaded guest list (ultra-simple line editor)
+  const [showGuestListBox, setShowGuestListBox] = useState(false);
+  const [guestListText, setGuestListText] = useState(() =>
+    (event.guestList || [])
+      .map((g) => (g.maxPasses > 1 ? `${g.name}, ${g.maxPasses}` : g.name))
+      .join("\n")
+  );
+  const [savingGuestList, setSavingGuestList] = useState(false);
+  const [guestListSavedMsg, setGuestListSavedMsg] = useState<string | null>(null);
+
+  // User-controlled PDF export options
+  const [showPdfPanel, setShowPdfPanel] = useState(false);
+  const [pdfIncludeGuests, setPdfIncludeGuests] = useState(true);
+  const [pdfIncludeDietary, setPdfIncludeDietary] = useState(true);
+  const [pdfIncludeSongs, setPdfIncludeSongs] = useState(true);
+  const [pdfIncludeMessages, setPdfIncludeMessages] = useState(false);
+
+  const handleSaveGuestList = async () => {
+    setSavingGuestList(true);
+    setGuestListSavedMsg(null);
+    const parsed: PreloadedGuest[] = guestListText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 500)
+      .map((line, idx) => {
+        const parts = line.split(/[,\t;]/).map((p) => p.trim());
+        const name = parts[0] || "";
+        const num = parts[1] ? parseInt(parts[1], 10) : 2;
+        const maxPasses = Number.isFinite(num) && num >= 1 ? Math.min(20, num) : 2;
+        return {
+          id: `g-${idx + 1}`,
+          name: name.slice(0, 120),
+          maxPasses,
+        };
+      })
+      .filter((g) => g.name.length > 0);
+
+    try {
+      const res = await fetch(`/api/panel/${event.panelToken}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestList: parsed }),
+      });
+      if (!res.ok) throw new Error("Error");
+      setGuestListSavedMsg(
+        parsed.length === 0
+          ? "Lista vaciada: los invitados escribirán su nombre libremente."
+          : `¡Guardado! ${parsed.length} invitados cargados en el buscador del RSVP.`
+      );
+    } catch {
+      setGuestListSavedMsg("No se pudo guardar la lista. Probá nuevamente.");
+    } finally {
+      setSavingGuestList(false);
+    }
+  };
+
   const stats = useMemo(() => {
     const yesRows = initialRsvps.filter((r) => r.attending);
     const noRows = initialRsvps.filter((r) => !r.attending);
     const totalPeople = yesRows.reduce((acc, r) => acc + r.passesUsed, 0);
     const dietaryRows = yesRows.filter((r) => r.dietary.length > 0);
+    const playlistIds = new Set((event.djPlaylist || []).map((item) => item.id));
     const rsvpSongs = yesRows
-      .filter((r) => r.song.trim().length > 0)
+      .filter((r) => r.song.trim().length > 0 && !playlistIds.has(`rsvp-song-${r.id}`))
       .map((r) => ({
-        id: r.id,
+        id: `rsvp-song-${r.id}`,
         song: r.song,
         guestName: r.guestName,
+        votes: 1,
         source: "RSVP",
       }));
     const extraSongs = (event.djPlaylist || []).map((item) => ({
       id: item.id,
       song: item.song,
       guestName: item.guestName,
+      votes: item.votes ?? 1,
       source: "Playlist",
     }));
-    const songs = [...extraSongs, ...rsvpSongs];
+    const songs = [...extraSongs, ...rsvpSongs].sort((a, b) => b.votes - a.votes);
     return {
+      yesRows,
+      dietaryRows,
       confirmedGroups: yesRows.length,
       declinedGroups: noRows.length,
       totalPeople,
@@ -116,9 +180,9 @@ export function OrganizerPanelClient({
       : 0;
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 print:bg-white">
       {/* Header */}
-      <header className="border-b border-stone-200 bg-white">
+      <header className="border-b border-stone-200 bg-white print:hidden">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div>
             <Link
@@ -158,19 +222,90 @@ export function OrganizerPanelClient({
               Ver Invitación en Vivo
             </Link>
             {!isEssentialPlan && (
-              <a
-                href={`/api/export/${event.panelToken}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Descargar Excel (.csv)
-              </a>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowPdfPanel((v) => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  Exportar PDF
+                </button>
+                <a
+                  href={`/api/export/${event.panelToken}`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Descargar Excel (.csv)
+                </a>
+              </>
             )}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 print:hidden">
+        {/* Panel Opcional de Reporte PDF elegido por el organizador */}
+        {!isEssentialPlan && showPdfPanel && (
+          <section className="rounded-3xl border border-stone-300 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-cormorant text-2xl font-semibold text-stone-900">
+                  Elegí qué incluir en tu reporte PDF
+                </h2>
+                <p className="text-xs text-stone-500">
+                  Marcá las secciones que necesitás imprimir o guardar como PDF (ideal para el salón, catering o DJ).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-stone-800"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Imprimir / Guardar PDF
+              </button>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs font-medium">
+                <input
+                  type="checkbox"
+                  checked={pdfIncludeGuests}
+                  onChange={(e) => setPdfIncludeGuests(e.target.checked)}
+                  className="h-4 w-4 accent-stone-900"
+                />
+                Invitados confirmados ({stats.totalPeople})
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs font-medium">
+                <input
+                  type="checkbox"
+                  checked={pdfIncludeDietary}
+                  onChange={(e) => setPdfIncludeDietary(e.target.checked)}
+                  className="h-4 w-4 accent-stone-900"
+                />
+                Menús especiales / Alergias ({stats.dietaryCount})
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs font-medium">
+                <input
+                  type="checkbox"
+                  checked={pdfIncludeSongs}
+                  onChange={(e) => setPdfIncludeSongs(e.target.checked)}
+                  className="h-4 w-4 accent-stone-900"
+                />
+                Ranking Playlist DJ ({stats.songs.length})
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs font-medium">
+                <input
+                  type="checkbox"
+                  checked={pdfIncludeMessages}
+                  onChange={(e) => setPdfIncludeMessages(e.target.checked)}
+                  className="h-4 w-4 accent-stone-900"
+                />
+                Mensajes de invitados
+              </label>
+            </div>
+          </section>
+        )}
         {/* 4-Card RSVP Funnel KPIs */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
@@ -351,6 +486,60 @@ export function OrganizerPanelClient({
         </section>
         )}
 
+        {/* Lista rápida opcional para buscador RSVP (PRO / Llave en Mano) */}
+        {!isEssentialPlan && (
+          <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ListChecks className="h-4 w-4 text-amber-700" />
+                  <h2 className="font-cormorant text-2xl font-semibold text-stone-900">
+                    Lista rápida de invitados (Opcional)
+                  </h2>
+                </div>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  Si pegás tu lista acá, el invitado se busca con 2 letras al confirmar. Si la dejás vacía, cualquiera escribe su nombre libremente.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGuestListBox((v) => !v)}
+                className="rounded-full border border-stone-300 px-4 py-1.5 text-xs font-semibold text-stone-700 hover:border-stone-900"
+              >
+                {showGuestListBox ? "Ocultar" : "Cargar / Editar lista"}
+              </button>
+            </div>
+
+            {showGuestListBox && (
+              <div className="mt-4 space-y-3">
+                <textarea
+                  rows={5}
+                  value={guestListText}
+                  onChange={(e) => setGuestListText(e.target.value)}
+                  placeholder={"Un invitado o familia por línea. Podés agregar la cantidad de lugares separada por coma:\nFamilia Gómez, 3\nLucía Fernández, 2\nMarcos Díaz, 1"}
+                  className="w-full rounded-2xl border border-stone-300 bg-stone-50 p-3.5 text-xs outline-none focus:border-stone-900"
+                />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-[11px] text-stone-500">
+                    Formato simple: <code>Nombre y Apellido, lugares</code> (si no ponés número, asigna 2 lugares).
+                  </p>
+                  <button
+                    type="button"
+                    disabled={savingGuestList}
+                    onClick={handleSaveGuestList}
+                    className="rounded-full bg-stone-900 px-5 py-2 text-xs font-semibold text-white hover:bg-stone-800 disabled:opacity-60"
+                  >
+                    {savingGuestList ? "Guardando..." : "Guardar lista en RSVP"}
+                  </button>
+                </div>
+                {guestListSavedMsg && (
+                  <p className="text-xs font-medium text-emerald-700">{guestListSavedMsg}</p>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Tabla de Confirmaciones + Playlist DJ */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm lg:col-span-8">
@@ -487,12 +676,17 @@ export function OrganizerPanelClient({
                     stats.songs.map((s) => (
                       <div
                         key={s.id}
-                        className="rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs"
+                        className="flex items-center justify-between gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-xs"
                       >
-                        <p className="font-semibold text-stone-900">{s.song}</p>
-                        <p className="text-[11px] text-stone-500">
-                          Por {s.guestName} · {s.source}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-stone-900">{s.song}</p>
+                          <p className="text-[11px] text-stone-500">
+                            Por {s.guestName} · {s.source}
+                          </p>
+                        </div>
+                        <span className="flex-shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900">
+                          🔥 {s.votes}
+                        </span>
                       </div>
                     ))
                   )}
@@ -502,6 +696,98 @@ export function OrganizerPanelClient({
           </section>
         </div>
       </main>
+
+      {/* Vista exclusiva para Impresión / Guardar PDF (controlada por checkboxes del organizador) */}
+      <div className="hidden print:block p-8 text-stone-900">
+        <div className="border-b border-stone-300 pb-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
+            Invita con Alma · Reporte del Organizador ({event.orderCode})
+          </p>
+          <h1 className="mt-1 font-cormorant text-3xl font-bold">{event.eventTitle}</h1>
+          <p className="text-xs text-stone-600">
+            {event.dateDisplay} · {event.timeDisplay} · {event.venue}
+          </p>
+          <p className="mt-2 text-xs font-semibold">
+            Resumen: {stats.totalPeople} personas confirmadas ({stats.confirmedGroups} grupos) ·{" "}
+            {stats.declinedGroups} no asisten · {stats.dietaryCount} menús especiales
+          </p>
+        </div>
+
+        {pdfIncludeGuests && (
+          <section className="mt-6">
+            <h2 className="border-b border-stone-200 pb-1 text-sm font-bold uppercase tracking-wider">
+              Invitados Confirmados ({stats.yesRows.length})
+            </h2>
+            <table className="mt-2 w-full border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-stone-300 text-stone-600">
+                  <th className="py-1.5 pr-3">Nombre / Familia</th>
+                  <th className="py-1.5 pr-3">Lugares</th>
+                  <th className="py-1.5 pr-3">Acompañantes</th>
+                  <th className="py-1.5">Menú Especial</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.yesRows.map((r) => (
+                  <tr key={r.id} className="border-b border-stone-200">
+                    <td className="py-1.5 pr-3 font-semibold">{r.guestName}</td>
+                    <td className="py-1.5 pr-3">{r.passesUsed}</td>
+                    <td className="py-1.5 pr-3">{r.companions || "—"}</td>
+                    <td className="py-1.5">{r.dietary.join(", ") || "Estándar"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {pdfIncludeDietary && stats.dietaryRows.length > 0 && (
+          <section className="mt-6">
+            <h2 className="border-b border-stone-200 pb-1 text-sm font-bold uppercase tracking-wider">
+              Menús Especiales & Alergias ({stats.dietaryRows.length})
+            </h2>
+            <ul className="mt-2 space-y-1 text-xs">
+              {stats.dietaryRows.map((r) => (
+                <li key={r.id}>
+                  <strong>{r.guestName}</strong> ({r.passesUsed} lug.): {r.dietary.join(", ")}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {pdfIncludeSongs && !isEssentialPlan && stats.songs.length > 0 && (
+          <section className="mt-6">
+            <h2 className="border-b border-stone-200 pb-1 text-sm font-bold uppercase tracking-wider">
+              Ranking Playlist para el DJ ({stats.songs.length})
+            </h2>
+            <ol className="mt-2 list-decimal pl-5 text-xs space-y-1">
+              {stats.songs.map((s) => (
+                <li key={s.id}>
+                  <strong>{s.song}</strong> — {s.votes} {s.votes === 1 ? "voto" : "votos"} (sugerida por {s.guestName})
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        {pdfIncludeMessages && (
+          <section className="mt-6">
+            <h2 className="border-b border-stone-200 pb-1 text-sm font-bold uppercase tracking-wider">
+              Mensajes y Buenos Deseos
+            </h2>
+            <div className="mt-2 space-y-1.5 text-xs">
+              {initialRsvps
+                .filter((r) => r.message.trim().length > 0)
+                .map((r) => (
+                  <p key={r.id}>
+                    <strong>{r.guestName}:</strong> &ldquo;{r.message}&rdquo;
+                  </p>
+                ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

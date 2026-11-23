@@ -49,10 +49,12 @@ export async function GET(
       .join(",")
   );
 
-  const extraDjRows = (event.djPlaylist || []).map((item) =>
+  const extraDjRows = [...(event.djPlaylist || [])]
+    .sort((a, b) => (b.votes ?? 1) - (a.votes ?? 1))
+    .map((item) =>
     [
       item.guestName,
-      "Sugerencia Playlist DJ",
+      `Playlist DJ (${item.votes ?? 1} voto/s 🔥)`,
       "-",
       "",
       "",

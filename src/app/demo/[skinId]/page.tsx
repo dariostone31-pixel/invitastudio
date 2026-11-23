@@ -54,12 +54,50 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
     }));
   const demoSongs = allRsvps
     .filter((r) => r.song && r.song.trim().length > 0)
-    .map((r) => ({
+    .map((r, i) => ({
       id: `demo-song-${r.id}`,
       guestName: r.guestName,
       song: r.song,
+      votes: i === 0 ? 4 : 2,
       createdAt: r.createdAt,
     }));
+  const demoTriviaQuestions = [
+    {
+      id: "tq-1",
+      question:
+        skin.category === "xv"
+          ? "¿Cuál es su comida favorita?"
+          : "¿Dónde fue su primer viaje juntos?",
+      options:
+        skin.category === "xv"
+          ? ["Pizza", "Sushi", "Milanesas con papas fritas", "Pastas"]
+          : ["Bariloche", "Mendoza", "Mar del Plata", "Córdoba"],
+      correctIndex: 1,
+    },
+    {
+      id: "tq-2",
+      question:
+        skin.category === "xv"
+          ? "¿Qué música no puede faltar en su pista?"
+          : "¿En qué estación del año eligieron celebrar?",
+      options:
+        skin.category === "xv"
+          ? ["Pop & Reggaeton", "Solo Rock", "Tango", "Jazz"]
+          : ["Otoño", "Invierno", "Primavera", "Verano"],
+      correctIndex: 0,
+    },
+    {
+      id: "tq-3",
+      question: "¿Cuál es el código de vestimenta para esta noche?",
+      options: [
+        "Deportivo",
+        skin.sample.dressCode.label,
+        "Disfraz obligatorio",
+        "Playa",
+      ],
+      correctIndex: 1,
+    },
+  ];
 
   return (
     <InvitationRenderer
@@ -70,9 +108,44 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
       table={sp.mesa || "7"}
       customTitle={sp.evento || undefined}
       customDateDisplay={sp.fecha || undefined}
+      planId="pro"
       wishesList={wishes}
       allowDjSongs={true}
       initialDjPlaylist={demoSongs}
+      triviaTitle={`¿Cuánto conocés a ${sp.evento || skin.sample.title}?`}
+      triviaQuestions={demoTriviaQuestions}
+      initialTriviaScores={[
+        {
+          id: "demo-sc-1",
+          guestName: "Enzo",
+          score: 3,
+          total: 3,
+          createdAt: "2026-11-20T12:00:00.000Z",
+        },
+        {
+          id: "demo-sc-2",
+          guestName: "Camila",
+          score: 2,
+          total: 3,
+          createdAt: "2026-11-20T13:00:00.000Z",
+        },
+      ]}
+      albumUrl={`https://invitastudio-vert.vercel.app/demo/${skin.id}`}
+      eventHashtag={skin.category === "xv" ? "MisXVSoñados" : "NuestraFiesta"}
+      enabledSections={{
+        countdown: true,
+        story: true,
+        schedule: true,
+        gallery: true,
+        dressCode: true,
+        gifts: true,
+        wishes: true,
+        djSongs: true,
+        djVoting: true,
+        trivia: true,
+        collaborativeAlbum: true,
+        rsvp: true,
+      }}
       showPreviewChrome={true}
     />
   );

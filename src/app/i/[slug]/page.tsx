@@ -74,16 +74,18 @@ export default async function PublicInvitationPage({
       guestName: r.guestName,
       message: r.message,
     }));
+  const playlistIds = new Set((event.djPlaylist || []).map((item) => item.id));
   const rsvpSongs = rsvps
-    .filter((r) => r.song && r.song.trim().length > 0)
+    .filter((r) => r.song && r.song.trim().length > 0 && !playlistIds.has(`rsvp-song-${r.id}`))
     .map((r) => ({
       id: `rsvp-song-${r.id}`,
       guestName: r.guestName,
       song: r.song,
+      votes: 1,
       createdAt: r.createdAt,
     }));
-  const combinedDjPlaylist = [...(event.djPlaylist || []), ...rsvpSongs].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt)
+  const combinedDjPlaylist = [...(event.djPlaylist || []), ...rsvpSongs].sort(
+    (a, b) => (b.votes ?? 1) - (a.votes ?? 1) || b.createdAt.localeCompare(a.createdAt)
   );
   const allowDjSongs = event.planId !== "esencial";
 
@@ -123,9 +125,17 @@ export default async function PublicInvitationPage({
         customAccent={event.accentOverride || undefined}
         customAudioUrl={allowDjSongs ? event.audioOverride || undefined : undefined}
         memoryMode={Boolean(event.memoryMode)}
+        planId={event.planId}
         wishesList={wishes}
         allowDjSongs={allowDjSongs}
         initialDjPlaylist={allowDjSongs ? combinedDjPlaylist : []}
+        triviaTitle={event.triviaTitle}
+        triviaQuestions={allowDjSongs ? event.triviaQuestions || [] : []}
+        initialTriviaScores={allowDjSongs ? event.triviaScores || [] : []}
+        albumUrl={allowDjSongs ? event.albumUrl : undefined}
+        instagramHandle={allowDjSongs ? event.instagramHandle : undefined}
+        eventHashtag={allowDjSongs ? event.eventHashtag : undefined}
+        guestList={allowDjSongs ? event.guestList || [] : []}
         enabledSections={event.enabledSections || undefined}
         showPreviewChrome={false}
       />

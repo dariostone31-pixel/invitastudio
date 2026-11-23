@@ -76,6 +76,16 @@ export async function PATCH(
           ...(isAsistido && typeof body.songRequest === "string"
             ? { songRequest: body.songRequest.trim().slice(0, 220) }
             : {}),
+          triviaTitle: typeof body.triviaTitle === "string" ? body.triviaTitle : undefined,
+          triviaQuestions: Array.isArray(body.triviaQuestions)
+            ? body.triviaQuestions
+            : undefined,
+          albumUrl: typeof body.albumUrl === "string" ? body.albumUrl.trim() : undefined,
+          instagramHandle:
+            typeof body.instagramHandle === "string" ? body.instagramHandle.trim() : undefined,
+          eventHashtag:
+            typeof body.eventHashtag === "string" ? body.eventHashtag.trim() : undefined,
+          guestList: Array.isArray(body.guestList) ? body.guestList.slice(0, 500) : undefined,
           memoryMode: body.memoryMode,
           enabledSections: body.enabledSections,
         };

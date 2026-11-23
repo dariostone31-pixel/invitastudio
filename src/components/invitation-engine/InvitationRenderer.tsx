@@ -21,7 +21,10 @@ import type {
   EnabledSectionsConfig,
   HeroOverlayStyle,
   ParentsOrHostsGroup,
+  PreloadedGuest,
   ScheduleItem,
+  TriviaQuestion,
+  TriviaScore,
 } from "@/lib/db";
 import { EnvelopeGate } from "./EnvelopeGate";
 import { AudioPlayerFloat } from "./AudioPlayerFloat";
@@ -31,6 +34,8 @@ import { RsvpModal } from "./RsvpModal";
 import { RevealSection } from "./RevealSection";
 import { AmbientParticles } from "./AmbientParticles";
 import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
+import { CollaborativeAlbumSection } from "./CollaborativeAlbumSection";
+import { TriviaSection } from "./TriviaSection";
 import {
   CelebrationAttireIcon,
   CelebrationCameraIcon,
@@ -75,9 +80,17 @@ interface InvitationRendererProps {
   customAccent?: string;
   customAudioUrl?: string;
   memoryMode?: boolean;
+  planId?: "esencial" | "pro" | "asistido";
   wishesList?: PublicWish[];
   allowDjSongs?: boolean;
   initialDjPlaylist?: DjSongItem[];
+  triviaTitle?: string;
+  triviaQuestions?: TriviaQuestion[];
+  initialTriviaScores?: TriviaScore[];
+  albumUrl?: string;
+  instagramHandle?: string;
+  eventHashtag?: string;
+  guestList?: PreloadedGuest[];
   enabledSections?: EnabledSectionsConfig;
   skipGate?: boolean;
   showPreviewChrome?: boolean;
@@ -165,18 +178,28 @@ export function InvitationRenderer({
   customAccent,
   customAudioUrl,
   memoryMode = false,
+  planId = "pro",
   wishesList = [],
   allowDjSongs = true,
   initialDjPlaylist = [],
+  triviaTitle,
+  triviaQuestions = [],
+  initialTriviaScores = [],
+  albumUrl,
+  instagramHandle,
+  eventHashtag,
+  guestList = [],
   enabledSections,
   skipGate = false,
   showPreviewChrome = true,
 }: InvitationRendererProps) {
+  const isEssentialPlan = planId === "esencial";
   const [isPlaying, setIsPlaying] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<"alias" | "cbu" | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [djSongs, setDjSongs] = useState<DjSongItem[]>(initialDjPlaylist);
+  const [votedSongIds, setVotedSongIds] = useState<Record<string, boolean>>({});
   const [djGuestName, setDjGuestName] = useState(guestName || "");
   const [djSongText, setDjSongText] = useState("");
   const [djSubmitting, setDjSubmitting] = useState(false);
@@ -226,16 +249,63 @@ export function InvitationRenderer({
   const audioSrc =
     customAudioUrl === "none" ? "" : customAudioUrl || sample.audioUrl;
 
-  const sections: EnabledSectionsConfig = {
-    countdown: enabledSections?.countdown ?? true,
-    story: enabledSections?.story ?? true,
-    schedule: enabledSections?.schedule ?? true,
-    gallery: enabledSections?.gallery ?? true,
-    dressCode: enabledSections?.dressCode ?? true,
-    gifts: enabledSections?.gifts ?? true,
-    wishes: enabledSections?.wishes ?? true,
-    djSongs: enabledSections?.djSongs ?? true,
-    rsvp: enabledSections?.rsvp ?? true,
+  const sections: EnabledSectionsConfig = isEssentialPlan
+    ? {
+        countdown: enabledSections?.countdown ?? true,
+        story: false,
+        schedule: false,
+        gallery: false,
+        dressCode: enabledSections?.dressCode ?? true,
+        gifts: enabledSections?.gifts ?? true,
+        wishes: false,
+        djSongs: false,
+        djVoting: false,
+        trivia: false,
+        collaborativeAlbum: false,
+        rsvp: enabledSections?.rsvp ?? true,
+      }
+    : {
+        countdown: enabledSections?.countdown ?? true,
+        story: enabledSections?.story ?? true,
+        schedule: enabledSections?.schedule ?? true,
+        gallery: enabledSections?.gallery ?? true,
+        dressCode: enabledSections?.dressCode ?? true,
+        gifts: enabledSections?.gifts ?? true,
+        wishes: enabledSections?.wishes ?? true,
+        djSongs: enabledSections?.djSongs ?? true,
+        djVoting: enabledSections?.djVoting ?? true,
+        trivia: enabledSections?.trivia ?? false,
+        collaborativeAlbum: enabledSections?.collaborativeAlbum ?? true,
+        rsvp: enabledSections?.rsvp ?? true,
+      };
+
+  const sortedDjSongs = [...djSongs].sort(
+    (a, b) => (b.votes ?? 1) - (a.votes ?? 1) || b.createdAt.localeCompare(a.createdAt)
+  );
+
+  const handleVoteDjSong = async (item: DjSongItem) => {
+    if (votedSongIds[item.id] || !sections.djVoting) return;
+    setVotedSongIds((prev) => ({ ...prev, [item.id]: true }));
+    setDjSongs((prev) =>
+      prev.map((s) => (s.id === item.id ? { ...s, votes: (s.votes ?? 1) + 1 } : s))
+    );
+
+    if (eventSlug) {
+      try {
+        await fetch("/api/songs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventSlug,
+            songId: item.id,
+            fallbackSong: item.song,
+            fallbackGuest: item.guestName,
+          }),
+        });
+      } catch {
+        // ignore network hiccup on optimistic vote
+      }
+    }
   };
 
   const handleAddDjSong = async (e: React.FormEvent) => {
@@ -718,7 +788,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= PADRES / PADRINOS (Bloque narrativo abierto) ================= */}
-          {parentsList && parentsList.length > 0 && (
+          {!isEssentialPlan && parentsList && parentsList.length > 0 && (
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section className="text-center">
@@ -1228,7 +1298,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= LOS PROTAGONISTAS (2 CARDS FOTO 1:1) ================= */}
-          {galleryList.length >= 2 && (skin.category === "boda" || skin.category === "xv") && (
+          {!isEssentialPlan && galleryList.length >= 2 && (skin.category === "boda" || skin.category === "xv") && (
             <RevealSection>
               <div className="mt-8 grid grid-cols-2 gap-3.5">
                 {galleryList.slice(0, 2).map((img, i) => (
@@ -1367,38 +1437,103 @@ export function InvitationRenderer({
                 </p>
               )}
 
-              {djSongs.length > 0 && (
+              {sortedDjSongs.length > 0 && (
                 <div className="mt-5 space-y-2 text-left">
                   <p
                     className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.18em]"
                     style={{ color: palette.textMuted }}
                   >
-                    Últimas sugerencias ({djSongs.length})
+                    {sections.djVoting
+                      ? `Las más pedidas 🔥 (${sortedDjSongs.length})`
+                      : `Últimas sugerencias (${sortedDjSongs.length})`}
                   </p>
-                  <div className="max-h-44 space-y-1.5 overflow-y-auto pr-1">
-                    {djSongs.slice(0, 8).map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs"
-                        style={{
-                          backgroundColor: palette.bg,
-                          borderColor: palette.border,
-                        }}
-                      >
-                        <span className="min-w-0 break-words font-medium" style={{ color: palette.text }}>
-                          🎵 {item.song}
-                        </span>
-                        <span className="flex-shrink-0 text-[11px]" style={{ color: palette.textMuted }}>
-                          {item.guestName}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="max-h-52 space-y-1.5 overflow-y-auto pr-1">
+                    {sortedDjSongs.slice(0, 10).map((item) => {
+                      const alreadyVoted = Boolean(votedSongIds[item.id]);
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs"
+                          style={{
+                            backgroundColor: palette.bg,
+                            borderColor: palette.border,
+                          }}
+                        >
+                          <div className="min-w-0">
+                            <span className="block break-words font-medium" style={{ color: palette.text }}>
+                              🎵 {item.song}
+                            </span>
+                            <span className="text-[11px]" style={{ color: palette.textMuted }}>
+                              {item.guestName}
+                            </span>
+                          </div>
+                          {sections.djVoting && (
+                            <button
+                              type="button"
+                              onClick={() => handleVoteDjSong(item)}
+                              disabled={alreadyVoted}
+                              aria-label={`Votar canción ${item.song}`}
+                              className="inline-flex flex-shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold transition-transform active:scale-95"
+                              style={{
+                                backgroundColor: alreadyVoted ? buttonBg : palette.surface,
+                                borderColor: alreadyVoted ? buttonBg : palette.border,
+                                color: alreadyVoted ? palette.accentText : palette.text,
+                              }}
+                            >
+                              🔥 {item.votes ?? 1}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </section>
           </RevealSection>
           )}
+
+          {/* ================= MINI-TRIVIA CON PODIO (PRO & LLAVE EN MANO) ================= */}
+          {!isEssentialPlan && sections.trivia && triviaQuestions.length > 0 && !memoryMode && (
+            <RevealSection>
+              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+              <TriviaSection
+                eventSlug={eventSlug}
+                title={triviaTitle || `¿Cuánto conocés a ${eventTitle}?`}
+                questions={triviaQuestions}
+                initialScores={initialTriviaScores}
+                initialGuestName={guestName}
+                palette={palette}
+                cardRadius={cardRadius}
+                innerRadius={innerRadius}
+                cardShadow={cardShadow}
+                sectionHeadingFont={sectionHeadingFont}
+                textAccentOnSurface={textAccentOnSurface}
+                isNewspaper={isNewspaper}
+              />
+            </RevealSection>
+          )}
+
+          {/* ================= ÁLBUM COLABORATIVO QR & HASHTAG (PRO & LLAVE EN MANO) ================= */}
+          {!isEssentialPlan &&
+            sections.collaborativeAlbum &&
+            Boolean(albumUrl || instagramHandle || eventHashtag) && (
+              <RevealSection>
+                <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+                <CollaborativeAlbumSection
+                  albumUrl={albumUrl}
+                  instagramHandle={instagramHandle}
+                  eventHashtag={eventHashtag}
+                  palette={palette}
+                  cardRadius={cardRadius}
+                  innerRadius={innerRadius}
+                  cardShadow={cardShadow}
+                  sectionHeadingFont={sectionHeadingFont}
+                  textAccentOnSurface={textAccentOnSurface}
+                  isNewspaper={isNewspaper}
+                />
+              </RevealSection>
+            )}
 
           {/* ================= CONFIRMAR ASISTENCIA (RSVP NATIVO) ================= */}
           {sections.rsvp && !memoryMode && (
@@ -1494,6 +1629,7 @@ export function InvitationRenderer({
         initialName={guestName}
         maxPasses={passes ?? 5}
         allowSongField={allowDjSongs}
+        guestList={!isEssentialPlan ? guestList : []}
       />
 
       {/* Lightbox Galería */}
