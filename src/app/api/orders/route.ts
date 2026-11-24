@@ -56,6 +56,8 @@ export async function POST(req: Request) {
       dressCode,
       rsvpDeadline,
       adultsOnly,
+      tarjetaPricing,
+      tarjetaNote,
       quote,
       parentsOrHosts,
       storyTitle,
@@ -179,6 +181,17 @@ export async function POST(req: Request) {
             .filter((q) => q.options.length >= 2)
         : undefined;
 
+    const cleanTarjetaPricing =
+      allowFullCustom && Array.isArray(tarjetaPricing)
+        ? tarjetaPricing
+            .slice(0, 6)
+            .map((t: { label?: unknown; price?: unknown }) => ({
+              label: String(t?.label || "").trim().slice(0, 60),
+              price: String(t?.price || "").trim().slice(0, 40),
+            }))
+            .filter((t) => t.label.length > 0 && t.price.length > 0)
+        : undefined;
+
     const created = await createOrderEvent({
       skinId: String(skinId || "boda-sobre-marfil"),
       planId: validPlan,
@@ -196,6 +209,12 @@ export async function POST(req: Request) {
           ? rsvpDeadline.trim().slice(0, 80)
           : undefined,
       adultsOnly: allowFullCustom ? Boolean(adultsOnly) : false,
+      tarjetaPricing:
+        cleanTarjetaPricing && cleanTarjetaPricing.length > 0 ? cleanTarjetaPricing : undefined,
+      tarjetaNote:
+        allowFullCustom && typeof tarjetaNote === "string" && tarjetaNote.trim()
+          ? tarjetaNote.trim().slice(0, 180)
+          : undefined,
       quote: quote && String(quote).trim() ? String(quote).trim() : undefined,
       parentsOrHosts: cleanParents,
       storyTitle: allowFullCustom && storyTitle ? String(storyTitle) : undefined,

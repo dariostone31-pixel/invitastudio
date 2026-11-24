@@ -157,6 +157,12 @@ function EncargarForm() {
   const [dressCode, setDressCode] = useState("");
   const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [adultsOnly, setAdultsOnly] = useState(false);
+  const [includeTarjeta, setIncludeTarjeta] = useState(false);
+  const [tarjetaTiers, setTarjetaTiers] = useState<Array<{ label: string; price: string }>>([
+    { label: "Mayores", price: "$25.000" },
+    { label: "Menores (hasta 12 años)", price: "$15.000" },
+  ]);
+  const [tarjetaNote, setTarjetaNote] = useState("");
   const [mercadopagoConfigured, setMercadopagoConfigured] = useState(false);
 
   useEffect(() => {
@@ -311,6 +317,16 @@ function EncargarForm() {
           dressCode: dressCode.trim(),
           rsvpDeadline: isAdvancedPlan ? rsvpDeadline.trim() : undefined,
           adultsOnly: isAdvancedPlan ? adultsOnly : false,
+          tarjetaPricing:
+            isAdvancedPlan && includeTarjeta
+              ? tarjetaTiers
+                  .map((t) => ({ label: t.label.trim(), price: t.price.trim() }))
+                  .filter((t) => t.label && t.price)
+              : undefined,
+          tarjetaNote:
+            isAdvancedPlan && includeTarjeta && tarjetaNote.trim()
+              ? tarjetaNote.trim()
+              : undefined,
           quote: quote.trim(),
           ...(isAdvancedPlan
             ? {
@@ -1637,6 +1653,83 @@ function EncargarForm() {
                     className="h-4 w-4 accent-stone-900"
                   />
                 </label>
+              </div>
+              <div className="sm:col-span-2 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
+                <label className="flex cursor-pointer items-center justify-between gap-3">
+                  <div>
+                    <span className="block text-xs font-semibold text-stone-900">
+                      Valor de Tarjeta (opcional)
+                    </span>
+                    <span className="block text-[11px] text-stone-500">
+                      Mostrá los valores de entrada por categorías (Mayores, Menores, etc.) con copia rápida de alias
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={includeTarjeta}
+                    onChange={(e) => setIncludeTarjeta(e.target.checked)}
+                    className="h-4 w-4 accent-stone-900"
+                  />
+                </label>
+
+                {includeTarjeta && (
+                  <div className="mt-3 space-y-2.5 border-t border-stone-200 pt-3">
+                    {tarjetaTiers.map((tier, idx) => (
+                      <div key={idx} className="grid grid-cols-[1fr_130px_auto] items-center gap-2">
+                        <input
+                          type="text"
+                          value={tier.label}
+                          onChange={(e) => {
+                            const next = [...tarjetaTiers];
+                            next[idx] = { ...next[idx], label: e.target.value };
+                            setTarjetaTiers(next);
+                          }}
+                          placeholder="Ej. Mayores"
+                          className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                        />
+                        <input
+                          type="text"
+                          value={tier.price}
+                          onChange={(e) => {
+                            const next = [...tarjetaTiers];
+                            next[idx] = { ...next[idx], price: e.target.value };
+                            setTarjetaTiers(next);
+                          }}
+                          placeholder="$25.000"
+                          className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-stone-900"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTarjetaTiers((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                          className="rounded-lg px-2 py-1.5 text-xs font-semibold text-stone-500 hover:bg-stone-200"
+                          title="Quitar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {tarjetaTiers.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setTarjetaTiers((prev) => [...prev, { label: "", price: "" }])
+                        }
+                        className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        + Agregar categoría
+                      </button>
+                    )}
+                    <input
+                      type="text"
+                      value={tarjetaNote}
+                      onChange={(e) => setTarjetaNote(e.target.value)}
+                      placeholder="Nota aclaratoria (ej. Podés abonar hasta 10 días antes por transferencia)"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    />
+                  </div>
+                )}
               </div>
             </>
           )}

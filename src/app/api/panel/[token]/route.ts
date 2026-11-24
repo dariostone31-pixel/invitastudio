@@ -73,6 +73,19 @@ export async function PATCH(
               : undefined,
           adultsOnly:
             typeof body.adultsOnly === "boolean" ? body.adultsOnly : undefined,
+          tarjetaPricing: Array.isArray(body.tarjetaPricing)
+            ? body.tarjetaPricing
+                .slice(0, 6)
+                .map((t: { label?: unknown; price?: unknown }) => ({
+                  label: String(t?.label || "").trim().slice(0, 60),
+                  price: String(t?.price || "").trim().slice(0, 40),
+                }))
+                .filter((t: { label: string; price: string }) => t.label && t.price)
+            : undefined,
+          tarjetaNote:
+            typeof body.tarjetaNote === "string"
+              ? body.tarjetaNote.trim().slice(0, 180)
+              : undefined,
           quote: body.quote,
           parentsOrHosts: body.parentsOrHosts,
           storyTitle: body.storyTitle,

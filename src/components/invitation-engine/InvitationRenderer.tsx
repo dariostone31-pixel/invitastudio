@@ -25,6 +25,7 @@ import type {
   ParentsOrHostsGroup,
   PreloadedGuest,
   ScheduleItem,
+  TarjetaTier,
   TriviaQuestion,
   TriviaScore,
 } from "@/lib/db";
@@ -47,7 +48,8 @@ import {
   CelebrationCheckIcon,
   CelebrationGiftIcon,
   CelebrationPinIcon,
-  CelebrationToastIcon,
+  CelebrationStoryIcon,
+  CelebrationTicketPriceIcon,
   CelebrationWishesIcon,
 } from "./CelebrationIcons";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
@@ -78,6 +80,8 @@ interface InvitationRendererProps {
   customDressCode?: string;
   customRsvpDeadline?: string;
   customAdultsOnly?: boolean;
+  customTarjetaPricing?: TarjetaTier[];
+  customTarjetaNote?: string;
   customQuote?: string;
   customParentsOrHosts?: ParentsOrHostsGroup[];
   customStoryTitle?: string;
@@ -225,6 +229,8 @@ export function InvitationRenderer({
   customDressCode,
   customRsvpDeadline,
   customAdultsOnly = false,
+  customTarjetaPricing,
+  customTarjetaNote,
   customQuote,
   customParentsOrHosts,
   customStoryTitle,
@@ -256,6 +262,7 @@ export function InvitationRenderer({
 }: InvitationRendererProps) {
   const isEssentialPlan = planId === "esencial";
   const [isPlaying, setIsPlaying] = useState(false);
+  const [gateOpened, setGateOpened] = useState(Boolean(skipGate));
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [giftsExpanded, setGiftsExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<"alias" | "cbu" | null>(null);
@@ -273,10 +280,46 @@ export function InvitationRenderer({
   const isNewspaper = layoutId === "diario-editorial";
   const isTicket = layoutId === "ticket-vip";
   const isEditorialPaper = layoutId === "editorial-sobre";
-  const cardRadius = isNewspaper ? "rounded-none" : isTicket ? "rounded-2xl" : "rounded-[22px]";
-  const innerRadius = isNewspaper ? "rounded-none" : isTicket ? "rounded-xl" : "rounded-[18px]";
+  const isNeon = layoutId === "neon-dark";
+  const isInfantil = layoutId === "infantil-animado";
+  const isFullscreen = layoutId === "fullscreen-hero";
+  const activeFontKey = customFont || skin.fontDisplay;
+  const isScriptHeroFont = activeFontKey === "script" || activeFontKey === "pinyon";
+  const heroTitleAnimClass = !gateOpened
+    ? ""
+    : isScriptHeroFont
+    ? "type-hero-ink"
+    : isNeon || isTicket
+    ? "type-hero-vip"
+    : isInfantil
+    ? "type-hero-playful"
+    : "type-hero-editorial";
+  const sectionTitleAnimClass = isInfantil
+    ? "type-section-title-playful"
+    : isScriptHeroFont && isEditorialPaper
+    ? "type-section-title-ink"
+    : "type-section-title";
+
+  const cardRadius = isNewspaper
+    ? "rounded-none"
+    : isTicket
+    ? "rounded-2xl"
+    : isInfantil
+    ? "rounded-[28px]"
+    : isNeon
+    ? "rounded-2xl"
+    : "rounded-[22px]";
+  const innerRadius = isNewspaper
+    ? "rounded-none"
+    : isTicket
+    ? "rounded-xl"
+    : isInfantil
+    ? "rounded-[22px]"
+    : "rounded-[18px]";
   const cardShadow = isNewspaper
     ? "shadow-none"
+    : isInfantil
+    ? "shadow-[0_6px_0_rgba(42,36,32,0.08)]"
     : palette.isDark
     ? "shadow-[0_12px_32px_-16px_rgba(0,0,0,0.45)]"
     : "shadow-[0_10px_28px_-14px_rgba(42,36,32,0.12)]";
@@ -286,6 +329,7 @@ export function InvitationRenderer({
   const textAccentOnAlt = ensureContrast(palette.accent, palette.surfaceAlt, 4.6);
   const showAmbientParticles =
     layoutId === "neon-dark" ||
+    layoutId === "infantil-animado" ||
     skin.id === "nina-hadas-sobre" ||
     skin.id === "xv-mariposas-lila";
   const heroImage = customHeroImage || skin.heroImage;
@@ -445,7 +489,6 @@ export function InvitationRenderer({
   // Layer 1 (Hero / Monogram): displayFont
   // Layer 2 (Section Headings): sectionSerifFont
   // Layer 3 (Eyebrows / UI): font-ui-jost
-  const activeFontKey = customFont || skin.fontDisplay;
   const displayFont = FONT_MAP[activeFontKey];
   const sectionHeadingFont =
     skin.category === "nino" || skin.category === "nina"
@@ -524,7 +567,10 @@ export function InvitationRenderer({
           customDateDisplay={dateDisplay}
           customTimeDisplay={timeDisplay}
           fontDisplayClass={displayFont}
-          onOpen={() => setIsPlaying(true)}
+          onOpen={() => {
+            setIsPlaying(true);
+            setGateOpened(true);
+          }}
         />
       )}
 
@@ -599,18 +645,24 @@ export function InvitationRenderer({
       {/* Contenedor Mobile-First (480px máx centrado en escritorio) */}
       <main
         className={`relative z-10 mx-auto min-h-screen w-full max-w-[480px] shadow-2xl md:my-6 md:overflow-hidden md:border ${
-          isNewspaper ? "md:rounded-none" : "md:rounded-[32px]"
-        }`}
+          gateOpened ? "gate-open" : ""
+        } ${isNewspaper ? "md:rounded-none" : "md:rounded-[32px]"}`}
         style={{
           backgroundColor: palette.bg,
-          borderColor: palette.border,
+          borderColor: isNeon ? `${palette.accent}55` : palette.border,
+          backgroundImage: isNeon
+            ? `radial-gradient(circle at 50% 0%, ${palette.accent}22, transparent 52%)`
+            : isInfantil
+            ? `radial-gradient(${palette.accent}1A 1.2px, transparent 1.2px)`
+            : undefined,
+          backgroundSize: isInfantil ? "20px 20px" : undefined,
         }}
       >
         {(isEditorialPaper || isNewspaper) && (
           <div aria-hidden="true" className="paper-texture absolute inset-0 z-0 opacity-60" />
         )}
         {/* ================= HERO SECTION ================= */}
-        {layoutId === "fullscreen-hero" || layoutId === "editorial-sobre" ? (
+        {isFullscreen || isEditorialPaper ? (
           <section className="relative overflow-hidden">
             <div className="relative h-[420px] sm:h-[460px] w-full overflow-hidden">
               <img
@@ -659,19 +711,28 @@ export function InvitationRenderer({
                       style={{ borderColor: palette.accent }}
                     />
                     <p
-                      className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
+                      key={gateOpened ? "ey-open" : "ey-closed"}
+                      className={`font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em] ${
+                        gateOpened ? "type-eyebrow-reveal" : ""
+                      }`}
                       style={{ color: textAccentOnSurface }}
                     >
                       {sample.eyebrow}
                     </p>
                     <h1
-                      className={`animate-tracking-expand relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                      key={gateOpened ? "h1-open" : "h1-closed"}
+                      className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
                       style={{ color: palette.text }}
                     >
                       {eventTitle}
                     </h1>
+                    <span
+                      aria-hidden="true"
+                      className="type-rule-draw relative mx-auto mt-2 block h-[1.5px] w-16"
+                      style={{ backgroundColor: palette.accent }}
+                    />
                     <div
-                      className="relative mt-5 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                      className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
                       style={{ borderColor: palette.border }}
                     >
                       <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
@@ -687,15 +748,25 @@ export function InvitationRenderer({
                   </div>
                 ) : (
                   <div className="w-full max-w-[350px] rounded-2xl border border-white/60 bg-black/35 px-5 py-7 text-center text-white shadow-xl backdrop-blur-[4px]">
-                    <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
+                    <p
+                      key={gateOpened ? "ey-open" : "ey-closed"}
+                      className={`font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 ${
+                        gateOpened ? "type-eyebrow-reveal" : ""
+                      }`}
+                    >
                       {sample.eyebrow}
                     </p>
                     <h1
-                      className={`animate-tracking-expand text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                      key={gateOpened ? "h1-open" : "h1-closed"}
+                      className={`text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
                     >
                       {eventTitle}
                     </h1>
-                    <div className="mt-5 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
+                    <span
+                      aria-hidden="true"
+                      className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-16 bg-white/80"
+                    />
+                    <div className="mt-4 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
                       <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
                         {dateDisplay.split(" ")[0]}
                       </span>
@@ -751,7 +822,181 @@ export function InvitationRenderer({
               </p>
             </div>
           </section>
+        ) : isNewspaper ? (
+          /* DIARIO EDITORIAL HERO: Cabecera de periódico + foto enmarcada + epígrafe */
+          <section className="relative px-6 pt-7 pb-4 text-center">
+            <div className="border-y-2 py-2.5" style={{ borderColor: palette.text }}>
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: palette.textMuted }}>
+                <span>{sample.badgeText || "EDICIÓN ESPECIAL"}</span>
+                <span>VOL. I · N° 01</span>
+                <span>ARGENTINA</span>
+              </div>
+              <p className={`mt-1 text-2xl font-bold tracking-tight ${displayFont}`} style={{ color: palette.text }}>
+                THE CELEBRATION TIMES
+              </p>
+            </div>
+            <div className="border-b py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ borderColor: palette.border, color: textAccentOnBg }}>
+              {dateDisplay} · {timeDisplay}
+            </div>
+
+            <p
+              key={gateOpened ? "ey-open" : "ey-closed"}
+              className={`font-ui-jost mt-5 text-[11px] font-bold uppercase tracking-[0.26em] ${
+                gateOpened ? "type-eyebrow-reveal" : ""
+              }`}
+              style={{ color: textAccentOnBg }}
+            >
+              {sample.eyebrow}
+            </p>
+            <h1
+              key={gateOpened ? "h1-open" : "h1-closed"}
+              className={`mt-2 break-words py-1 text-5xl font-bold leading-[1.14] ${displayFont} ${heroTitleAnimClass}`}
+              style={{ color: palette.text }}
+            >
+              {eventTitle}
+            </h1>
+            <span
+              aria-hidden="true"
+              className="type-rule-draw mx-auto mt-2 block h-[2px] w-20"
+              style={{ backgroundColor: palette.text }}
+            />
+
+            <figure className="mt-5 border-2 p-1.5" style={{ borderColor: palette.text, backgroundColor: palette.surface }}>
+              <div className="h-[260px] w-full overflow-hidden">
+                <img
+                  src={heroImage}
+                  alt={eventTitle}
+                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                />
+              </div>
+              <figcaption className="border-t pt-1.5 text-[11px] italic" style={{ borderColor: palette.border, color: palette.textMuted }}>
+                Edición fotográfica · {eventTitle} — {dateDisplay}
+              </figcaption>
+            </figure>
+
+            {guestName && (
+              <div
+                className="mt-5 border-2 px-5 py-4 text-center"
+                style={{ backgroundColor: palette.surface, borderColor: palette.text }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em]" style={{ color: textAccentOnSurface }}>
+                  Ejemplar Nominado Para
+                </p>
+                <p className="mt-1 break-words text-base font-bold" style={{ color: palette.text }}>
+                  {guestName}
+                </p>
+                {(passes || table || paseLabel) && (
+                  <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
+                    {passes ? `${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
+                    {passes && table ? " · " : ""}
+                    {table ? `Mesa ${table}` : ""}
+                    {(passes || table) && paseLabel ? " · " : ""}
+                    {paseLabel}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <p className="mx-auto mt-5 max-w-sm border-l-2 pl-3 text-left text-[15px] italic leading-[1.65]" style={{ borderColor: palette.accent, color: palette.textMuted }}>
+              &ldquo;{quoteText}&rdquo;
+            </p>
+          </section>
+        ) : isTicket ? (
+          /* TICKET VIP HERO: Talón de acceso con muescas, código de barras y folio */
+          <section className="relative px-5 pt-6 pb-4">
+            <div
+              className="overflow-hidden rounded-3xl border shadow-lg"
+              style={{ backgroundColor: palette.surface, borderColor: palette.border }}
+            >
+              <div className="relative h-[250px] w-full overflow-hidden">
+                <img
+                  src={heroImage}
+                  alt={eventTitle}
+                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                <div className="absolute left-4 right-4 top-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                  <span className="rounded-full border border-white/40 bg-black/45 px-3 py-1 backdrop-blur-sm">
+                    {sample.badgeText || "ALL ACCESS"}
+                  </span>
+                  <span className="font-mono rounded-md bg-black/45 px-2.5 py-1">PASE N° 0040</span>
+                </div>
+              </div>
+
+              <div className="px-5 pt-5 pb-4 text-center">
+                <p
+                  key={gateOpened ? "ey-open" : "ey-closed"}
+                  className={`font-ui-jost text-[11px] font-bold uppercase tracking-[0.24em] ${
+                    gateOpened ? "type-eyebrow-reveal" : ""
+                  }`}
+                  style={{ color: textAccentOnSurface }}
+                >
+                  {sample.eyebrow}
+                </p>
+                <h1
+                  key={gateOpened ? "h1-open" : "h1-closed"}
+                  className={`mt-1.5 break-words py-1 text-4xl sm:text-5xl font-bold uppercase leading-[1.15] ${displayFont} ${heroTitleAnimClass}`}
+                  style={{ color: palette.text }}
+                >
+                  {eventTitle}
+                </h1>
+                <span
+                  aria-hidden="true"
+                  className="type-rule-draw mx-auto mt-2 block h-[2px] w-16"
+                  style={{ backgroundColor: palette.accent }}
+                />
+
+                <div className="mt-4 grid grid-cols-3 gap-2 border-y border-dashed py-3 text-center" style={{ borderColor: palette.border }}>
+                  <div>
+                    <span className="block text-[9px] font-bold uppercase tracking-widest" style={{ color: palette.textMuted }}>FECHA</span>
+                    <span className="text-xs font-bold">{dateDisplay.split(" de ").slice(0, 2).join(" ")}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-bold uppercase tracking-widest" style={{ color: palette.textMuted }}>HORA</span>
+                    <span className="text-xs font-bold">{timeDisplay}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-bold uppercase tracking-widest" style={{ color: palette.textMuted }}>ACCESO</span>
+                    <span className="text-xs font-bold">{paseType === "ceremonia" ? "CEREMONIA" : paseType === "fiesta" ? "FIESTA" : "VIP TOTAL"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative flex items-center py-2">
+                <span className="-ml-3 h-6 w-6 rounded-full border" style={{ backgroundColor: palette.bg, borderColor: palette.border }} />
+                <div className="mx-2 flex-1 border-t-2 border-dashed" style={{ borderColor: palette.border }} />
+                <span className="-mr-3 h-6 w-6 rounded-full border" style={{ backgroundColor: palette.bg, borderColor: palette.border }} />
+              </div>
+
+              <div className="px-5 pb-5 text-center">
+                {guestName && (
+                  <div className="mb-3 rounded-xl border border-dashed px-4 py-3" style={{ borderColor: palette.accent, backgroundColor: palette.bg }}>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: textAccentOnBg }}>
+                      Titular del Pase
+                    </p>
+                    <p className="mt-0.5 text-base font-bold" style={{ color: palette.text }}>{guestName}</p>
+                    {(passes || table) && (
+                      <p className="text-xs" style={{ color: palette.textMuted }}>
+                        {passes ? `${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
+                        {passes && table ? " · " : ""}
+                        {table ? `Sector / Mesa ${table}` : ""}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="mx-auto flex h-7 w-44 items-stretch justify-center gap-[2px] opacity-60">
+                  {[2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 1, 3, 2, 1, 2].map((w, idx) => (
+                    <div key={idx} style={{ width: `${w * 2}px`, backgroundColor: palette.text }} className="h-full" />
+                  ))}
+                </div>
+                <p className="mt-3 text-[14px] italic leading-relaxed" style={{ color: palette.textMuted }}>
+                  &ldquo;{quoteText}&rdquo;
+                </p>
+              </div>
+            </div>
+          </section>
         ) : (
+          /* NEON DARK & INFANTIL ANIMADO HERO */
           <section className="relative overflow-hidden">
             <div className="relative h-[320px] sm:h-[360px] w-full overflow-hidden">
               <img
@@ -782,12 +1027,13 @@ export function InvitationRenderer({
 
             <div className="relative -mt-20 px-6 pb-4 text-center">
               <div
-                className={`font-ui-jost mx-auto inline-block border px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] shadow-sm ${
-                  isNewspaper ? "rounded-none" : "rounded-full"
+                key={gateOpened ? "ey-open" : "ey-closed"}
+                className={`font-ui-jost mx-auto inline-block border px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] shadow-sm rounded-full ${
+                  gateOpened ? "type-eyebrow-reveal" : ""
                 }`}
                 style={{
                   backgroundColor: palette.surface,
-                  borderColor: palette.border,
+                  borderColor: isNeon ? palette.accent : palette.border,
                   color: textAccentOnSurface,
                 }}
               >
@@ -795,25 +1041,32 @@ export function InvitationRenderer({
               </div>
 
               <h1
-                className={`animate-tracking-expand mt-4 break-words py-1 text-5xl sm:text-6xl font-semibold leading-[1.2] tracking-tight ${displayFont}`}
+                key={gateOpened ? "h1-open" : "h1-closed"}
+                className={`mt-4 break-words py-1 text-5xl sm:text-6xl font-semibold leading-[1.2] tracking-tight ${displayFont} ${heroTitleAnimClass}`}
                 style={{ color: palette.text }}
               >
                 {eventTitle}
               </h1>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[2px] w-16 rounded-full"
+                style={{ backgroundColor: palette.accent }}
+              />
 
               <p
-                className="font-ui-jost mt-2 text-[12px] font-medium uppercase tracking-[0.2em]"
+                className="font-ui-jost mt-2.5 text-[12px] font-medium uppercase tracking-[0.2em]"
                 style={{ color: palette.textMuted }}
               >
                 {dateDisplay} · {timeDisplay}
               </p>
 
-              <CircularSaveSeal
-                monogram={sample.monogram}
-                color={textAccentOnBg}
-              />
+              {!isInfantil && (
+                <CircularSaveSeal
+                  monogram={sample.monogram}
+                  color={textAccentOnBg}
+                />
+              )}
 
-              {/* Pase personalizado si viene en URL */}
               {guestName && (
                 <div
                   className={`mt-5 ${cardRadius} border px-5 py-4 ${cardShadow}`}
@@ -886,6 +1139,7 @@ export function InvitationRenderer({
                   targetISO={dateISO}
                   palette={palette}
                   fontClass={sectionHeadingFont}
+                  layoutId={layoutId}
                   variant={
                     layoutId === "editorial-sobre" || layoutId === "fullscreen-hero"
                       ? "arch"
@@ -896,17 +1150,22 @@ export function InvitationRenderer({
             )
           )}
 
-          {/* ================= PADRES / PADRINOS (Bloque narrativo abierto) ================= */}
+          {/* ================= PADRES / PADRINOS ================= */}
           {!isEssentialPlan && parentsList && parentsList.length > 0 && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section className="text-center">
-                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
-                  <CelebrationCeremonyIcon category={skin.category} className="h-7 w-7" />
+                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
+                  <CelebrationCeremonyIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
                 </AnimatedSectionMedallion>
-                <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Con la bendición de
                 </h2>
+                <span
+                  aria-hidden="true"
+                  className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-12"
+                  style={{ backgroundColor: palette.accent }}
+                />
                 <div
                   className="mt-5 grid grid-cols-1 gap-5 border-y py-5 sm:grid-cols-2 sm:gap-4"
                   style={{ borderColor: palette.border }}
@@ -931,81 +1190,156 @@ export function InvitationRenderer({
             </RevealSection>
           )}
 
-          {/* ================= HISTORIA (Bloque narrativo abierto sobre tono suave) ================= */}
+          {/* ================= HISTORIA (Diferenciada por Layout) ================= */}
           {sections.story && storyBody && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
-              <section
-                className={`${innerRadius} px-6 py-7 text-center`}
-                style={{
-                  backgroundColor: palette.surfaceAlt,
-                }}
-              >
-                <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
-                  <CelebrationToastIcon className="h-7 w-7" />
-                </AnimatedSectionMedallion>
-                <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
-                  {storyHeading}
-                </h2>
-                <p className="mx-auto mt-2.5 max-w-sm break-words text-[15px] leading-[1.7]" style={{ color: palette.textMuted }}>
-                  {storyBody}
-                </p>
-              </section>
+              <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
+              {isNewspaper ? (
+                <section
+                  className="border-y-2 py-6"
+                  style={{ borderColor: palette.text }}
+                >
+                  <div className="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: textAccentOnBg }}>
+                    <span>CRÓNICA CENTRAL</span>
+                    <span>EDICIÓN ESPECIAL</span>
+                  </div>
+                  <h2 className={`${sectionTitleAnimClass} text-[28px] sm:text-[32px] font-bold leading-[1.15] ${sectionHeadingFont}`}>
+                    {storyHeading}
+                  </h2>
+                  <p
+                    className="mt-3 break-words text-left text-[15px] leading-[1.75] first-letter:float-left first-letter:mr-2.5 first-letter:text-5xl first-letter:font-bold first-letter:leading-[0.88]"
+                    style={{ color: palette.textMuted }}
+                  >
+                    {storyBody}
+                  </p>
+                </section>
+              ) : isEditorialPaper || isFullscreen ? (
+                <section
+                  className="-mx-6 px-7 py-9 text-center border-y"
+                  style={{
+                    backgroundColor: palette.surfaceAlt,
+                    borderColor: palette.border,
+                  }}
+                >
+                  <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface} layoutId={layoutId}>
+                    <CelebrationStoryIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
+                  </AnimatedSectionMedallion>
+                  <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                    {storyHeading}
+                  </h2>
+                  <span
+                    aria-hidden="true"
+                    className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                    style={{ backgroundColor: palette.accent }}
+                  />
+                  <p className="mx-auto mt-3.5 max-w-sm break-words text-[15px] leading-[1.75]" style={{ color: palette.textMuted }}>
+                    {storyBody}
+                  </p>
+                </section>
+              ) : (
+                <section
+                  className={`${innerRadius} border px-6 py-7 text-center ${cardShadow}`}
+                  style={{
+                    backgroundColor: palette.surfaceAlt,
+                    borderColor: isInfantil ? palette.accent : palette.border,
+                  }}
+                >
+                  <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface} layoutId={layoutId}>
+                    <CelebrationStoryIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
+                  </AnimatedSectionMedallion>
+                  <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                    {storyHeading}
+                  </h2>
+                  <span
+                    aria-hidden="true"
+                    className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                    style={{ backgroundColor: palette.accent }}
+                  />
+                  <p className="mx-auto mt-3 max-w-sm break-words text-[15px] leading-[1.7]" style={{ color: palette.textMuted }}>
+                    {storyBody}
+                  </p>
+                </section>
+              )}
             </RevealSection>
           )}
 
-          {/* ================= LUGARES & MAPA & CALENDARIO (Bloque práctico delimitado) ================= */}
+          {/* ================= LUGARES & MAPA & CALENDARIO ================= */}
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
           <section className="space-y-4">
             <div className="text-center">
-              <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
+              <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
                 <CelebrationPinIcon className="h-7 w-7" />
               </AnimatedSectionMedallion>
               <p
-                className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                className="type-section-eyebrow mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: textAccentOnBg }}
               >
-                Dónde & Cuándo
+                {isNeon ? "01 // Dónde & Cuándo" : isTicket ? "Puerta & Ubicación" : "Dónde & Cuándo"}
               </p>
-              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 Coordenadas del Evento
               </h2>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                style={{ backgroundColor: palette.accent }}
+              />
             </div>
 
             <div className="space-y-4">
               {locations.map((loc) => (
                 <div
                   key={loc.label}
-                  className={`${cardRadius} border p-5 sm:p-6 text-center ${cardShadow}`}
+                  className={`${cardRadius} border p-5 sm:p-6 ${isTicket ? "text-left" : "text-center"} ${cardShadow}`}
                   style={{
                     backgroundColor: palette.surface,
-                    borderColor: palette.border,
+                    borderColor: isNeon ? `${palette.accent}55` : isInfantil ? palette.accent : palette.border,
                   }}
                 >
-                  <span
-                    className={`inline-block px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
-                      isNewspaper ? "rounded-none border" : "rounded-full"
-                    }`}
-                    style={{
-                      backgroundColor: palette.surfaceAlt,
-                      borderColor: palette.border,
-                      color: textAccentOnAlt,
-                    }}
-                  >
-                    {loc.label}
-                  </span>
-                  <h3 className="mt-2.5 break-words text-lg font-semibold">{loc.venue}</h3>
-                  <p className="mt-1.5 break-words text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
-                    {loc.address} · {loc.city}
-                  </p>
-                  <p
-                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold"
-                    style={{ color: textAccentOnSurface }}
-                  >
-                    <Clock className="h-4 w-4" strokeWidth={1.75} />
-                    {loc.time}
-                  </p>
+                  {isTicket ? (
+                    <>
+                      <div className="flex items-center justify-between border-b border-dashed pb-2.5" style={{ borderColor: palette.border }}>
+                        <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: textAccentOnSurface }}>
+                          SECTOR · {loc.label}
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-mono text-xs font-bold" style={{ color: palette.text }}>
+                          <Clock className="h-3.5 w-3.5" />
+                          {loc.time}
+                        </span>
+                      </div>
+                      <h3 className="mt-3 break-words text-lg font-bold">{loc.venue}</h3>
+                      <p className="mt-1 break-words text-[14px]" style={{ color: palette.textMuted }}>
+                        {loc.address} · {loc.city}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className={`inline-block px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${
+                          isNewspaper ? "rounded-none border" : "rounded-full"
+                        }`}
+                        style={{
+                          backgroundColor: palette.surfaceAlt,
+                          borderColor: palette.border,
+                          color: textAccentOnAlt,
+                        }}
+                      >
+                        {loc.label}
+                      </span>
+                      <h3 className="mt-2.5 break-words text-lg font-semibold">{loc.venue}</h3>
+                      <p className="mt-1.5 break-words text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
+                        {loc.address} · {loc.city}
+                      </p>
+                      <p
+                        className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold"
+                        style={{ color: textAccentOnSurface }}
+                      >
+                        <Clock className="h-4 w-4" strokeWidth={1.75} />
+                        {loc.time}
+                      </p>
+                    </>
+                  )}
                   <div className="mt-4">
                     <a
                       href={loc.mapsUrl}
@@ -1068,19 +1402,24 @@ export function InvitationRenderer({
           </section>
           </RevealSection>
 
-          {/* ================= ITINERARIO ================= */}
+          {/* ================= ITINERARIO (Diferenciado por Layout) ================= */}
           {sections.schedule && scheduleList.length > 0 && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section>
                 <div className="mb-5 text-center">
                   <p
-                    className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+                    className="type-section-eyebrow text-[11px] font-semibold uppercase tracking-[0.22em]"
                     style={{ color: textAccentOnBg }}
                   >
-                    Programa del Día
+                    {isNeon ? "02 // Line-Up" : "Programa del Día"}
                   </p>
-                  <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>Itinerario</h2>
+                  <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>Itinerario</h2>
+                  <span
+                    aria-hidden="true"
+                    className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                    style={{ backgroundColor: palette.accent }}
+                  />
                   {paseLabel && (
                     <p
                       className="mt-2 inline-block rounded-full border px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
@@ -1095,7 +1434,46 @@ export function InvitationRenderer({
                   )}
                 </div>
 
-                {/* Mobile <640px: left rail full-width cards; >=640px: center axis alternating */}
+                {isNewspaper ? (
+                  <div className="divide-y border-y-2" style={{ borderColor: palette.text }}>
+                    {scheduleList.map((item) => (
+                      <div key={item.time + item.title} className="grid grid-cols-[84px_1fr] items-start gap-3 py-3.5" style={{ borderColor: palette.border }}>
+                        <span className={`text-sm font-bold ${sectionHeadingFont}`} style={{ color: textAccentOnBg }}>
+                          {item.time} hs
+                        </span>
+                        <div>
+                          <h3 className="text-[15px] font-bold">{item.title}</h3>
+                          <p className="mt-0.5 text-[13px]" style={{ color: palette.textMuted }}>{item.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : isNeon || isTicket ? (
+                  <div className="space-y-2.5">
+                    {scheduleList.map((item) => (
+                      <div
+                        key={item.time + item.title}
+                        className={`flex items-center gap-3.5 ${innerRadius} border px-4 py-3.5 ${cardShadow}`}
+                        style={{
+                          backgroundColor: palette.surface,
+                          borderColor: isNeon ? `${palette.accent}44` : palette.border,
+                        }}
+                      >
+                        <span
+                          className="flex-shrink-0 rounded-lg px-2.5 py-1.5 font-mono text-xs font-bold"
+                          style={{ backgroundColor: buttonBg, color: palette.accentText }}
+                        >
+                          {item.time}
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="text-[15px] font-bold leading-snug">{item.title}</h3>
+                          <p className="mt-0.5 text-[13px]" style={{ color: palette.textMuted }}>{item.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                /* Mobile <640px: left rail full-width cards; >=640px: center axis alternating */
                 <div className="relative space-y-4 pl-6 sm:pl-0">
                   <div
                     className="absolute bottom-2 left-[11px] top-2 w-[1.5px] sm:left-1/2 sm:-translate-x-1/2"
@@ -1174,108 +1552,159 @@ export function InvitationRenderer({
                     );
                   })}
                 </div>
+                )}
               </section>
             </RevealSection>
           )}
 
-          {/* ================= GALERÍA DE FOTOS CON CROSSFADE + POLAROID MINIATURAS ================= */}
+          {/* ================= GALERÍA DE FOTOS (Collage Bento en Fullscreen / Polaroid en Editorial / Prensa en Diario) ================= */}
           {sections.gallery && galleryList.length > 0 && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section>
                 <div className="mb-5 text-center">
-                  <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
-                    <CelebrationCameraIcon className="h-7 w-7" />
+                  <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
+                    <CelebrationCameraIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
                   </AnimatedSectionMedallion>
-                  <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                  <p
+                    className="type-section-eyebrow mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                    style={{ color: textAccentOnBg }}
+                  >
+                    {isNeon ? "03 // Galería" : isNewspaper ? "Archivo Fotográfico" : "Recuerdos"}
+                  </p>
+                  <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                     Momentos Especiales
                   </h2>
+                  <span
+                    aria-hidden="true"
+                    className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                    style={{ backgroundColor: palette.accent }}
+                  />
                 </div>
 
-                {/* Visor principal con transición suave y botón ampliar */}
-                <div
-                  className={`relative overflow-hidden ${cardRadius} border p-2.5 ${cardShadow}`}
-                  style={{
-                    backgroundColor: palette.surface,
-                    borderColor: palette.border,
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setLightboxIdx(activeGalleryIdx)}
-                    aria-label="Ampliar foto destacada"
-                    className={`relative block aspect-[4/5] w-full overflow-hidden ${innerRadius}`}
-                  >
-                    <img
-                      key={galleryList[activeGalleryIdx]}
-                      src={galleryList[activeGalleryIdx] || galleryList[0]}
-                      alt={`Momento ${activeGalleryIdx + 1}`}
-                      className={`anim-gallery-slide h-full w-full object-cover ${
-                        skin.imageFilter ?? ""
-                      }`}
-                    />
-                    <span
-                      className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md"
+                {isFullscreen && galleryList.length >= 3 ? (
+                  /* Collage estilo Revista / e-invitados para portadas fotográficas */
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIdx(0)}
+                      aria-label="Ampliar foto destacada"
+                      className={`group relative col-span-2 aspect-[16/10] w-full overflow-hidden ${cardRadius} border ${cardShadow}`}
+                      style={{ borderColor: palette.border }}
                     >
-                      {activeGalleryIdx + 1} / {galleryList.length} · Tocar para ampliar
-                    </span>
-                  </button>
-
-                  {galleryList.length > 1 && (
-                    <>
+                      <img
+                        src={galleryList[0]}
+                        alt="Momento 1"
+                        className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] ${skin.imageFilter ?? ""}`}
+                      />
+                      <span className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md">
+                        {galleryList.length} fotos · Tocar para ampliar
+                      </span>
+                    </button>
+                    {galleryList.slice(1, 5).map((imgUrl, idx) => (
                       <button
+                        key={imgUrl + idx}
                         type="button"
-                        aria-label="Foto anterior"
-                        onClick={() =>
-                          setActiveGalleryIdx(
-                            (i) => (i - 1 + galleryList.length) % galleryList.length
-                          )
-                        }
-                        className="absolute left-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                        onClick={() => setLightboxIdx(idx + 1)}
+                        aria-label={`Ampliar foto ${idx + 2}`}
+                        className={`group relative aspect-square overflow-hidden ${innerRadius} border ${cardShadow}`}
+                        style={{ borderColor: palette.border }}
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <img
+                          src={imgUrl}
+                          alt={`Momento ${idx + 2}`}
+                          loading="lazy"
+                          className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${skin.imageFilter ?? ""}`}
+                        />
                       </button>
-                      <button
-                        type="button"
-                        aria-label="Foto siguiente"
-                        onClick={() =>
-                          setActiveGalleryIdx((i) => (i + 1) % galleryList.length)
-                        }
-                        className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                    ))}
+                  </div>
+                ) : (
+                  /* Visor principal con transición suave + tiras de miniaturas */
+                  <div
+                    className={`relative overflow-hidden ${cardRadius} ${isNewspaper ? "border-2 p-2" : "border p-2.5"} ${cardShadow}`}
+                    style={{
+                      backgroundColor: palette.surface,
+                      borderColor: isNewspaper ? palette.text : isNeon ? `${palette.accent}55` : palette.border,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIdx(activeGalleryIdx)}
+                      aria-label="Ampliar foto destacada"
+                      className={`relative block aspect-[4/5] w-full overflow-hidden ${innerRadius}`}
+                    >
+                      <img
+                        key={galleryList[activeGalleryIdx]}
+                        src={galleryList[activeGalleryIdx] || galleryList[0]}
+                        alt={`Momento ${activeGalleryIdx + 1}`}
+                        className={`anim-gallery-slide h-full w-full object-cover ${
+                          skin.imageFilter ?? ""
+                        }`}
+                      />
+                      <span
+                        className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md"
                       >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                        {activeGalleryIdx + 1} / {galleryList.length} · Tocar para ampliar
+                      </span>
+                    </button>
 
-                      {/* Tira de miniaturas seleccionables */}
-                      <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
-                        {galleryList.map((imgUrl, idx) => {
-                          const isCurrent = idx === activeGalleryIdx;
-                          return (
-                            <button
-                              key={imgUrl + idx}
-                              type="button"
-                              onClick={() => setActiveGalleryIdx(idx)}
-                              aria-label={`Ver foto ${idx + 1}`}
-                              className={`relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                                isCurrent ? "scale-[1.03] opacity-100" : "opacity-60 hover:opacity-90"
-                              }`}
-                              style={{
-                                borderColor: isCurrent ? palette.accent : palette.border,
-                              }}
-                            >
-                              <img
-                                src={imgUrl}
-                                alt={`Miniatura ${idx + 1}`}
-                                loading="lazy"
-                                className={`h-full w-full object-cover ${skin.imageFilter ?? ""}`}
-                              />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
+                    {galleryList.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          aria-label="Foto anterior"
+                          onClick={() =>
+                            setActiveGalleryIdx(
+                              (i) => (i - 1 + galleryList.length) % galleryList.length
+                            )
+                          }
+                          className="absolute left-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Foto siguiente"
+                          onClick={() =>
+                            setActiveGalleryIdx((i) => (i + 1) % galleryList.length)
+                          }
+                          className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+
+                        {/* Tira de miniaturas seleccionables */}
+                        <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
+                          {galleryList.map((imgUrl, idx) => {
+                            const isCurrent = idx === activeGalleryIdx;
+                            return (
+                              <button
+                                key={imgUrl + idx}
+                                type="button"
+                                onClick={() => setActiveGalleryIdx(idx)}
+                                aria-label={`Ver foto ${idx + 1}`}
+                                className={`relative h-16 w-14 flex-shrink-0 overflow-hidden ${isNewspaper ? "rounded-none" : "rounded-xl"} border-2 transition-all ${
+                                  isCurrent ? "scale-[1.03] opacity-100" : "opacity-60 hover:opacity-90"
+                                }`}
+                                style={{
+                                  borderColor: isCurrent ? palette.accent : palette.border,
+                                }}
+                              >
+                                <img
+                                  src={imgUrl}
+                                  alt={`Miniatura ${idx + 1}`}
+                                  loading="lazy"
+                                  className={`h-full w-full object-cover ${skin.imageFilter ?? ""}`}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </section>
             </RevealSection>
           )}
@@ -1283,26 +1712,31 @@ export function InvitationRenderer({
           {/* ================= DRESS CODE ================= */}
           {sections.dressCode && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
-              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
+              className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surface,
-                borderColor: palette.border,
+                borderColor: isNewspaper ? palette.text : isNeon ? `${palette.accent}55` : isInfantil ? palette.accent : palette.border,
               }}
             >
-              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt}>
-                <CelebrationAttireIcon className="h-7 w-7" />
+              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt} layoutId={layoutId}>
+                <CelebrationAttireIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
               </AnimatedSectionMedallion>
             <p
-              className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              className="type-section-eyebrow mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: palette.textMuted }}
             >
-              Código de Vestimenta
+              {isNeon ? "04 // Dress Code" : "Código de Vestimenta"}
             </p>
-            <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+            <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {dressCodeLabel}
             </h2>
+            <span
+              aria-hidden="true"
+              className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+              style={{ backgroundColor: palette.accent }}
+            />
             <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
               {sample.dressCode.notes}
             </p>
@@ -1339,7 +1773,7 @@ export function InvitationRenderer({
           {/* ================= SOLO ADULTOS (OPCIONAL) ================= */}
           {!isEssentialPlan && customAdultsOnly && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               className={`${cardRadius} border p-6 text-center ${cardShadow}`}
               style={{
@@ -1347,21 +1781,113 @@ export function InvitationRenderer({
                 borderColor: palette.border,
               }}
             >
-              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
+              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface} layoutId={layoutId}>
                 <CelebrationAdultsIcon className="h-7 w-7" />
               </AnimatedSectionMedallion>
               <p
-                className="font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                className="type-section-eyebrow font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: textAccentOnAlt }}
               >
                 Evento Exclusivo
               </p>
-              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 Solo Adultos
               </h2>
-              <p className="mx-auto mt-2 max-w-xs text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                style={{ backgroundColor: palette.accent }}
+              />
+              <p className="mx-auto mt-2.5 max-w-xs text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
                 Queremos que esa noche sólo tengas que preocuparte por disfrutar y pasarla increíble.
               </p>
+            </section>
+          </RevealSection>
+          )}
+
+          {/* ================= VALOR DE TARJETA (OPCIONAL) ================= */}
+          {!isEssentialPlan && customTarjetaPricing && customTarjetaPricing.length > 0 && (
+          <RevealSection>
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
+            <section
+              className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${cardShadow}`}
+              style={{
+                backgroundColor: palette.surface,
+                borderColor: isNewspaper ? palette.text : isNeon ? `${palette.accent}55` : palette.border,
+              }}
+            >
+              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt} layoutId={layoutId}>
+                <CelebrationTicketPriceIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
+              <p
+                className="type-section-eyebrow font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                style={{ color: textAccentOnSurface }}
+              >
+                Información de Entrada
+              </p>
+              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                Valor de Tarjeta
+              </h2>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                style={{ backgroundColor: palette.accent }}
+              />
+              <div className="mt-4 space-y-2 text-left">
+                {customTarjetaPricing.map((tier, idx) => (
+                  <div
+                    key={tier.label + idx}
+                    className={`flex items-center justify-between gap-3 ${innerRadius} border px-4 py-3`}
+                    style={{
+                      backgroundColor: palette.bg,
+                      borderColor: palette.border,
+                    }}
+                  >
+                    <span className="text-[14px] font-medium" style={{ color: palette.text }}>
+                      {tier.label}
+                    </span>
+                    <span className="font-mono text-[15px] font-bold" style={{ color: textAccentOnBg }}>
+                      {tier.price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {customTarjetaNote && (
+                <p className="mt-3 text-[13px] leading-relaxed" style={{ color: palette.textMuted }}>
+                  {customTarjetaNote}
+                </p>
+              )}
+              {aliasText && (
+                <div className="mt-4 pt-3 border-t" style={{ borderColor: palette.border }}>
+                  <p className="text-[12px]" style={{ color: palette.textMuted }}>
+                    Titular: <strong style={{ color: palette.text }}>{giftHolderText}</strong> · Alias:{" "}
+                    <strong className="font-mono" style={{ color: palette.text }}>{aliasText}</strong>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(aliasText, "alias")}
+                    className={`mt-2.5 inline-flex min-h-[40px] items-center gap-1.5 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.12em] transition-all active:scale-95 ${
+                      isNewspaper ? "rounded-none" : "rounded-full"
+                    }`}
+                    style={{
+                      backgroundColor: buttonBg,
+                      color: palette.accentText,
+                    }}
+                  >
+                    {copiedField === "alias" ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        ¡Alias Copiado!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        Copiar Alias para Tarjeta
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </section>
           </RevealSection>
           )}
@@ -1369,20 +1895,25 @@ export function InvitationRenderer({
           {/* ================= REGALOS / VAQUITA + COPIAR ALIAS ================= */}
           {sections.gifts && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
-              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
+              className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surface,
-                borderColor: palette.border,
+                borderColor: isNewspaper ? palette.text : isNeon ? `${palette.accent}55` : palette.border,
               }}
             >
-              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt}>
-                <CelebrationGiftIcon className="h-7 w-7" />
+              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt} layoutId={layoutId}>
+                <CelebrationGiftIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
               </AnimatedSectionMedallion>
-            <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+            <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {sample.gifts.title}
             </h2>
+            <span
+              aria-hidden="true"
+              className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+              style={{ backgroundColor: palette.accent }}
+            />
             <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
               {sample.gifts.intro}
             </p>
@@ -1455,22 +1986,27 @@ export function InvitationRenderer({
           {/* ================= MURO DE BUENOS DESEOS / FIRMAS ================= */}
           {sections.wishes && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section className="space-y-3.5">
               <div className="text-center">
-                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
-                  <CelebrationWishesIcon className="h-7 w-7" />
+                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
+                  <CelebrationWishesIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
                 </AnimatedSectionMedallion>
                 <p
-                  className="font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                  className="type-section-eyebrow font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
                   style={{ color: textAccentOnBg }}
                 >
                   Libro de Firmas
                 </p>
-                <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Buenos Deseos
                 </h2>
-                <p className="mx-auto mt-1 max-w-xs text-xs" style={{ color: palette.textMuted }}>
+                <span
+                  aria-hidden="true"
+                  className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                  style={{ backgroundColor: palette.accent }}
+                />
+                <p className="mx-auto mt-2 max-w-xs text-xs" style={{ color: palette.textMuted }}>
                   Mensajes escritos por nuestros invitados al confirmar su asistencia.
                 </p>
               </div>
@@ -1569,12 +2105,12 @@ export function InvitationRenderer({
           {/* ================= MÚSICA PARA LA FIESTA / PLAYLIST DJ (PRO & LLAVE EN MANO) ================= */}
           {allowDjSongs && sections.djSongs && !memoryMode && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
-              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
+              className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surface,
-                borderColor: palette.border,
+                borderColor: isNewspaper ? palette.text : isNeon ? `${palette.accent}55` : palette.border,
               }}
             >
               <div
@@ -1588,14 +2124,19 @@ export function InvitationRenderer({
                 <Music className="h-5 w-5" strokeWidth={1.75} />
               </div>
               <p
-                className="font-ui-jost mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                className="type-section-eyebrow font-ui-jost mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: textAccentOnSurface }}
               >
                 Playlist de la Fiesta
               </p>
-              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 ¿Qué tema no puede faltar?
               </h2>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                style={{ backgroundColor: palette.accent }}
+              />
               <p className="mt-2 text-[14px] leading-relaxed" style={{ color: palette.textMuted }}>
                 Agregá la canción que querés escuchar o bailar en la pista para que la reciba nuestro DJ.
               </p>
@@ -1711,7 +2252,7 @@ export function InvitationRenderer({
           {/* ================= MINI-TRIVIA CON PODIO (PRO & LLAVE EN MANO) ================= */}
           {!isEssentialPlan && sections.trivia && triviaQuestions.length > 0 && !memoryMode && (
             <RevealSection>
-              <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+              <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <TriviaSection
                 eventSlug={eventSlug}
                 title={triviaTitle || `¿Cuánto conocés a ${eventTitle}?`}
@@ -1734,7 +2275,7 @@ export function InvitationRenderer({
             sections.collaborativeAlbum &&
             Boolean(albumUrl || instagramHandle || eventHashtag) && (
               <RevealSection>
-                <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+                <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
                 <CollaborativeAlbumSection
                   albumUrl={albumUrl}
                   instagramHandle={instagramHandle}
@@ -1753,20 +2294,25 @@ export function InvitationRenderer({
           {/* ================= CONFIRMAR ASISTENCIA (RSVP NATIVO) ================= */}
           {sections.rsvp && !memoryMode && (
           <RevealSection>
-            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
-              className={`${isNewspaper ? "rounded-none" : "rounded-[24px]"} border-2 p-6 sm:p-7 text-center ${cardShadow}`}
+              className={`${isNewspaper ? "rounded-none" : cardRadius} border-2 p-6 sm:p-7 text-center ${cardShadow}`}
               style={{
                 backgroundColor: palette.surfaceAlt,
                 borderColor: textAccentOnAlt,
               }}
             >
-              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
-                <CelebrationCheckIcon className="h-7 w-7" />
+              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface} layoutId={layoutId}>
+                <CelebrationCheckIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
               </AnimatedSectionMedallion>
-              <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 ¿Contamos con vos?
               </h2>
+              <span
+                aria-hidden="true"
+                className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
+                style={{ backgroundColor: palette.accent }}
+              />
               <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
                 {customRsvpDeadline
                   ? `Confirmá tu asistencia antes del ${customRsvpDeadline}. `

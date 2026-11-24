@@ -111,6 +111,8 @@ export default async function PublicInvitationPage({
       customDressCode={event.dressCode || undefined}
       customRsvpDeadline={event.rsvpDeadline || undefined}
       customAdultsOnly={Boolean(event.adultsOnly)}
+      customTarjetaPricing={event.tarjetaPricing || undefined}
+      customTarjetaNote={event.tarjetaNote || undefined}
       customQuote={event.quote || undefined}
       customParentsOrHosts={event.parentsOrHosts || undefined}
       customStoryTitle={event.storyTitle || undefined}

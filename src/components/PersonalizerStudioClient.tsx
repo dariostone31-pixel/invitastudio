@@ -25,6 +25,7 @@ import type {
   HeroOverlayStyle,
   ParentsOrHostsGroup,
   ScheduleItem,
+  TarjetaTier,
   TriviaQuestion,
 } from "@/lib/db";
 import {
@@ -134,6 +135,10 @@ export function PersonalizerStudioClient({
   const [dressCode, setDressCode] = useState(event.dressCode);
   const [rsvpDeadline, setRsvpDeadline] = useState(event.rsvpDeadline || "");
   const [adultsOnly, setAdultsOnly] = useState(Boolean(event.adultsOnly));
+  const [tarjetaPricing, setTarjetaPricing] = useState<TarjetaTier[]>(
+    event.tarjetaPricing || []
+  );
+  const [tarjetaNote, setTarjetaNote] = useState(event.tarjetaNote || "");
   const [quote, setQuote] = useState(event.quote);
 
   const selectedSkin = getSkinById(skinId);
@@ -298,6 +303,10 @@ export function PersonalizerStudioClient({
           dressCode,
           rsvpDeadline,
           adultsOnly,
+          tarjetaPricing: tarjetaPricing
+            .map((t) => ({ label: t.label.trim(), price: t.price.trim() }))
+            .filter((t) => t.label && t.price),
+          tarjetaNote: tarjetaNote.trim(),
           quote,
           parentsOrHosts,
           storyTitle,
@@ -744,6 +753,79 @@ export function PersonalizerStudioClient({
                         className="h-4 w-4 accent-stone-900"
                       />
                     </label>
+                  </div>
+                  <div className="sm:col-span-2 rounded-2xl border border-stone-200 bg-stone-50 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="block text-xs font-semibold text-stone-800">
+                          Valor de Tarjeta (opcional)
+                        </span>
+                        <span className="block text-[10px] text-stone-500">
+                          Dejá vacío para ocultar la sección; agregá categorías para mostrar precios
+                        </span>
+                      </div>
+                      {tarjetaPricing.length < 6 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTarjetaPricing((prev) => [
+                              ...prev,
+                              { label: prev.length === 0 ? "Mayores" : "Menores", price: "$25.000" },
+                            ])
+                          }
+                          className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                        >
+                          <Plus className="h-3 w-3" /> Agregar tarifa
+                        </button>
+                      )}
+                    </div>
+                    {tarjetaPricing.length > 0 && (
+                      <div className="space-y-2 pt-1">
+                        {tarjetaPricing.map((tier, idx) => (
+                          <div key={idx} className="grid grid-cols-[1fr_115px_auto] items-center gap-2">
+                            <input
+                              type="text"
+                              value={tier.label}
+                              onChange={(e) => {
+                                const next = [...tarjetaPricing];
+                                next[idx] = { ...next[idx], label: e.target.value };
+                                setTarjetaPricing(next);
+                              }}
+                              placeholder="Ej. Mayores"
+                              className="rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs outline-none focus:border-stone-900"
+                            />
+                            <input
+                              type="text"
+                              value={tier.price}
+                              onChange={(e) => {
+                                const next = [...tarjetaPricing];
+                                next[idx] = { ...next[idx], price: e.target.value };
+                                setTarjetaPricing(next);
+                              }}
+                              placeholder="$25.000"
+                              className="rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTarjetaPricing((prev) => prev.filter((_, i) => i !== idx))
+                              }
+                              className="rounded-lg p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600"
+                              aria-label="Quitar tarifa"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <input
+                          type="text"
+                          value={tarjetaNote}
+                          onChange={(e) => setTarjetaNote(e.target.value)}
+                          placeholder="Nota aclaratoria (ej. Podés abonar hasta 10 días antes)"
+                          className="w-full rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -1351,6 +1433,8 @@ export function PersonalizerStudioClient({
                 customDressCode={dressCode}
                 customRsvpDeadline={rsvpDeadline || undefined}
                 customAdultsOnly={adultsOnly}
+                customTarjetaPricing={tarjetaPricing.length > 0 ? tarjetaPricing : undefined}
+                customTarjetaNote={tarjetaNote || undefined}
                 customQuote={quote}
                 customParentsOrHosts={parentsOrHosts}
                 customStoryTitle={storyTitle}

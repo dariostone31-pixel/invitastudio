@@ -542,16 +542,202 @@ body {
   stroke-dashoffset: 16;
 }
 
-[data-revealed="true"] .anim-gift-lid { animation: gGiftLid 2.8s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-cup-left { animation: gCupLeft 2.8s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-cup-right { animation: gCupRight 2.8s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-toast-spark { animation: gToastSpark 2.8s 180ms ease-in-out infinite; }
-[data-revealed="true"] .anim-camera-flash { animation: gCameraFlash 2.6s 150ms ease-in-out infinite; }
+[data-revealed="true"] .anim-gift-lid { animation: gGiftLid 4.2s 280ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+[data-revealed="true"] .anim-cup-left { animation: gCupLeft 4.4s 240ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+[data-revealed="true"] .anim-cup-right { animation: gCupRight 4.4s 240ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+[data-revealed="true"] .anim-toast-spark { animation: gToastSpark 3.8s 300ms ease-in-out infinite; }
+[data-revealed="true"] .anim-camera-flash { animation: gCameraFlash 3.6s 250ms ease-in-out infinite; }
 [data-revealed="true"] .anim-check-draw { animation: gCheckDraw 850ms 150ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards; }
-[data-revealed="true"] .anim-attire-sway { animation: gAttireSway 3.2s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-pin-drop { animation: gPinDrop 2.6s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-wish-heart { animation: gWishHeart 2.8s 120ms ease-in-out infinite; }
-[data-revealed="true"] .anim-adult-spark { animation: gAdultSpark 3s 150ms ease-in-out infinite; }
+[data-revealed="true"] .anim-attire-sway { animation: gAttireSway 4.6s 220ms ease-in-out infinite; }
+[data-revealed="true"] .anim-pin-drop { animation: gPinDrop 3.8s 200ms cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+[data-revealed="true"] .anim-wish-heart { animation: gWishHeart 4.2s 220ms ease-in-out infinite; }
+[data-revealed="true"] .anim-adult-spark { animation: gAdultSpark 4s 240ms ease-in-out infinite; }
+
+/* Choreographed multi-stroke draw-in + theme-specific icon motion */
+@keyframes svgStrokeDraw {
+  from { stroke-dashoffset: 90; opacity: 0.35; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes themeRocketHover {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  50% { transform: translate(1.4px, -2.6px) rotate(2deg); }
+}
+@keyframes themeWingFlutter {
+  0%, 100% { transform: scaleX(1) translateY(0px); }
+  45% { transform: scaleX(0.84) translateY(-1.5px); }
+}
+@keyframes themeCrownFloat {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-2px) scale(1.03); }
+}
+@keyframes themeRipplePulse {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  70% { transform: scale(1.22); opacity: 0.08; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+@keyframes themeVinylTurn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes themeGentleBreath {
+  0%, 100% { transform: scale(1) translateY(0px); }
+  50% { transform: scale(1.035) translateY(-1.2px); }
+}
+
+.anim-draw-primary,
+.anim-draw-secondary,
+.anim-draw-accent {
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+}
+[data-revealed="true"] .anim-draw-primary {
+  animation: svgStrokeDraw 850ms 60ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+}
+[data-revealed="true"] .anim-draw-secondary {
+  animation: svgStrokeDraw 850ms 220ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+}
+[data-revealed="true"] .anim-draw-accent {
+  animation: svgStrokeDraw 700ms 380ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+}
+
+.anim-rocket-motion { transform-box: fill-box; transform-origin: center; }
+.anim-wing-motion { transform-box: fill-box; transform-origin: center; }
+.anim-crown-motion { transform-box: fill-box; transform-origin: center bottom; }
+.anim-ripple-ring { transform-box: fill-box; transform-origin: center; }
+.anim-vinyl-motion { transform-box: fill-box; transform-origin: center; }
+.anim-breath-motion { transform-box: fill-box; transform-origin: center; }
+
+[data-revealed="true"] .anim-rocket-motion { animation: themeRocketHover 3.4s 150ms ease-in-out infinite; }
+[data-revealed="true"] .anim-wing-motion { animation: themeWingFlutter 2.8s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-crown-motion { animation: themeCrownFloat 4.2s 160ms ease-in-out infinite; }
+[data-revealed="true"] .anim-ripple-ring { animation: themeRipplePulse 3.2s 250ms ease-out infinite; }
+[data-revealed="true"] .anim-vinyl-motion { animation: themeVinylTurn 10s linear infinite; }
+[data-revealed="true"] .anim-breath-motion { animation: themeGentleBreath 4.8s 200ms ease-in-out infinite; }
+
+/* Real Typography & Font Entrance Transitions (triggered once envelope opens or section reveals) */
+@keyframes typeInkSweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.2;
+    transform: translateX(-8px);
+  }
+  100% {
+    clip-path: inset(0 0% 0 0);
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes typeEditorialMask {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    clip-path: inset(0 0 0% 0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes typeVipFocus {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    letter-spacing: 0.16em;
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    letter-spacing: normal;
+    transform: scale(1);
+  }
+}
+@keyframes typePlayfulPop {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.91);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes typeRuleExpand {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes typeEyebrowTrack {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.08em;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.24em;
+    transform: translateY(0);
+  }
+}
+
+.type-hero-ink {
+  animation: typeInkSweep 950ms 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.type-hero-editorial {
+  animation: typeEditorialMask 820ms 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.type-hero-vip {
+  animation: typeVipFocus 780ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.type-hero-playful {
+  animation: typePlayfulPop 760ms 140ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.type-eyebrow-reveal {
+  animation: typeEyebrowTrack 650ms 60ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.type-rule-draw {
+  transform-origin: center;
+  transform: scaleX(0);
+}
+[data-revealed="true"] .type-rule-draw,
+.gate-open .type-rule-draw {
+  animation: typeRuleExpand 750ms 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.type-section-title {
+  opacity: 0;
+  transform: translateY(14px);
+}
+[data-revealed="true"] .type-section-title {
+  animation: typeEditorialMask 720ms 90ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.type-section-title-ink {
+  opacity: 0;
+}
+[data-revealed="true"] .type-section-title-ink {
+  animation: typeInkSweep 820ms 110ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.type-section-title-playful {
+  opacity: 0;
+}
+[data-revealed="true"] .type-section-title-playful {
+  animation: typePlayfulPop 700ms 90ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.type-section-eyebrow {
+  opacity: 0;
+}
+[data-revealed="true"] .type-section-eyebrow {
+  animation: typeEyebrowTrack 600ms 40ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
 
 .data-critical {
   font-family: var(--font-jost), var(--font-sans), sans-serif;
@@ -578,9 +764,25 @@ body {
   .animate-rise-3,
   .animate-phone-in,
   .animate-tracking-expand,
-  .animate-panel-in {
+  .animate-panel-in,
+  .type-hero-ink,
+  .type-hero-editorial,
+  .type-hero-vip,
+  .type-hero-playful,
+  .type-eyebrow-reveal,
+  .type-section-title,
+  .type-section-title-ink,
+  .type-section-title-playful,
+  .type-section-eyebrow {
     opacity: 1 !important;
     transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    animation: none !important;
+  }
+  .type-rule-draw {
+    transform: scaleX(1) !important;
+    opacity: 1 !important;
     animation: none !important;
   }
   .eq-bar-1,
@@ -620,12 +822,22 @@ body {
   .anim-wish-heart,
   .anim-adult-spark,
   .anim-badge-halo,
-  .anim-gallery-slide {
+  .anim-gallery-slide,
+  .anim-rocket-motion,
+  .anim-wing-motion,
+  .anim-crown-motion,
+  .anim-ripple-ring,
+  .anim-vinyl-motion,
+  .anim-breath-motion {
     animation: none !important;
   }
-  .anim-check-draw {
+  .anim-check-draw,
+  .anim-draw-primary,
+  .anim-draw-secondary,
+  .anim-draw-accent {
     animation: none !important;
     stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
   }
   .reveal-section {
     opacity: 1 !important;

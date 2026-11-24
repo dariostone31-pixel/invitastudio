@@ -62,6 +62,11 @@ export interface ScheduleItem {
   detail: string;
 }
 
+export interface TarjetaTier {
+  label: string;
+  price: string;
+}
+
 export type HeroOverlayStyle =
   | "natural"
   | "translucido-suave"
@@ -95,6 +100,8 @@ export interface EventRecord {
   dressCode: string;
   rsvpDeadline?: string;
   adultsOnly?: boolean;
+  tarjetaPricing?: TarjetaTier[];
+  tarjetaNote?: string;
   quote: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
   storyTitle?: string;
@@ -377,6 +384,8 @@ async function ensurePgReady(): Promise<Pool> {
         alter table public.events add column if not exists gift_holder text;
         alter table public.events add column if not exists rsvp_deadline text;
         alter table public.events add column if not exists adults_only boolean not null default false;
+        alter table public.events add column if not exists tarjeta_pricing jsonb;
+        alter table public.events add column if not exists tarjeta_note text;
         alter table public.events add column if not exists payment_method text;
         alter table public.events add column if not exists mp_preference_id text;
         alter table public.events add column if not exists mp_payment_id text;
@@ -461,6 +470,10 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     dressCode: String(row.dress_code ?? "Elegante Sport"),
     rsvpDeadline: row.rsvp_deadline ? String(row.rsvp_deadline) : undefined,
     adultsOnly: Boolean(row.adults_only),
+    tarjetaPricing: Array.isArray(row.tarjeta_pricing)
+      ? (row.tarjeta_pricing as TarjetaTier[])
+      : undefined,
+    tarjetaNote: row.tarjeta_note ? String(row.tarjeta_note) : undefined,
     quote: String(row.quote ?? ""),
     parentsOrHosts: Array.isArray(row.parents_or_hosts)
       ? (row.parents_or_hosts as ParentsOrHostsGroup[])
@@ -533,7 +546,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       id, order_code, slug, panel_token, skin_id, plan_id, status,
       payment_status, payment_method, mp_preference_id, mp_payment_id, paid_amount,
       event_title, date_iso, date_display, time_display, venue, address, city,
-      alias, gift_bank, gift_holder, dress_code, rsvp_deadline, adults_only, quote, parents_or_hosts, story_title, story_text, schedule,
+      alias, gift_bank, gift_holder, dress_code, rsvp_deadline, adults_only, tarjeta_pricing, tarjeta_note, quote, parents_or_hosts, story_title, story_text, schedule,
       hero_image_url, hero_overlay_override, gallery_images,
       font_override, accent_override, audio_override, song_request, dj_playlist,
       trivia_title, trivia_questions, trivia_scores, album_url, instagram_handle, event_hashtag, guest_list,
@@ -542,7 +555,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57
     )`,
     [
       ev.id,
@@ -570,6 +583,8 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.dressCode,
       ev.rsvpDeadline ?? null,
       Boolean(ev.adultsOnly),
+      ev.tarjetaPricing ? JSON.stringify(ev.tarjetaPricing) : null,
+      ev.tarjetaNote ?? null,
       ev.quote,
       ev.parentsOrHosts ? JSON.stringify(ev.parentsOrHosts) : null,
       ev.storyTitle ?? null,
@@ -740,6 +755,8 @@ export async function createOrderEvent(input: {
   dressCode: string;
   rsvpDeadline?: string;
   adultsOnly?: boolean;
+  tarjetaPricing?: TarjetaTier[];
+  tarjetaNote?: string;
   quote?: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
   storyTitle?: string;
@@ -810,6 +827,11 @@ export async function createOrderEvent(input: {
     dressCode: input.dressCode || "Elegante Sport",
     rsvpDeadline: input.rsvpDeadline?.trim() || undefined,
     adultsOnly: Boolean(input.adultsOnly),
+    tarjetaPricing:
+      input.tarjetaPricing && input.tarjetaPricing.length > 0
+        ? input.tarjetaPricing
+        : undefined,
+    tarjetaNote: input.tarjetaNote?.trim() || undefined,
     quote:
       input.quote && input.quote.trim()
         ? input.quote.trim()
@@ -885,6 +907,8 @@ export type EventPatch = Partial<
     | "dressCode"
     | "rsvpDeadline"
     | "adultsOnly"
+    | "tarjetaPricing"
+    | "tarjetaNote"
     | "quote"
     | "parentsOrHosts"
     | "storyTitle"
@@ -930,6 +954,8 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   dressCode: { col: "dress_code" },
   rsvpDeadline: { col: "rsvp_deadline" },
   adultsOnly: { col: "adults_only" },
+  tarjetaPricing: { col: "tarjeta_pricing", json: true },
+  tarjetaNote: { col: "tarjeta_note" },
   quote: { col: "quote" },
   parentsOrHosts: { col: "parents_or_hosts", json: true },
   storyTitle: { col: "story_title" },

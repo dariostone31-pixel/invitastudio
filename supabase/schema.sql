@@ -27,6 +27,8 @@ create table if not exists public.events (
   dress_code text not null default 'Elegante Sport',
   rsvp_deadline text,
   adults_only boolean not null default false,
+  tarjeta_pricing jsonb,
+  tarjeta_note text,
   quote text not null default '',
   parents_or_hosts jsonb,
   story_title text,
