@@ -1,78 +1,83 @@
 import type { Metadata } from "next";
-import {
-  Cormorant_Garamond,
-  Alex_Brush,
-  Pinyon_Script,
-  Fraunces,
-  Jost,
-  Cinzel,
-  Plus_Jakarta_Sans,
-  Oswald,
-  Fredoka,
-  Playfair_Display,
-} from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
+const cormorant = localFont({
+  src: [
+    { path: "./fonts/cormorant-garamond-normal.woff2", weight: "400 700", style: "normal" },
+    { path: "./fonts/cormorant-garamond-italic.woff2", weight: "400 700", style: "italic" },
+  ],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
   variable: "--font-cormorant",
 });
 
-const alexBrush = Alex_Brush({
-  subsets: ["latin"],
-  weight: ["400"],
+const alexBrush = localFont({
+  src: [{ path: "./fonts/alex-brush.woff2", weight: "400", style: "normal" }],
+  display: "swap",
+  fallback: ["cursive"],
   variable: "--font-script",
 });
 
-const pinyonScript = Pinyon_Script({
-  subsets: ["latin"],
-  weight: ["400"],
+const pinyonScript = localFont({
+  src: [{ path: "./fonts/pinyon-script.woff2", weight: "400", style: "normal" }],
+  display: "swap",
+  fallback: ["cursive"],
   variable: "--font-pinyon",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
+const fraunces = localFont({
+  src: [
+    { path: "./fonts/fraunces-normal.woff2", weight: "400 700", style: "normal" },
+    { path: "./fonts/fraunces-italic.woff2", weight: "400 700", style: "italic" },
+  ],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
   variable: "--font-fraunces",
 });
 
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+const jost = localFont({
+  src: [{ path: "./fonts/jost.woff2", weight: "300 700", style: "normal" }],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
   variable: "--font-jost",
 });
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+const cinzel = localFont({
+  src: [{ path: "./fonts/cinzel.woff2", weight: "400 700", style: "normal" }],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
   variable: "--font-cinzel",
 });
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const jakarta = localFont({
+  src: [{ path: "./fonts/plus-jakarta-sans.woff2", weight: "400 700", style: "normal" }],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
   variable: "--font-jakarta",
 });
 
-const oswald = Oswald({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const oswald = localFont({
+  src: [{ path: "./fonts/oswald.woff2", weight: "400 700", style: "normal" }],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
   variable: "--font-oswald",
 });
 
-const fredoka = Fredoka({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const fredoka = localFont({
+  src: [{ path: "./fonts/fredoka.woff2", weight: "400 700", style: "normal" }],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
   variable: "--font-fredoka",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
+const playfair = localFont({
+  src: [
+    { path: "./fonts/playfair-display-normal.woff2", weight: "400 700", style: "normal" },
+    { path: "./fonts/playfair-display-italic.woff2", weight: "400 700", style: "italic" },
+  ],
+  display: "swap",
+  fallback: ["Georgia", "serif"],
   variable: "--font-playfair",
 });
 
