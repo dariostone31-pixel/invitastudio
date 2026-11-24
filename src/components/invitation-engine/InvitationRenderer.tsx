@@ -664,7 +664,7 @@ export function InvitationRenderer({
         {/* ================= HERO SECTION ================= */}
         {isFullscreen || isEditorialPaper ? (
           <section className="relative overflow-hidden">
-            <div className="relative h-[420px] sm:h-[460px] w-full overflow-hidden">
+            <div className={`relative w-full overflow-hidden ${isFullscreen ? "h-[460px] sm:h-[520px]" : "h-[420px] sm:h-[460px]"}`}>
               <img
                 src={heroImage}
                 alt={eventTitle}
@@ -678,7 +678,7 @@ export function InvitationRenderer({
                 />
               )}
               {!isEditorialPaper && (
-                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/70" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-black/80" />
               )}
               {isEditorialPaper && (
                 <div
@@ -693,8 +693,20 @@ export function InvitationRenderer({
                 color={isEditorialPaper ? textAccentOnSurface : "#FFFFFF"}
                 layoutId={layoutId}
               />
+              {isFullscreen && (
+                <>
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-3.5 rounded-2xl border border-white/40"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-5 rounded-xl border border-white/25"
+                  />
+                </>
+              )}
 
-              {/* Framed plaque: ivory paper plaque on editorial-sobre, dark glass on fullscreen photographic hero */}
+              {/* Framed plaque: ivory paper plaque on editorial-sobre, fine double hairline glass on fullscreen photographic hero */}
               <div className="absolute inset-0 flex items-center justify-center px-6">
                 {isEditorialPaper ? (
                   <div
@@ -747,35 +759,37 @@ export function InvitationRenderer({
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full max-w-[350px] rounded-2xl border border-white/60 bg-black/35 px-5 py-7 text-center text-white shadow-xl backdrop-blur-[4px]">
-                    <p
-                      key={gateOpened ? "ey-open" : "ey-closed"}
-                      className={`font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 ${
-                        gateOpened ? "type-eyebrow-reveal" : ""
-                      }`}
-                    >
-                      {sample.eyebrow}
-                    </p>
-                    <h1
-                      key={gateOpened ? "h1-open" : "h1-closed"}
-                      className={`text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
-                    >
-                      {eventTitle}
-                    </h1>
-                    <span
-                      aria-hidden="true"
-                      className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-16 bg-white/80"
-                    />
-                    <div className="mt-4 grid grid-cols-3 items-center border-y border-white/65 py-2.5 text-center">
-                      <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
-                        {dateDisplay.split(" ")[0]}
-                      </span>
-                      <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
-                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
-                      </span>
-                      <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
-                        {timeDisplay}
-                      </span>
+                  <div className="relative w-full max-w-[356px] rounded-2xl border border-white/55 bg-black/35 p-1.5 text-center text-white shadow-2xl backdrop-blur-[4px]">
+                    <div className="rounded-xl border border-white/25 px-5 py-6">
+                      <p
+                        key={gateOpened ? "ey-open" : "ey-closed"}
+                        className={`font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 ${
+                          gateOpened ? "type-eyebrow-reveal" : ""
+                        }`}
+                      >
+                        {sample.eyebrow}
+                      </p>
+                      <h1
+                        key={gateOpened ? "h1-open" : "h1-closed"}
+                        className={`text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
+                      >
+                        {eventTitle}
+                      </h1>
+                      <span
+                        aria-hidden="true"
+                        className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-16 bg-white/80"
+                      />
+                      <div className="mt-4 grid grid-cols-3 items-center border-y border-white/55 py-2.5 text-center">
+                        <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                          {dateDisplay.split(" ")[0]}
+                        </span>
+                        <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
+                          {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                        </span>
+                        <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                          {timeDisplay}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}

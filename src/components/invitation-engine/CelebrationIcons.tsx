@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import type { EventCategory, LayoutId } from "@/templates/catalog";
+import { AnimatedIconBox } from "@/components/AnimatedIconBox";
 
 interface CelebrationIconProps {
   className?: string;
@@ -11,12 +14,7 @@ interface CelebrationIconProps {
 
 /**
  * Medallón editorial animado adaptable al layout:
- * - editorial-sobre: doble anillo botánico con halo suave
- * - fullscreen-hero: aro fino arquitectónico
- * - neon-dark: insignia angular nocturna con brillo sutil
- * - ticket-vip: sello perforado tipo boarding/acceso
- * - diario-editorial: sello editorial cuadrado de doble línea
- * - infantil-animado: nube / insignia lúdica suave
+ * - Usa AnimatedIconBox (Framer Motion whileInView + spring + levitación + hover orgánico)
  */
 export function AnimatedSectionMedallion({
   accentColor,
@@ -31,7 +29,7 @@ export function AnimatedSectionMedallion({
 }) {
   if (layoutId === "diario-editorial") {
     return (
-      <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+      <AnimatedIconBox className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-1 border"
@@ -47,13 +45,13 @@ export function AnimatedSectionMedallion({
         >
           {children}
         </span>
-      </div>
+      </AnimatedIconBox>
     );
   }
 
   if (layoutId === "ticket-vip") {
     return (
-      <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+      <AnimatedIconBox className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
         <span
           aria-hidden="true"
           className="anim-badge-halo pointer-events-none absolute inset-0 rounded-2xl border border-dashed"
@@ -72,13 +70,13 @@ export function AnimatedSectionMedallion({
         >
           {children}
         </span>
-      </div>
+      </AnimatedIconBox>
     );
   }
 
   if (layoutId === "neon-dark") {
     return (
-      <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+      <AnimatedIconBox className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
         <span
           aria-hidden="true"
           className="anim-badge-halo pointer-events-none absolute inset-0.5 rotate-45 rounded-2xl border"
@@ -98,13 +96,13 @@ export function AnimatedSectionMedallion({
         >
           {children}
         </span>
-      </div>
+      </AnimatedIconBox>
     );
   }
 
   if (layoutId === "infantil-animado") {
     return (
-      <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+      <AnimatedIconBox className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
         <span
           aria-hidden="true"
           className="anim-badge-halo pointer-events-none absolute inset-0 rounded-[22px] border-2"
@@ -123,13 +121,13 @@ export function AnimatedSectionMedallion({
         >
           {children}
         </span>
-      </div>
+      </AnimatedIconBox>
     );
   }
 
   if (layoutId === "fullscreen-hero") {
     return (
-      <div className="relative mx-auto inline-flex h-14 w-14 items-center justify-center">
+      <AnimatedIconBox className="relative mx-auto inline-flex h-14 w-14 items-center justify-center">
         <span
           className="relative flex h-12 w-12 items-center justify-center rounded-full border"
           style={{
@@ -141,12 +139,12 @@ export function AnimatedSectionMedallion({
         >
           {children}
         </span>
-      </div>
+      </AnimatedIconBox>
     );
   }
 
   return (
-    <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+    <AnimatedIconBox className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
       <span
         aria-hidden="true"
         className="anim-badge-halo pointer-events-none absolute inset-0 rounded-full border"
@@ -165,7 +163,7 @@ export function AnimatedSectionMedallion({
       >
         {children}
       </span>
-    </div>
+    </AnimatedIconBox>
   );
 }
 

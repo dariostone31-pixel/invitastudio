@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MotionHeroBlock, MotionSection } from "@/components/MotionReveal";
+import { AnimatedIconBox } from "@/components/AnimatedIconBox";
+import { MotionTap } from "@/components/MotionTapButton";
 import { HeroMockup } from "@/components/HeroMockup";
 import { HeroFan } from "@/components/HeroFan";
 import { MiniTester } from "@/components/MiniTester";
@@ -183,18 +185,22 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-2.5">
-            <Link
-              href="/mi-panel"
-              className="hidden rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:text-[#6B1E30] sm:inline-flex"
-            >
-              Mi Panel
-            </Link>
-            <Link
-              href="/encargar"
-              className="btn-gold-shimmer rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_30px_-10px_rgba(107,30,48,0.7)]"
-            >
-              Encargar Ahora
-            </Link>
+            <MotionTap className="hidden sm:block">
+              <Link
+                href="/mi-panel"
+                className="inline-flex rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:text-[#6B1E30]"
+              >
+                Mi Panel
+              </Link>
+            </MotionTap>
+            <MotionTap>
+              <Link
+                href="/encargar"
+                className="btn-gold-shimmer inline-flex rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_30px_-10px_rgba(107,30,48,0.7)]"
+              >
+                Encargar Ahora
+              </Link>
+            </MotionTap>
           </div>
         </div>
 
@@ -260,22 +266,26 @@ export default function HomePage() {
 
             <MotionHeroBlock delay={0.24}>
               <div className="mt-7 flex flex-wrap items-center gap-3.5">
-                <a
-                  href="#modelos"
-                  className="btn-gold-shimmer inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
-                >
-                  Explorar 42 Modelos en Vivo
-                  <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-                </a>
-                <a
-                  href="#como-funciona"
-                  className="group inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
-                >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
-                    <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  </span>
-                  Ver cómo funciona
-                </a>
+                <MotionTap>
+                  <a
+                    href="#modelos"
+                    className="btn-gold-shimmer inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
+                  >
+                    Explorar 42 Modelos en Vivo
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+                  </a>
+                </MotionTap>
+                <MotionTap>
+                  <a
+                    href="#como-funciona"
+                    className="btn-shimmer-hover group inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
+                      <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    </span>
+                    Ver cómo funciona
+                  </a>
+                </MotionTap>
               </div>
             </MotionHeroBlock>
 
@@ -331,9 +341,12 @@ export default function HomePage() {
               return (
                 <MotionSection key={card.title} delay={idx * 0.06}>
                   <div className="group shadow-bordo-lg flex h-full flex-col rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FBF1EE]/65 p-5 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#FFFBFA] hover:shadow-[0_20px_38px_-18px_rgba(107,30,48,0.3)]">
-                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#6B1E30] shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#6B1E30] group-hover:bg-[#6B1E30] group-hover:text-white">
+                    <AnimatedIconBox
+                      index={idx}
+                      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#B78A4E]/45 bg-white text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:border-[#6B1E30] group-hover:bg-[#6B1E30] group-hover:text-white"
+                    >
                       <Icon className="h-5 w-5" strokeWidth={1.5} />
-                    </div>
+                    </AnimatedIconBox>
                     <h3 className="mt-3.5 text-sm font-bold text-[#2A121B]">{card.title}</h3>
                     <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{card.desc}</p>
                   </div>
@@ -345,11 +358,14 @@ export default function HomePage() {
           {/* Compromiso & Garantías Verificables + Demo Panel */}
           <MotionSection delay={0.1}>
             <div className="mt-8 grid grid-cols-1 gap-4 rounded-[20px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
-              {GUARANTEES.map((g) => (
+              {GUARANTEES.map((g, idx) => (
                 <div key={g.title} className="group flex items-start gap-3">
-                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#B78A4E] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                  <AnimatedIconBox
+                    index={idx}
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/45 bg-white text-[#B78A4E] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
+                  >
                     <HeartHandshake className="h-4 w-4" strokeWidth={1.5} />
-                  </span>
+                  </AnimatedIconBox>
                   <div>
                     <h4 className="text-xs font-bold text-[#2A121B]">{g.title}</h4>
                     <p className="mt-1 text-[11px] leading-relaxed text-[#7A5A62]">{g.desc}</p>
@@ -362,20 +378,22 @@ export default function HomePage() {
           <MotionSection delay={0.14}>
             <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30]">
+                <AnimatedIconBox className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm">
                   <BarChart3 className="h-5 w-5" strokeWidth={1.5} />
-                </span>
+                </AnimatedIconBox>
                 <div className="text-xs">
                   <strong className="text-[#2A121B]">¿Querés ver cómo organizás tus invitados?</strong>
                   <span className="block text-[#7A5A62]">Probá en vivo el panel con pases por familia, alergias y descarga Excel.</span>
                 </div>
               </div>
-              <Link
-                href="/panel/demo-boda"
-                className="rounded-full border border-[#6B1E30]/35 px-5 py-2.5 text-xs font-semibold text-[#6B1E30] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
-              >
-                Probar Panel Demo
-              </Link>
+              <MotionTap>
+                <Link
+                  href="/panel/demo-boda"
+                  className="btn-shimmer-hover inline-flex rounded-full border border-[#6B1E30]/35 px-5 py-2.5 text-xs font-semibold text-[#6B1E30] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
+                >
+                  Probar Panel Demo
+                </Link>
+              </MotionTap>
             </div>
           </MotionSection>
         </div>
@@ -403,9 +421,12 @@ export default function HomePage() {
                       <span className="font-display-cormorant text-3xl font-semibold italic text-[#B78A4E]">
                         {item.step}
                       </span>
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                      <AnimatedIconBox
+                        index={idx}
+                        className="flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
+                      >
                         <StepIcon className="h-4 w-4" strokeWidth={1.5} />
-                      </span>
+                      </AnimatedIconBox>
                     </div>
                     <h3 className="mt-3 text-base font-bold text-[#2A121B]">{item.title}</h3>
                     <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{item.desc}</p>
@@ -495,16 +516,18 @@ export default function HomePage() {
                   </ul>
                 </div>
 
-                <Link
-                  href={`/encargar?plan=${plan.id}`}
-                  className={`mt-8 block w-full rounded-full py-3.5 text-center text-xs font-bold uppercase tracking-[0.18em] transition-all duration-300 hover:scale-[1.03] ${
-                    plan.highlight
-                      ? "bg-[#E7AFC0] text-[#2A121B] shadow-md hover:bg-[#f2c6d4] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
-                      : "bg-[#6B1E30] text-white shadow-sm hover:bg-[#4A1420] hover:shadow-[0_12px_26px_-8px_rgba(107,30,48,0.65)]"
-                  }`}
-                >
-                  Encargar {plan.name}
-                </Link>
+                <MotionTap className="mt-8">
+                  <Link
+                    href={`/encargar?plan=${plan.id}`}
+                    className={`block w-full rounded-full py-3.5 text-center text-xs font-bold uppercase tracking-[0.18em] transition-all duration-300 hover:scale-[1.03] ${
+                      plan.highlight
+                        ? "btn-shimmer-hover bg-[#E7AFC0] text-[#2A121B] shadow-md hover:bg-[#f2c6d4] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
+                        : "btn-gold-shimmer text-white shadow-sm hover:shadow-[0_12px_26px_-8px_rgba(107,30,48,0.65)]"
+                    }`}
+                  >
+                    Encargar {plan.name}
+                  </Link>
+                </MotionTap>
               </div>
             </MotionSection>
           ))}
@@ -547,9 +570,9 @@ export default function HomePage() {
           {/* CTA Final */}
           <MotionSection delay={0.1}>
             <div className="shadow-bordo-lg mt-12 rounded-[26px] bg-[#4A1420] p-8 text-center text-white sm:p-10">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#E7AFC0]/40 bg-white/10 text-[#E7AFC0]">
+              <AnimatedIconBox className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#E7AFC0]/40 bg-white/10 text-[#E7AFC0]">
                 <Clock className="h-6 w-6" strokeWidth={1.5} />
-              </div>
+              </AnimatedIconBox>
               <h3 className="font-display-cormorant mt-3 text-3xl font-semibold sm:text-4xl">
                 ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
               </h3>
@@ -557,26 +580,30 @@ export default function HomePage() {
                 Elegí uno de nuestros 42 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/encargar"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] shadow-md transition-all duration-300 hover:scale-[1.03] hover:bg-[#f1c4d2] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
-                >
-                  Encargar Mi Invitación
-                </Link>
+                <MotionTap>
+                  <Link
+                    href="/encargar"
+                    className="btn-shimmer-hover inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] shadow-md transition-all duration-300 hover:scale-[1.03] hover:bg-[#f1c4d2] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
+                  >
+                    Encargar Mi Invitación
+                  </Link>
+                </MotionTap>
                 {(() => {
                   const waUrl = getWhatsAppHref(
                     `¡Hola ${BUSINESS_CONFIG.brandName}! Quiero consultar por una invitación digital.`
                   );
                   return waUrl ? (
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.03] hover:border-[#E7AFC0] hover:bg-white/10"
-                    >
-                      <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
-                      Consultar por WhatsApp
-                    </a>
+                    <MotionTap>
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-shimmer-hover inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.03] hover:border-[#E7AFC0] hover:bg-white/10"
+                      >
+                        <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
+                        Consultar por WhatsApp
+                      </a>
+                    </MotionTap>
                   ) : null;
                 })()}
               </div>

@@ -3,6 +3,8 @@ import { CheckCircle2, MessageCircle, ShieldCheck, Sparkles, Star } from "lucide
 import { getAuthorizedTestimonials } from "@/config/testimonials";
 import { BUSINESS_CONFIG, getWhatsAppHref } from "@/config/business";
 import { MotionSection } from "@/components/MotionReveal";
+import { AnimatedIconBox } from "@/components/AnimatedIconBox";
+import { MotionTap } from "@/components/MotionTapButton";
 
 function GoogleGMark() {
   return (
@@ -146,9 +148,12 @@ export function TestimonialsSection() {
               <MotionSection key={g.title} delay={idx * 0.07}>
                 <div className="group flex h-full flex-col justify-between rounded-[20px] border border-[#2A121B]/12 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#B78A4E]/50 hover:shadow-[0_16px_34px_-18px_rgba(107,30,48,0.28)]">
                   <div>
-                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                    <AnimatedIconBox
+                      index={idx}
+                      className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
+                    >
                       <Sparkles className="h-4 w-4" strokeWidth={1.5} />
-                    </div>
+                    </AnimatedIconBox>
                     <h3 className="text-sm font-bold text-[#2A121B]">{g.title}</h3>
                     <p className="mt-1.5 text-xs leading-relaxed text-[#574046]">{g.detail}</p>
                   </div>
@@ -178,15 +183,17 @@ export function TestimonialsSection() {
                   </p>
                 </div>
               </div>
+            <MotionTap>
               <a
                 href={reviewWaHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-[#2A121B]/20 bg-[#FAF8F5] px-4 py-2 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30]/40 hover:bg-[#FBF1EE]"
+                className="btn-shimmer-hover inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-[#2A121B]/20 bg-[#FAF8F5] px-4 py-2 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30]/40 hover:bg-[#FBF1EE]"
               >
                 <MessageCircle className="h-3.5 w-3.5 text-[#6B1E30]" strokeWidth={1.5} />
                 Enviar mi reseña
               </a>
+            </MotionTap>
             </div>
           </MotionSection>
         )}

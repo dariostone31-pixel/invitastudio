@@ -127,9 +127,40 @@ body {
 }
 
 .btn-gold-shimmer {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(120deg, #6B1E30 0%, #4A1420 42%, #8F3349 52%, #4A1420 62%, #6B1E30 100%);
   background-size: 200% 100%;
   animation: goldShimmer 5.5s linear infinite;
+}
+
+.btn-shimmer-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer-hover::after,
+.btn-gold-shimmer::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -40%;
+  width: 38%;
+  height: 140%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-160%) skewX(-20deg);
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.btn-shimmer-hover:hover::after,
+.btn-gold-shimmer:hover::after {
+  transform: translateX(460%) skewX(-20deg);
 }
 
 /* WhatsApp pulse ring */

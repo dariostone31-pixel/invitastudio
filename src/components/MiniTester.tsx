@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Wand2, ArrowRight } from "lucide-react";
+import { AnimatedIconBox } from "@/components/AnimatedIconBox";
 import { INVITATION_SKINS, CATEGORY_LABELS, EventCategory } from "@/templates/catalog";
 
 const DEFAULT_SKIN_BY_CAT: Record<EventCategory, string> = {
@@ -47,9 +48,9 @@ export function MiniTester() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
             <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#6B1E30]">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#B78A4E] shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <AnimatedIconBox className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#B78A4E] shadow-sm">
                 <Wand2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-              </span>
+              </AnimatedIconBox>
               Prueba Instantánea Sin Registro
             </span>
             <h2 className="font-display-cormorant mt-2 text-3xl font-semibold text-[#2A121B]">
@@ -105,13 +106,14 @@ export function MiniTester() {
             </div>
 
             <div className="flex items-end">
-              <button
+              <motion.button
                 type="submit"
-                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#6B1E30] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-[1.02] hover:bg-[#4A1420] hover:shadow-[0_12px_26px_-10px_rgba(107,30,48,0.65)] active:scale-[0.98]"
+                whileTap={{ scale: 0.97 }}
+                className="btn-gold-shimmer inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_12px_26px_-10px_rgba(107,30,48,0.65)]"
               >
                 Abrir mi prueba
                 <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-              </button>
+              </motion.button>
             </div>
           </form>
         </div>
