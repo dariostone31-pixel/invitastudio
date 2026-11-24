@@ -4,7 +4,6 @@ import {
   Music,
   CheckCircle2,
   Clock,
-  ShieldCheck,
   Users,
   Smartphone,
   ArrowRight,
@@ -15,7 +14,14 @@ import {
   ChevronDown,
   Camera,
   MapPin,
+  Sparkles,
+  LayoutGrid,
+  PenLine,
+  Eye,
+  Share2,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
+import { MotionHeroBlock, MotionSection } from "@/components/MotionReveal";
 import { HeroMockup } from "@/components/HeroMockup";
 import { HeroFan } from "@/components/HeroFan";
 import { MiniTester } from "@/components/MiniTester";
@@ -66,21 +72,25 @@ const FAQS = [
 const HOW_IT_WORKS = [
   {
     step: "01",
+    icon: LayoutGrid,
     title: "Elegís plan y diseño",
     desc: "Explorá 42 modelos en vivo y elegí entre Esencial, PRO o Llave en Mano según cuánto quieras personalizar.",
   },
   {
     step: "02",
+    icon: PenLine,
     title: "Cargás los datos",
     desc: "Completás los 4 pasos en pocos minutos (en PRO y Llave en Mano ya podés ajustar textos, padres, historia, itinerario y fotos).",
   },
   {
     step: "03",
+    icon: Eye,
     title: "Revisás tu borrador",
     desc: "Al instante obtenés tu borrador y tu Panel Privado para revisar todo en tu celular antes de compartirlo.",
   },
   {
     step: "04",
+    icon: Share2,
     title: "Compartís y organizás",
     desc: "Enviás el link por WhatsApp y seguís confirmaciones, menús especiales y música en tu panel.",
   },
@@ -105,7 +115,7 @@ const MORE_THAN_INVITE = [
   {
     icon: Music,
     title: "Que no falte ninguna canción",
-    desc: "Música al abrir el sobre + Playlist DJ donde tus invitados sugieren y votan sus temas con 🔥.",
+    desc: "Música al abrir el sobre + Playlist DJ donde tus invitados sugieren y votan sus temas con pulso en vivo.",
   },
   {
     icon: Camera,
@@ -153,13 +163,8 @@ export default function HomePage() {
       {/* ================= HEADER BLUR EDITORIAL ================= */}
       <header className="sticky top-0 z-40 border-b border-[#2A121B]/12 bg-[#FFFBFA]/90 backdrop-blur-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <Link href="/" className="flex items-center gap-1.5">
-            <span className="font-display-cormorant text-[26px] font-semibold italic tracking-tight text-[#6B1E30] sm:text-[28px]">
-              Invita
-            </span>
-            <span className="font-display-cormorant text-[26px] font-semibold italic tracking-tight text-[#B78A4E] sm:text-[28px]">
-              con Alma
-            </span>
+          <Link href="/" aria-label="Invita con Alma - Inicio">
+            <BrandLogo />
           </Link>
 
           <nav className="font-ui-jost hidden items-center gap-6 text-xs font-medium uppercase tracking-[0.18em] text-[#7A5A62] md:flex">
@@ -180,13 +185,13 @@ export default function HomePage() {
           <div className="flex items-center gap-2.5">
             <Link
               href="/mi-panel"
-              className="hidden rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-colors hover:border-[#6B1E30] hover:text-[#6B1E30] sm:inline-flex"
+              className="hidden rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:text-[#6B1E30] sm:inline-flex"
             >
               Mi Panel
             </Link>
             <Link
               href="/encargar"
-              className="rounded-full bg-[#6B1E30] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all hover:bg-[#4A1420]"
+              className="btn-gold-shimmer rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_30px_-10px_rgba(107,30,48,0.7)]"
             >
               Encargar Ahora
             </Link>
@@ -232,54 +237,69 @@ export default function HomePage() {
 
         <div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <span className="animate-rise-1 font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B1E30] shadow-sm">
-              Invitaciones digitales de autor · Argentina
-            </span>
+            <MotionHeroBlock delay={0}>
+              <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B1E30] shadow-sm">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E]">
+                  <Sparkles className="h-3 w-3" strokeWidth={1.5} />
+                </span>
+                Invitaciones digitales de autor · Argentina
+              </span>
+            </MotionHeroBlock>
 
-            <h1 className="animate-rise-2 font-display-cormorant mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-[#2A121B] sm:text-7xl">
-              Tu evento empieza desde el<span className="gold-underline ml-[0.22em] italic text-[#6B1E30]">primer clic.</span>
-            </h1>
+            <MotionHeroBlock delay={0.08}>
+              <h1 className="font-display-cormorant mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-[#2A121B] sm:text-7xl">
+                Tu evento empieza desde el<span className="gold-underline ml-[0.22em] italic text-[#6B1E30]">primer clic.</span>
+              </h1>
+            </MotionHeroBlock>
 
-            <p className="animate-rise-2 mt-5 max-w-xl text-base leading-relaxed text-[#7A5A62] sm:text-lg">
-              Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de estudio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
-            </p>
+            <MotionHeroBlock delay={0.16}>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-[#7A5A62] sm:text-lg">
+                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de estudio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
+              </p>
+            </MotionHeroBlock>
 
-            <div className="animate-rise-3 mt-7 flex flex-wrap items-center gap-3.5">
-              <a
-                href="#modelos"
-                className="btn-gold-shimmer inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(74,20,32,0.55)] transition-transform hover:scale-[1.02]"
-              >
-                Explorar 42 Modelos en Vivo
-                <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-              </a>
-              <a
-                href="#como-funciona"
-                className="inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-colors hover:border-[#6B1E30] hover:bg-white"
-              >
-                <Smartphone className="h-4 w-4 text-[#B78A4E]" strokeWidth={1.5} />
-                Ver cómo funciona
-              </a>
-            </div>
-
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[#2A121B]/12 pt-6 text-xs text-[#7A5A62]">
-              <div>
-                <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">&lt; 24 hs</p>
-                <p>Entrega garantizada</p>
+            <MotionHeroBlock delay={0.24}>
+              <div className="mt-7 flex flex-wrap items-center gap-3.5">
+                <a
+                  href="#modelos"
+                  className="btn-gold-shimmer inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
+                >
+                  Explorar 42 Modelos en Vivo
+                  <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+                </a>
+                <a
+                  href="#como-funciona"
+                  className="group inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
+                >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
+                    <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  </span>
+                  Ver cómo funciona
+                </a>
               </div>
-              <div>
-                <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">25% OFF</p>
-                <p>Pagando por Transferencia</p>
+            </MotionHeroBlock>
+
+            <MotionHeroBlock delay={0.32}>
+              <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[#2A121B]/12 pt-6 text-xs text-[#7A5A62]">
+                <div>
+                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">&lt; 24 hs</p>
+                  <p>Entrega garantizada</p>
+                </div>
+                <div>
+                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">25% OFF</p>
+                  <p>Pagando por Transferencia</p>
+                </div>
+                <div>
+                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">42 Modelos</p>
+                  <p>Sin apps ni logins</p>
+                </div>
               </div>
-              <div>
-                <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">42 Modelos</p>
-                <p>Sin apps ni logins</p>
-              </div>
-            </div>
+            </MotionHeroBlock>
           </div>
 
-          <div className="lg:col-span-5">
+          <MotionHeroBlock delay={0.14} className="lg:col-span-5">
             <HeroMockup />
-          </div>
+          </MotionHeroBlock>
         </div>
       </section>
 
@@ -295,95 +315,113 @@ export default function HomePage() {
       {/* ================= MÁS QUE UNA INVITACIÓN (5 CARDS EDITORIALES) ================= */}
       <section id="diferencia" className="border-y border-[#2A121B]/12 bg-[#FFFBFA] py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="text-center">
-            <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.28em] text-[#B78A4E]">
+          <MotionSection className="text-center">
+            <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#B78A4E]">
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
               Enamora a tus invitados · Te ordena tu fiesta
             </span>
-            <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
+            <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
               Todo lo que necesitás, <span className="italic text-[#6B1E30]">en un solo link</span>
             </h2>
-          </div>
+          </MotionSection>
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {MORE_THAN_INVITE.map((card) => {
+            {MORE_THAN_INVITE.map((card, idx) => {
               const Icon = card.icon;
               return (
-                <div
-                  key={card.title}
-                  className="shadow-bordo-lg rounded-[16px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FBF1EE]/65 p-5 transition-transform duration-300 hover:-translate-y-1"
-                >
-                  <Icon className="h-5 w-5 text-[#6B1E30]" strokeWidth={1.5} />
-                  <h3 className="mt-3 text-sm font-bold text-[#2A121B]">{card.title}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{card.desc}</p>
-                </div>
+                <MotionSection key={card.title} delay={idx * 0.06}>
+                  <div className="group shadow-bordo-lg flex h-full flex-col rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FBF1EE]/65 p-5 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#FFFBFA] hover:shadow-[0_20px_38px_-18px_rgba(107,30,48,0.3)]">
+                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#6B1E30] shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#6B1E30] group-hover:bg-[#6B1E30] group-hover:text-white">
+                      <Icon className="h-5 w-5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="mt-3.5 text-sm font-bold text-[#2A121B]">{card.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{card.desc}</p>
+                  </div>
+                </MotionSection>
               );
             })}
           </div>
 
           {/* Compromiso & Garantías Verificables + Demo Panel */}
-          <div className="mt-8 grid grid-cols-1 gap-4 rounded-[20px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
-            {GUARANTEES.map((g) => (
-              <div key={g.title} className="flex items-start gap-3">
-                <HeartHandshake className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#B78A4E]" strokeWidth={1.5} />
-                <div>
-                  <h4 className="text-xs font-bold text-[#2A121B]">{g.title}</h4>
-                  <p className="mt-1 text-[11px] leading-relaxed text-[#7A5A62]">{g.desc}</p>
+          <MotionSection delay={0.1}>
+            <div className="mt-8 grid grid-cols-1 gap-4 rounded-[20px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
+              {GUARANTEES.map((g) => (
+                <div key={g.title} className="group flex items-start gap-3">
+                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#B78A4E] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                    <HeartHandshake className="h-4 w-4" strokeWidth={1.5} />
+                  </span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#2A121B]">{g.title}</h4>
+                    <p className="mt-1 text-[11px] leading-relaxed text-[#7A5A62]">{g.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </MotionSection>
+
+          <MotionSection delay={0.14}>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30]">
+                  <BarChart3 className="h-5 w-5" strokeWidth={1.5} />
+                </span>
+                <div className="text-xs">
+                  <strong className="text-[#2A121B]">¿Querés ver cómo organizás tus invitados?</strong>
+                  <span className="block text-[#7A5A62]">Probá en vivo el panel con pases por familia, alergias y descarga Excel.</span>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-[#6B1E30]" strokeWidth={1.5} />
-              <div className="text-xs">
-                <strong className="text-[#2A121B]">¿Querés ver cómo organizás tus invitados?</strong>
-                <span className="block text-[#7A5A62]">Probá en vivo el panel con pases por familia, alergias y descarga Excel.</span>
-              </div>
+              <Link
+                href="/panel/demo-boda"
+                className="rounded-full border border-[#6B1E30]/35 px-5 py-2.5 text-xs font-semibold text-[#6B1E30] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
+              >
+                Probar Panel Demo
+              </Link>
             </div>
-            <Link
-              href="/panel/demo-boda"
-              className="rounded-full border border-[#6B1E30]/35 px-4 py-2 text-xs font-semibold text-[#6B1E30] transition-colors hover:bg-[#FBF1EE]"
-            >
-              Probar Panel Demo
-            </Link>
-          </div>
+          </MotionSection>
         </div>
       </section>
 
       {/* ================= CÓMO FUNCIONA EN 4 PASOS ================= */}
       <section id="como-funciona" className="border-b border-[#2A121B]/12 bg-[#FBF1EE] py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="text-center">
+          <MotionSection className="text-center">
             <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.28em] text-[#6B1E30]">
               Cómo funciona
             </span>
             <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
               De la idea al WhatsApp en 4 pasos
             </h2>
-          </div>
+          </MotionSection>
 
           <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {HOW_IT_WORKS.map((item) => (
-              <div
-                key={item.step}
-                className="rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FFFBFA] p-6 shadow-sm"
-              >
-                <span className="font-display-cormorant text-3xl font-semibold italic text-[#B78A4E]">
-                  {item.step}
-                </span>
-                <h3 className="mt-2 text-base font-bold text-[#2A121B]">{item.title}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{item.desc}</p>
-              </div>
-            ))}
+            {HOW_IT_WORKS.map((item, idx) => {
+              const StepIcon = item.icon;
+              return (
+                <MotionSection key={item.step} delay={idx * 0.07}>
+                  <div className="group flex h-full flex-col rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FFFBFA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(107,30,48,0.28)]">
+                    <div className="flex items-center justify-between">
+                      <span className="font-display-cormorant text-3xl font-semibold italic text-[#B78A4E]">
+                        {item.step}
+                      </span>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                        <StepIcon className="h-4 w-4" strokeWidth={1.5} />
+                      </span>
+                    </div>
+                    <h3 className="mt-3 text-base font-bold text-[#2A121B]">{item.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{item.desc}</p>
+                  </div>
+                </MotionSection>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ================= PRECIOS TRANSPARENTES EN ARS ================= */}
       <section id="precios" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="text-center">
-          <span className="font-ui-jost inline-flex items-center gap-1.5 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6B1E30]">
+        <MotionSection className="text-center">
+          <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6B1E30] shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-[#B78A4E]" strokeWidth={1.5} />
             Precios Transparentes en Pesos Argentinos
           </span>
           <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
@@ -393,151 +431,157 @@ export default function HomePage() {
             Pagás una sola vez por evento. Incluye borrador inmediato para revisar, activación en &lt; 24 hs hábiles y{" "}
             <strong className="text-[#2A121B]">25% OFF pagando por transferencia</strong>.
           </p>
-        </div>
+        </MotionSection>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {PRICING_PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative flex flex-col justify-between rounded-[24px] border p-7 transition-shadow ${
-                plan.highlight
-                  ? "shadow-bordo-lg border-[#B78A4E] bg-[#4A1420] text-white ring-2 ring-[#E7AFC0]/40 lg:scale-[1.03]"
-                  : "border-[#2A121B]/12 bg-[#FFFBFA] text-[#2A121B] shadow-sm"
-              }`}
-            >
-              {plan.highlight && (
-                <span className="absolute -top-3 right-6 rounded-full bg-[#E7AFC0] px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#2A121B] shadow">
-                  Más vendido
-                </span>
-              )}
-              <div>
-                <span
-                  className={`inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                    plan.highlight
-                      ? "bg-[#B78A4E] text-white"
-                      : "bg-[#FBF1EE] text-[#6B1E30]"
-                  }`}
-                >
-                  {plan.badge}
-                </span>
-
-                <h3 className="font-display-cormorant mt-4 text-3xl font-semibold">
-                  {plan.name}
-                </h3>
-
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span
-                    className={`text-4xl font-bold ${
-                      plan.highlight ? "text-[#E7AFC0]" : "text-[#6B1E30]"
-                    }`}
-                  >
-                    {plan.transferPrice}
-                  </span>
-                  <span className="text-xs opacity-75">ARS transf.</span>
-                </div>
-                <p className="mt-1 text-xs opacity-70">
-                  Precio de lista (Mercado Pago / cuotas): {plan.listPrice} ARS
-                </p>
-
-                <ul className="mt-6 space-y-2.5 text-xs">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2">
-                      <Check
-                        strokeWidth={1.75}
-                        className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                          plan.highlight ? "text-[#E7AFC0]" : "text-[#6B1E30]"
-                        }`}
-                      />
-                      <span className="leading-relaxed opacity-90">{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link
-                href={`/encargar?plan=${plan.id}`}
-                className={`mt-8 block w-full rounded-full py-3.5 text-center text-xs font-bold uppercase tracking-[0.18em] transition-transform hover:scale-[1.02] ${
+          {PRICING_PLANS.map((plan, idx) => (
+            <MotionSection key={plan.id} delay={idx * 0.08} className="flex">
+              <div
+                className={`relative flex w-full flex-col justify-between rounded-[24px] border p-7 transition-all duration-300 hover:-translate-y-1.5 ${
                   plan.highlight
-                    ? "bg-[#E7AFC0] text-[#2A121B]"
-                    : "bg-[#6B1E30] text-white hover:bg-[#4A1420]"
+                    ? "shadow-bordo-lg border-[#B78A4E] bg-[#4A1420] text-white ring-2 ring-[#E7AFC0]/40 lg:scale-[1.03]"
+                    : "border-[#2A121B]/12 bg-[#FFFBFA] text-[#2A121B] shadow-sm hover:border-[#B78A4E]/50 hover:shadow-[0_20px_40px_-18px_rgba(107,30,48,0.28)]"
                 }`}
               >
-                Encargar {plan.name}
-              </Link>
-            </div>
+                {plan.highlight && (
+                  <span className="absolute -top-3 right-6 rounded-full bg-[#E7AFC0] px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#2A121B] shadow">
+                    Más vendido
+                  </span>
+                )}
+                <div>
+                  <span
+                    className={`inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                      plan.highlight
+                        ? "bg-[#B78A4E] text-white"
+                        : "bg-[#FBF1EE] text-[#6B1E30]"
+                    }`}
+                  >
+                    {plan.badge}
+                  </span>
+
+                  <h3 className="font-display-cormorant mt-4 text-3xl font-semibold">
+                    {plan.name}
+                  </h3>
+
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span
+                      className={`text-4xl font-bold ${
+                        plan.highlight ? "text-[#E7AFC0]" : "text-[#6B1E30]"
+                      }`}
+                    >
+                      {plan.transferPrice}
+                    </span>
+                    <span className="text-xs opacity-75">ARS transf.</span>
+                  </div>
+                  <p className="mt-1 text-xs opacity-70">
+                    Precio de lista (Mercado Pago / cuotas): {plan.listPrice} ARS
+                  </p>
+
+                  <ul className="mt-6 space-y-2.5 text-xs">
+                    {plan.features.map((feat) => (
+                      <li key={feat} className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${
+                            plan.highlight
+                              ? "bg-white/10 text-[#E7AFC0]"
+                              : "bg-[#FBF1EE] text-[#6B1E30]"
+                          }`}
+                        >
+                          <Check strokeWidth={1.5} className="h-3 w-3" />
+                        </span>
+                        <span className="leading-relaxed opacity-90">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Link
+                  href={`/encargar?plan=${plan.id}`}
+                  className={`mt-8 block w-full rounded-full py-3.5 text-center text-xs font-bold uppercase tracking-[0.18em] transition-all duration-300 hover:scale-[1.03] ${
+                    plan.highlight
+                      ? "bg-[#E7AFC0] text-[#2A121B] shadow-md hover:bg-[#f2c6d4] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
+                      : "bg-[#6B1E30] text-white shadow-sm hover:bg-[#4A1420] hover:shadow-[0_12px_26px_-8px_rgba(107,30,48,0.65)]"
+                  }`}
+                >
+                  Encargar {plan.name}
+                </Link>
+              </div>
+            </MotionSection>
           ))}
         </div>
       </section>
 
-      {/* ================= RESEÑAS AUTÉNTICAS (OCULTA SI NO HAY AUTORIZADAS) ================= */}
+      {/* ================= RESEÑAS AUTÉNTICAS & CONFIANZA VERIFICADA ================= */}
       <TestimonialsSection />
 
       {/* ================= FAQ ACORDEÓN ================= */}
       <section id="faq" className="border-t border-[#2A121B]/12 bg-[#FFFBFA] py-16">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="text-center">
+          <MotionSection className="text-center">
             <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.28em] text-[#B78A4E]">
               Despejá tus dudas
             </span>
             <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B]">
               Preguntas Frecuentes
             </h2>
-          </div>
+          </MotionSection>
 
           <div className="mt-8 space-y-3">
-            {FAQS.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-[16px] border border-[#2A121B]/12 bg-[#FBF1EE]/60 p-5 transition-colors open:border-[#B78A4E] open:bg-[#FFFBFA]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-[#2A121B]">
-                  <span>{item.q}</span>
-                  <ChevronDown
-                    strokeWidth={1.5}
-                    className="h-4 w-4 flex-shrink-0 text-[#6B1E30] transition-transform duration-200 group-open:rotate-180"
-                  />
-                </summary>
-                <p className="mt-3 text-xs leading-relaxed text-[#7A5A62] sm:text-sm">
-                  {item.a}
-                </p>
-              </details>
+            {FAQS.map((item, idx) => (
+              <MotionSection key={item.q} delay={Math.min(idx * 0.03, 0.18)}>
+                <details className="group rounded-[16px] border border-[#2A121B]/12 bg-[#FBF1EE]/60 p-5 transition-colors open:border-[#B78A4E] open:bg-[#FFFBFA]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-[#2A121B]">
+                    <span>{item.q}</span>
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#2A121B]/10 bg-white text-[#6B1E30] transition-transform duration-200 group-open:rotate-180">
+                      <ChevronDown strokeWidth={1.5} className="h-4 w-4" />
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-xs leading-relaxed text-[#7A5A62] sm:text-sm">
+                    {item.a}
+                  </p>
+                </details>
+              </MotionSection>
             ))}
           </div>
 
           {/* CTA Final */}
-          <div className="shadow-bordo-lg mt-12 rounded-[26px] bg-[#4A1420] p-8 text-center text-white sm:p-10">
-            <Clock className="mx-auto h-7 w-7 text-[#E7AFC0]" strokeWidth={1.5} />
-            <h3 className="font-display-cormorant mt-3 text-3xl font-semibold sm:text-4xl">
-              ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
-            </h3>
-            <p className="mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
-              Elegí uno de nuestros 42 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/encargar"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] hover:bg-[#f1c4d2]"
-              >
-                Encargar Mi Invitación
-              </Link>
-              {(() => {
-                const waUrl = getWhatsAppHref(
-                  `¡Hola ${BUSINESS_CONFIG.brandName}! Quiero consultar por una invitación digital.`
-                );
-                return waUrl ? (
-                  <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white hover:border-[#E7AFC0]"
-                  >
-                    <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
-                    Consultar por WhatsApp
-                  </a>
-                ) : null;
-              })()}
+          <MotionSection delay={0.1}>
+            <div className="shadow-bordo-lg mt-12 rounded-[26px] bg-[#4A1420] p-8 text-center text-white sm:p-10">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#E7AFC0]/40 bg-white/10 text-[#E7AFC0]">
+                <Clock className="h-6 w-6" strokeWidth={1.5} />
+              </div>
+              <h3 className="font-display-cormorant mt-3 text-3xl font-semibold sm:text-4xl">
+                ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
+              </h3>
+              <p className="mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
+                Elegí uno de nuestros 42 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/encargar"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#E7AFC0] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#2A121B] shadow-md transition-all duration-300 hover:scale-[1.03] hover:bg-[#f1c4d2] hover:shadow-[0_12px_26px_-8px_rgba(231,175,192,0.7)]"
+                >
+                  Encargar Mi Invitación
+                </Link>
+                {(() => {
+                  const waUrl = getWhatsAppHref(
+                    `¡Hola ${BUSINESS_CONFIG.brandName}! Quiero consultar por una invitación digital.`
+                  );
+                  return waUrl ? (
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#E7AFC0]/45 px-6 py-3.5 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.03] hover:border-[#E7AFC0] hover:bg-white/10"
+                    >
+                      <MessageCircle className="h-4 w-4 text-emerald-300" strokeWidth={1.5} />
+                      Consultar por WhatsApp
+                    </a>
+                  ) : null;
+                })()}
+              </div>
             </div>
-          </div>
+          </MotionSection>
         </div>
       </section>
 
@@ -546,11 +590,13 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 sm:px-6">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <div className="flex items-center gap-2 font-semibold text-[#2A121B]">
-                <ShieldCheck className="h-4 w-4 text-[#6B1E30]" strokeWidth={1.5} />
-                {BUSINESS_CONFIG.brandName} · {BUSINESS_CONFIG.tagline} (Argentina)
+              <div className="flex flex-wrap items-center gap-3">
+                <BrandLogo size="sm" />
+                <span className="text-[11px] font-medium text-[#7A5A62]">
+                  · {BUSINESS_CONFIG.tagline} (Argentina)
+                </span>
               </div>
-              <p className="mt-1 text-[11px] text-[#7A5A62]">
+              <p className="mt-2 text-[11px] text-[#7A5A62]">
                 Responsable: {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación"} ·{" "}
                 Soporte:{" "}
                 {BUSINESS_CONFIG.supportEmail ||

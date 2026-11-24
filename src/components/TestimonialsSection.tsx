@@ -2,6 +2,7 @@ import React from "react";
 import { CheckCircle2, MessageCircle, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { getAuthorizedTestimonials } from "@/config/testimonials";
 import { BUSINESS_CONFIG, getWhatsAppHref } from "@/config/business";
+import { MotionSection } from "@/components/MotionReveal";
 
 function GoogleGMark() {
   return (
@@ -44,13 +45,6 @@ const TRUST_GUARANTEES = [
   },
 ];
 
-/**
- * Bloque de Confianza & Reseñas Verificadas.
- * - Si existen testimonios reales con `publicationAuthorized: true` en `src/config/testimonials.ts`,
- *   los muestra en tarjetas estilo Google Review con fuente y fecha verificadas.
- * - Mientras la lista esté vacía, muestra únicamente garantías verificables del servicio
- *   y el canal directo para recoger reseñas auténticas (sin inventar reseñas ni métricas).
- */
 export function TestimonialsSection() {
   const items = getAuthorizedTestimonials();
   const reviewWaHref = getWhatsAppHref(
@@ -60,12 +54,12 @@ export function TestimonialsSection() {
   return (
     <section className="border-t border-[#2A121B]/12 bg-[#FAF8F5] py-14">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="text-center">
-          <span className="font-ui-jost inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#B78A4E]">
-            <ShieldCheck className="h-3.5 w-3.5" />
+        <MotionSection className="text-center">
+          <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/35 bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#B78A4E] shadow-sm">
+            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.5} />
             Confianza Verificada
           </span>
-          <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B]">
+          <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B]">
             {items.length > 0
               ? "Quienes ya celebraron con nosotros"
               : "Transparencia y respaldo real en cada entrega"}
@@ -75,124 +69,126 @@ export function TestimonialsSection() {
               ? "Reseñas reales publicadas con autorización expresa de nuestros clientes."
               : "Publicamos únicamente reseñas reales autorizadas por quienes usaron su invitación. Mientras tanto, conocé cómo cuidamos cada evento."}
           </p>
-        </div>
+        </MotionSection>
 
         {items.length > 0 ? (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((t) => {
+            {items.map((t, idx) => {
               const initial = t.displayName.trim().charAt(0).toUpperCase() || "C";
               return (
-                <article
-                  key={t.id}
-                  className="flex flex-col justify-between rounded-[20px] border border-[#2A121B]/12 bg-white p-6 shadow-sm"
-                >
-                  <div>
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        {t.image ? (
-                          <img
-                            src={t.image}
-                            alt={t.displayName}
-                            className="h-9 w-9 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6B1E30] text-xs font-bold text-white">
-                            {initial}
-                          </span>
-                        )}
-                        <div>
-                          <p className="flex items-center gap-1 text-xs font-bold text-[#2A121B]">
-                            {t.displayName}
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#1A73E8]" />
-                          </p>
-                          {(t.eventType || t.date) && (
-                            <p className="text-[11px] text-[#7A5A62]">
-                              {[t.eventType, t.date].filter(Boolean).join(" · ")}
-                            </p>
+                <MotionSection key={t.id} delay={(idx % 3) * 0.06}>
+                  <article className="group flex h-full flex-col justify-between rounded-[20px] border border-[#2A121B]/12 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#B78A4E]/50 hover:shadow-md">
+                    <div>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          {t.image ? (
+                            <img
+                              src={t.image}
+                              alt={t.displayName}
+                              className="h-9 w-9 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6B1E30] text-xs font-bold text-white">
+                              {initial}
+                            </span>
                           )}
+                          <div>
+                            <p className="flex items-center gap-1 text-xs font-bold text-[#2A121B]">
+                              {t.displayName}
+                              <CheckCircle2 className="h-3.5 w-3.5 text-[#1A73E8]" strokeWidth={1.5} />
+                            </p>
+                            {(t.eventType || t.date) && (
+                              <p className="text-[11px] text-[#7A5A62]">
+                                {[t.eventType, t.date].filter(Boolean).join(" · ")}
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        <GoogleGMark />
                       </div>
-                      <GoogleGMark />
+
+                      {typeof t.rating === "number" && t.rating > 0 && (
+                        <div
+                          className="mb-2.5 flex items-center gap-0.5 text-[#FBBC05]"
+                          aria-label={`${t.rating} de 5 estrellas`}
+                        >
+                          {Array.from({ length: Math.min(5, Math.round(t.rating)) }).map((_, i) => (
+                            <Star key={i} className="h-3.5 w-3.5 fill-current" strokeWidth={1.5} />
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-sm italic leading-relaxed text-[#574046]">
+                        &ldquo;{t.quote}&rdquo;
+                      </p>
                     </div>
 
-                    {typeof t.rating === "number" && t.rating > 0 && (
-                      <div
-                        className="mb-2.5 flex items-center gap-0.5 text-[#FBBC05]"
-                        aria-label={`${t.rating} de 5 estrellas`}
-                      >
-                        {Array.from({ length: Math.min(5, Math.round(t.rating)) }).map((_, i) => (
-                          <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                        ))}
+                    {t.sourceUrl && (
+                      <div className="mt-4 border-t border-[#2A121B]/10 pt-3 text-right text-xs">
+                        <a
+                          href={t.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold text-[#6B1E30] underline"
+                        >
+                          {t.sourceLabel || "Ver reseña original"}
+                        </a>
                       </div>
                     )}
-
-                    <p className="text-sm italic leading-relaxed text-[#574046]">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                  </div>
-
-                  {t.sourceUrl && (
-                    <div className="mt-4 border-t border-[#2A121B]/10 pt-3 text-right text-xs">
-                      <a
-                        href={t.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-[#6B1E30] underline"
-                      >
-                        {t.sourceLabel || "Ver reseña original"}
-                      </a>
-                    </div>
-                  )}
-                </article>
+                  </article>
+                </MotionSection>
               );
             })}
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {TRUST_GUARANTEES.map((g) => (
-              <div
-                key={g.title}
-                className="flex flex-col justify-between rounded-[20px] border border-[#2A121B]/12 bg-white p-6 shadow-sm"
-              >
-                <div>
-                  <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FBF1EE] text-[#6B1E30]">
-                    <Sparkles className="h-4 w-4" strokeWidth={1.75} />
+            {TRUST_GUARANTEES.map((g, idx) => (
+              <MotionSection key={g.title} delay={idx * 0.07}>
+                <div className="group flex h-full flex-col justify-between rounded-[20px] border border-[#2A121B]/12 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#B78A4E]/50 hover:shadow-[0_16px_34px_-18px_rgba(107,30,48,0.28)]">
+                  <div>
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] transition-all duration-300 group-hover:scale-105 group-hover:bg-[#6B1E30] group-hover:text-white">
+                      <Sparkles className="h-4 w-4" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-sm font-bold text-[#2A121B]">{g.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#574046]">{g.detail}</p>
                   </div>
-                  <h3 className="text-sm font-bold text-[#2A121B]">{g.title}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-[#574046]">{g.detail}</p>
+                  <div className="mt-4 flex items-center gap-1.5 border-t border-[#2A121B]/10 pt-3 text-[11px] font-semibold text-[#6B1E30]">
+                    <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <span>Incluido en el servicio</span>
+                  </div>
                 </div>
-                <div className="mt-4 flex items-center gap-1.5 border-t border-[#2A121B]/10 pt-3 text-[11px] font-semibold text-[#6B1E30]">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Incluido en el servicio</span>
-                </div>
-              </div>
+              </MotionSection>
             ))}
           </div>
         )}
 
         {reviewWaHref && (
-          <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-white px-6 py-4 sm:flex-row">
-            <div className="flex items-center gap-3 text-center sm:text-left">
-              <GoogleGMark />
-              <div>
-                <p className="text-xs font-bold text-[#2A121B]">
-                  ¿Ya celebraste con {BUSINESS_CONFIG.brandName}?
-                </p>
-                <p className="text-[11px] text-[#7A5A62]">
-                  Contanos cómo fue tu experiencia para sumarla a nuestras opiniones verificadas.
-                </p>
+          <MotionSection delay={0.12}>
+            <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-white px-6 py-4 shadow-sm sm:flex-row">
+              <div className="flex items-center gap-3 text-center sm:text-left">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[#2A121B]/10 bg-[#FAF8F5]">
+                  <GoogleGMark />
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-[#2A121B]">
+                    ¿Ya celebraste con {BUSINESS_CONFIG.brandName}?
+                  </p>
+                  <p className="text-[11px] text-[#7A5A62]">
+                    Contanos cómo fue tu experiencia para sumarla a nuestras opiniones verificadas.
+                  </p>
+                </div>
               </div>
+              <a
+                href={reviewWaHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-[#2A121B]/20 bg-[#FAF8F5] px-4 py-2 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30]/40 hover:bg-[#FBF1EE]"
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-[#6B1E30]" strokeWidth={1.5} />
+                Enviar mi reseña
+              </a>
             </div>
-            <a
-              href={reviewWaHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-[#2A121B]/20 bg-[#FAF8F5] px-4 py-2 text-xs font-semibold text-[#2A121B] transition-colors hover:bg-[#FBF1EE]"
-            >
-              <MessageCircle className="h-3.5 w-3.5 text-[#6B1E30]" />
-              Enviar mi reseña
-            </a>
-          </div>
+          </MotionSection>
         )}
       </div>
     </section>
