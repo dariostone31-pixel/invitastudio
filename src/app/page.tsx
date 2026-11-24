@@ -88,44 +88,44 @@ const HOW_IT_WORKS = [
 
 const MORE_THAN_INVITE = [
   {
-    icon: Camera,
-    title: "Galería & Recuerdos",
-    desc: "Galería cargada por el organizador y Modo Recuerdo para agradecer después del evento.",
+    icon: Users,
+    title: "Cada invitado recibe la suya",
+    desc: "Sobre animado con su nombre grande en la tapa y acceso diferenciado (todo el evento, ceremonia o fiesta).",
   },
   {
     icon: MapPin,
-    title: "Ubicación 1 Toque",
-    desc: "Botón directo a Google Maps + agendar en Google Calendar o iPhone (.ics).",
+    title: "Que nadie pregunte “¿a qué hora era?”",
+    desc: "Cuenta regresiva, mapa en 1 toque, dress code, Solo Adultos opcional y agendar directo al calendario.",
   },
   {
     icon: CheckCircle2,
-    title: "RSVP + Pases + Sin TACC",
-    desc: "Confirmación de asistencia, lugares reservados, menús especiales y tema sugerido.",
-  },
-  {
-    icon: Users,
-    title: "Panel & Planilla Excel",
-    desc: "Links con nombre por familia (PRO / Llave en Mano) y descarga Excel (.xlsx) para el salón.",
+    title: "La lista se arma sola",
+    desc: "Confirmación grupal con acompañantes y alergias (Sin TACC), todo ordenado al instante en tu Excel (.xlsx).",
   },
   {
     icon: Music,
-    title: "Música Integrada",
-    desc: "Suena al abrir el sobre con control flotante de silencio y reproducción.",
+    title: "Que no falte ninguna canción",
+    desc: "Música al abrir el sobre + Playlist DJ donde tus invitados sugieren y votan sus temas con 🔥.",
+  },
+  {
+    icon: Camera,
+    title: "Juegos, firmas y Álbum QR",
+    desc: "Mini-Trivia con ranking Top 5, mural de buenos deseos, galería con transiciones y Modo Recuerdo.",
   },
 ];
 
 const GUARANTEES = [
   {
-    title: "Proceso claro sin apps ni cuentas",
-    desc: "Ni vos ni tus invitados necesitan descargar aplicaciones ni crear contraseñas para abrir o confirmar.",
+    title: "¿Todavía no tenés tus fotos? Cargalas después",
+    desc: "Podés reservar y crear tu invitación hoy con imágenes de ejemplo y subir tu book o fotos propias más adelante desde tu panel.",
   },
   {
-    title: "Precios y alcance transparentes",
-    desc: "Elegís Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999) sabiendo exactamente qué incluye cada modalidad.",
+    title: "Sin apps ni contraseñas para tus invitados",
+    desc: "Se abre directo desde WhatsApp en cualquier celular y mantenemos legibilidad perfecta aunque usen modo oscuro.",
   },
   {
-    title: "Privacidad de tus invitados",
-    desc: "Acompañantes y alergias son privados del organizador en su panel y las páginas del evento llevan etiqueta noindex.",
+    title: "Precios y alcance transparentes en ARS",
+    desc: "Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999) por transferencia (25% OFF), sabiendo exactamente qué incluye cada uno.",
   },
 ];
 
@@ -297,10 +297,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center">
             <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.28em] text-[#B78A4E]">
-              Más que una invitación
+              Enamora a tus invitados · Te ordena tu fiesta
             </span>
             <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
-              Todo lo que tus invitados necesitan, <span className="italic text-[#6B1E30]">en un solo link</span>
+              Todo lo que necesitás, <span className="italic text-[#6B1E30]">en un solo link</span>
             </h2>
           </div>
 

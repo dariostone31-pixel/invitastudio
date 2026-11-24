@@ -54,6 +54,8 @@ export async function POST(req: Request) {
       giftBank,
       giftHolder,
       dressCode,
+      rsvpDeadline,
+      adultsOnly,
       quote,
       parentsOrHosts,
       storyTitle,
@@ -69,6 +71,7 @@ export async function POST(req: Request) {
       albumUrl,
       instagramHandle,
       eventHashtag,
+      triviaQuestions,
       enabledSections,
       termsAccepted,
       contactName,
@@ -146,6 +149,36 @@ export async function POST(req: Request) {
             .filter((s) => s.title.length > 0)
         : undefined;
 
+    const cleanTrivia =
+      allowFullCustom && Array.isArray(triviaQuestions)
+        ? triviaQuestions
+            .slice(0, 6)
+            .filter(
+              (q) =>
+                q &&
+                typeof q.question === "string" &&
+                q.question.trim().length > 0 &&
+                Array.isArray(q.options) &&
+                q.options.length >= 2
+            )
+            .map((q, idx) => {
+              const opts = q.options
+                .slice(0, 4)
+                .map((o: unknown) => String(o || "").trim())
+                .filter(Boolean);
+              const ci = Number(q.correctIndex);
+              return {
+                id: String(q.id || `q-${idx + 1}`).slice(0, 40),
+                question: String(q.question).trim().slice(0, 160),
+                options: opts,
+                correctIndex: Number.isFinite(ci)
+                  ? Math.max(0, Math.min(opts.length - 1, ci))
+                  : 0,
+              };
+            })
+            .filter((q) => q.options.length >= 2)
+        : undefined;
+
     const created = await createOrderEvent({
       skinId: String(skinId || "boda-sobre-marfil"),
       planId: validPlan,
@@ -158,6 +191,11 @@ export async function POST(req: Request) {
       giftBank: giftBank ? String(giftBank).trim().slice(0, 80) : undefined,
       giftHolder: giftHolder ? String(giftHolder).trim().slice(0, 120) : undefined,
       dressCode: String(dressCode || "").trim(),
+      rsvpDeadline:
+        allowFullCustom && typeof rsvpDeadline === "string" && rsvpDeadline.trim()
+          ? rsvpDeadline.trim().slice(0, 80)
+          : undefined,
+      adultsOnly: allowFullCustom ? Boolean(adultsOnly) : false,
       quote: quote && String(quote).trim() ? String(quote).trim() : undefined,
       parentsOrHosts: cleanParents,
       storyTitle: allowFullCustom && storyTitle ? String(storyTitle) : undefined,
@@ -178,6 +216,7 @@ export async function POST(req: Request) {
       instagramHandle:
         allowFullCustom && instagramHandle ? String(instagramHandle).trim() : undefined,
       eventHashtag: allowFullCustom && eventHashtag ? String(eventHashtag).trim() : undefined,
+      triviaQuestions: cleanTrivia,
       enabledSections: allowFullCustom && enabledSections ? enabledSections : undefined,
       termsAccepted: true,
       termsVersion: LEGAL_VERSION,

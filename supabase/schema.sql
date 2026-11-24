@@ -25,6 +25,8 @@ create table if not exists public.events (
   gift_bank text,
   gift_holder text,
   dress_code text not null default 'Elegante Sport',
+  rsvp_deadline text,
+  adults_only boolean not null default false,
   quote text not null default '',
   parents_or_hosts jsonb,
   story_title text,

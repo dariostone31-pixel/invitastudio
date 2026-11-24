@@ -7,6 +7,42 @@ interface CelebrationIconProps {
 }
 
 /**
+ * Medallón editorial animado estilo boutique (doble anillo + glow sutil) para destacar los íconos de sección.
+ */
+export function AnimatedSectionMedallion({
+  accentColor,
+  surfaceColor,
+  children,
+}: {
+  accentColor: string;
+  surfaceColor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative mx-auto inline-flex h-16 w-16 items-center justify-center">
+      <span
+        aria-hidden="true"
+        className="anim-badge-halo pointer-events-none absolute inset-0 rounded-full border"
+        style={{
+          borderColor: accentColor,
+          backgroundColor: `${accentColor}12`,
+        }}
+      />
+      <span
+        className="relative flex h-12 w-12 items-center justify-center rounded-full border shadow-sm"
+        style={{
+          backgroundColor: surfaceColor,
+          borderColor: `${accentColor}55`,
+          color: accentColor,
+        }}
+      >
+        {children}
+      </span>
+    </div>
+  );
+}
+
+/**
  * Regalo: caja base fija + <g className="anim-gift-lid"> (tapa y lazo) que se eleva levemente y vuelve.
  */
 export function CelebrationGiftIcon({ className = "h-8 w-8", style }: CelebrationIconProps) {
@@ -234,6 +270,32 @@ export function CelebrationCeremonyIcon({
       <path d="M3 20h18" />
       <g className="anim-toast-spark">
         <path d="M12 7.5v3M10.5 9h3" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Solo Adultos: copa elegante con destello estelar sutil.
+ */
+export function CelebrationAdultsIcon({ className = "h-8 w-8", style }: CelebrationIconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.65}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path d="M8 4h8l-1 6a3 3 0 0 1-6 0L8 4z" />
+      <path d="M12 13v7" />
+      <path d="M9 20h6" />
+      <g className="anim-adult-spark">
+        <path d="M18.5 4.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6.6-1.4z" />
       </g>
     </svg>
   );

@@ -10,6 +10,7 @@ interface EnvelopeGateProps {
   guestName?: string;
   passes?: number;
   table?: string;
+  paseType?: "todo" | "ceremonia" | "fiesta";
   customTitle?: string;
   customHeroImage?: string;
   customDateDisplay?: string;
@@ -23,6 +24,7 @@ export function EnvelopeGate({
   guestName,
   passes,
   table,
+  paseType = "todo",
   customTitle,
   customHeroImage,
   customDateDisplay,
@@ -71,9 +73,21 @@ export function EnvelopeGate({
     skin.category === "nina" ||
     skin.id === "xv-mariposas-lila";
 
+  const guestNamesList = (guestName || "")
+    .split(/[|,·]+/)
+    .map((n) => n.trim())
+    .filter(Boolean);
+
+  const paseLabel =
+    paseType === "ceremonia"
+      ? "Pase: Ceremonia"
+      : paseType === "fiesta"
+      ? "Pase: Fiesta y Brindis"
+      : "";
+
   const guestPill = guestName ? (
     <div
-      className="mt-3.5 inline-flex flex-col items-center rounded-2xl border px-5 py-2.5 text-center shadow-sm"
+      className="mt-4 inline-flex w-full max-w-[320px] flex-col items-center rounded-2xl border px-5 py-3 text-center shadow-sm"
       style={{
         backgroundColor: palette.isDark
           ? "rgba(255,255,255,0.08)"
@@ -82,17 +96,25 @@ export function EnvelopeGate({
       }}
     >
       <span
-        className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+        className="text-[10px] font-bold uppercase tracking-[0.24em]"
         style={{ color: palette.isDark ? palette.accent : textAccentOnSurface }}
       >
-        Invitación Especial
+        {guestNamesList.length > 1 ? "Invitados Especiales" : "Invitación Especial"}
       </span>
-      <span className="mt-0.5 break-words text-base font-semibold" style={{ color: palette.text }}>
-        {`¡Hola, ${guestName}!`}
-      </span>
-      {(passes || table) && (
+      <div className="mt-1 space-y-0.5">
+        {guestNamesList.map((n, idx) => (
+          <p
+            key={idx}
+            className={`break-words text-2xl font-semibold leading-tight ${fontDisplayClass}`}
+            style={{ color: palette.text }}
+          >
+            {n}
+          </p>
+        ))}
+      </div>
+      {(passes || table || paseLabel) && (
         <div
-          className="mt-1 flex items-center gap-2 text-xs font-medium"
+          className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-semibold"
           style={{ color: palette.textMuted }}
         >
           {passes ? (
@@ -102,6 +124,17 @@ export function EnvelopeGate({
           ) : null}
           {passes && table ? <span>·</span> : null}
           {table ? <span>Mesa {table}</span> : null}
+          {paseLabel && (
+            <span
+              className="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider"
+              style={{
+                borderColor: `${palette.accent}66`,
+                color: palette.isDark ? palette.accent : textAccentOnSurface,
+              }}
+            >
+              {paseLabel}
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -216,28 +249,37 @@ export function EnvelopeGate({
 
             {/* Wax Seal Button overlapping flap */}
             <div className="relative z-20 -mt-12 flex justify-center">
-              <button
-                type="button"
-                onClick={handleTap}
-                aria-label={`Abrir invitación${guestName ? ` para ${guestName}` : ""}`}
-                className={`envelope-seal flex h-24 w-24 flex-col items-center justify-center rounded-full border-4 shadow-2xl transition-all duration-500 ${
-                  opening
-                    ? "scale-125 rotate-12 opacity-0"
-                    : "animate-seal-pulse hover:scale-105 active:scale-95"
-                }`}
-                style={{
-                  backgroundColor: buttonBg,
-                  borderColor: palette.surface,
-                  color: palette.accentText,
-                }}
-              >
-                <span className={`text-xl font-semibold leading-none ${fontDisplayClass}`}>
-                  {sample.monogram}
-                </span>
-                <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] opacity-95">
-                  Abrir
-                </span>
-              </button>
+              <div className="relative flex items-center justify-center">
+                <span
+                  aria-hidden="true"
+                  className={`animate-slow-spin pointer-events-none absolute -inset-2.5 rounded-full border border-dashed opacity-70 transition-opacity ${
+                    opening ? "opacity-0" : ""
+                  }`}
+                  style={{ borderColor: palette.accent }}
+                />
+                <button
+                  type="button"
+                  onClick={handleTap}
+                  aria-label={`Abrir invitación${guestName ? ` para ${guestName}` : ""}`}
+                  className={`envelope-seal relative flex h-24 w-24 flex-col items-center justify-center rounded-full border-4 shadow-2xl transition-all duration-500 ${
+                    opening
+                      ? "scale-125 rotate-12 opacity-0"
+                      : "animate-seal-pulse hover:scale-105 active:scale-95"
+                  }`}
+                  style={{
+                    backgroundColor: buttonBg,
+                    borderColor: palette.surface,
+                    color: palette.accentText,
+                  }}
+                >
+                  <span className={`text-xl font-semibold leading-none ${fontDisplayClass}`}>
+                    {sample.monogram}
+                  </span>
+                  <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] opacity-95">
+                    Abrir
+                  </span>
+                </button>
+              </div>
             </div>
 
             <div className="relative z-20 px-6 pb-8 pt-3 text-center">
@@ -310,15 +352,28 @@ export function EnvelopeGate({
                 {dateDisplay}
               </p>
               {guestName && (
-                <div className="mt-4 rounded-2xl border border-white/30 bg-black/50 px-5 py-2.5 backdrop-blur-md">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-amber-200">
-                    Invitación Especial
+                <div className="mt-4 rounded-2xl border border-white/35 bg-black/55 px-5 py-3 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-200">
+                    {guestNamesList.length > 1 ? "Invitados Especiales" : "Invitación Especial"}
                   </p>
-                  <p className="text-base font-semibold text-white">{`¡Hola, ${guestName}!`}</p>
-                  {passes && (
-                    <p className="text-xs text-white/90">
-                      {passes} {passes === 1 ? "lugar reservado" : "lugares reservados"}
-                      {table ? ` · Mesa ${table}` : ""}
+                  <div className="mt-1 space-y-0.5">
+                    {guestNamesList.map((n, idx) => (
+                      <p
+                        key={idx}
+                        className={`text-2xl font-semibold leading-tight text-white ${fontDisplayClass}`}
+                      >
+                        {n}
+                      </p>
+                    ))}
+                  </div>
+                  {(passes || table || paseLabel) && (
+                    <p className="mt-1 text-xs text-white/90">
+                      {passes
+                        ? `${passes} ${passes === 1 ? "lugar reservado" : "lugares reservados"}`
+                        : ""}
+                      {passes && table ? " · " : ""}
+                      {table ? `Mesa ${table}` : ""}
+                      {paseLabel ? ` · ${paseLabel}` : ""}
                     </p>
                   )}
                 </div>

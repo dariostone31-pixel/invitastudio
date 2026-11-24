@@ -23,8 +23,17 @@ import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } f
 import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 import { LEGAL_VERSION } from "@/config/legal";
 import { prepareImageForUpload } from "@/lib/imageUpload";
-import { getDefaultStoryTitleForCategory } from "@/lib/categoryPresets";
-import type { EventRecord, HeroOverlayStyle, ParentsOrHostsGroup, ScheduleItem } from "@/lib/db";
+import {
+  getDefaultStoryTitleForCategory,
+  getTriviaPresetForCategory,
+} from "@/lib/categoryPresets";
+import type {
+  EventRecord,
+  HeroOverlayStyle,
+  ParentsOrHostsGroup,
+  ScheduleItem,
+  TriviaQuestion,
+} from "@/lib/db";
 
 const FONT_CHOICES: { id: InvitationSkin["fontDisplay"]; label: string }[] = [
   { id: "pinyon", label: "Caligrafía Boutique" },
@@ -109,6 +118,14 @@ function EncargarForm() {
   );
   const [storyText, setStoryText] = useState(skinObj.sample.storyText || "");
   const [schedule, setSchedule] = useState<ScheduleItem[]>(skinObj.sample.schedule || []);
+  const [includeTrivia, setIncludeTrivia] = useState(true);
+  const [triviaQuestions, setTriviaQuestions] = useState<TriviaQuestion[]>(() =>
+    getTriviaPresetForCategory(
+      skinObj.category,
+      skinObj.sample.dressCode.label,
+      skinObj.id
+    )
+  );
 
   // Sincronizar sugerencias editables al cambiar modelo si el usuario aún no cargó pedido
   useEffect(() => {
@@ -122,6 +139,9 @@ function EncargarForm() {
     );
     setStoryText(s.sample.storyText || "");
     setSchedule(s.sample.schedule ? structuredClone(s.sample.schedule) : []);
+    setTriviaQuestions(
+      getTriviaPresetForCategory(s.category, s.sample.dressCode.label, s.id)
+    );
   }, [selectedSkin]);
 
   // Datos básicos del evento
@@ -135,6 +155,8 @@ function EncargarForm() {
   const [giftBank, setGiftBank] = useState("Mercado Pago");
   const [giftHolder, setGiftHolder] = useState("");
   const [dressCode, setDressCode] = useState("");
+  const [rsvpDeadline, setRsvpDeadline] = useState("");
+  const [adultsOnly, setAdultsOnly] = useState(false);
   const [mercadopagoConfigured, setMercadopagoConfigured] = useState(false);
 
   useEffect(() => {
@@ -287,13 +309,24 @@ function EncargarForm() {
           giftBank: giftBank.trim(),
           giftHolder: giftHolder.trim(),
           dressCode: dressCode.trim(),
+          rsvpDeadline: isAdvancedPlan ? rsvpDeadline.trim() : undefined,
+          adultsOnly: isAdvancedPlan ? adultsOnly : false,
           quote: quote.trim(),
           ...(isAdvancedPlan
             ? {
-                parentsOrHosts,
+                parentsOrHosts: parentsOrHosts
+                  .map((g) => ({
+                    label: g.label.trim(),
+                    names: g.names.map((n) => n.trim()).filter(Boolean),
+                  }))
+                  .filter((g) => g.label && g.names.length > 0),
                 storyTitle,
                 storyText,
                 schedule,
+                triviaQuestions: includeTrivia ? triviaQuestions : undefined,
+                enabledSections: {
+                  trivia: includeTrivia,
+                },
                 heroImageUrl: heroUploadedUrl || undefined,
                 heroOverlayOverride,
                 galleryImages: uploadedUrls,
@@ -1003,23 +1036,32 @@ function EncargarForm() {
                       </div>
                       <input
                         type="text"
-                        value={grp.names.join(", ")}
+                        value={grp.names.join(",")}
                         onChange={(e) =>
                           setParentsOrHosts((prev) =>
                             prev.map((item, i) =>
                               i === gIdx
                                 ? {
                                     ...item,
-                                    names: e.target.value
-                                      .split(",")
-                                      .map((n) => n.trim())
-                                      .filter(Boolean),
+                                    names: e.target.value.split(","),
                                   }
                                 : item
                             )
                           )
                         }
-                        placeholder="Nombres separados por coma"
+                        onBlur={() =>
+                          setParentsOrHosts((prev) =>
+                            prev.map((item, i) =>
+                              i === gIdx
+                                ? {
+                                    ...item,
+                                    names: item.names.map((n) => n.trim()).filter(Boolean),
+                                  }
+                                : item
+                            )
+                          )
+                        }
+                        placeholder="Nombres separados por coma (ej. Edith Quispe, Carlos Gómez)"
                         className="w-full rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
                       />
                     </div>
@@ -1124,8 +1166,126 @@ function EncargarForm() {
                   ))}
                 </div>
 
+                {/* Preguntas del Juego / Trivia Interactiva */}
+                <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={includeTrivia}
+                        onChange={(e) => setIncludeTrivia(e.target.checked)}
+                        className="h-4 w-4 accent-stone-900"
+                      />
+                      <div>
+                        <span className="block text-xs font-bold text-stone-800">
+                          Incluir Juego / Trivia Interactiva ({triviaQuestions.length} preguntas)
+                        </span>
+                        <span className="block text-[11px] text-stone-500">
+                          Editá las preguntas y marcá cuál opción es la correcta. Tus invitados compiten en un ranking Top 5.
+                        </span>
+                      </div>
+                    </label>
+                    {includeTrivia && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setTriviaQuestions(
+                            getTriviaPresetForCategory(
+                              skinObj.category,
+                              skinObj.sample.dressCode.label,
+                              skinObj.id
+                            )
+                          )
+                        }
+                        className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        Restaurar sugeridas
+                      </button>
+                    )}
+                  </div>
+
+                  {includeTrivia && triviaQuestions.map((tq, qIdx) => (
+                    <div
+                      key={tq.id || qIdx}
+                      className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                          Pregunta {qIdx + 1}
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={tq.question}
+                        onChange={(e) =>
+                          setTriviaQuestions((prev) =>
+                            prev.map((item, i) =>
+                              i === qIdx ? { ...item, question: e.target.value } : item
+                            )
+                          )
+                        }
+                        placeholder="Escribí la pregunta para tus invitados..."
+                        className="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                      />
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                        {tq.options.map((opt, oIdx) => {
+                          const isCorrect = tq.correctIndex === oIdx;
+                          return (
+                            <div
+                              key={oIdx}
+                              className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${
+                                isCorrect
+                                  ? "border-emerald-500 bg-emerald-50/70"
+                                  : "border-stone-200 bg-stone-50"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`encargar-trivia-correct-${qIdx}`}
+                                checked={isCorrect}
+                                title="Marcar como respuesta correcta"
+                                onChange={() =>
+                                  setTriviaQuestions((prev) =>
+                                    prev.map((item, i) =>
+                                      i === qIdx ? { ...item, correctIndex: oIdx } : item
+                                    )
+                                  )
+                                }
+                                className="h-3.5 w-3.5 accent-emerald-600"
+                              />
+                              <input
+                                type="text"
+                                value={opt}
+                                onChange={(e) =>
+                                  setTriviaQuestions((prev) =>
+                                    prev.map((item, i) =>
+                                      i === qIdx
+                                        ? {
+                                            ...item,
+                                            options: item.options.map((o, j) =>
+                                              j === oIdx ? e.target.value : o
+                                            ),
+                                          }
+                                        : item
+                                    )
+                                  )
+                                }
+                                placeholder={`Opción ${oIdx + 1}`}
+                                className="w-full bg-transparent text-[11px] outline-none"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Fotos separadas: 1) Portada (1 sola) + 2) Galería */}
                 <div className="space-y-4">
+                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/70 px-3.5 py-2.5 text-[11px] leading-relaxed text-amber-950">
+                    <strong>¿Todavía no tenés tus fotos o sesión hecha?</strong> Quedate tranquilo: podés crear y reservar tu invitación hoy con las fotos de muestra, y cuando hagas tu book las subís desde tu Panel de Organizador.
+                  </div>
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-stone-700">
                       Foto de Portada (1 sola foto · opcional)
@@ -1446,6 +1606,40 @@ function EncargarForm() {
               className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
             />
           </div>
+          {isAdvancedPlan && (
+            <>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Fecha límite para confirmar asistencia (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={rsvpDeadline}
+                  onChange={(e) => setRsvpDeadline(e.target.value)}
+                  placeholder="Ej. 15 de Noviembre de 2026"
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div className="flex items-end">
+                <label className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-stone-200 bg-[#FAF8F5] px-3.5 py-2.5">
+                  <div>
+                    <span className="block text-xs font-semibold text-stone-800">
+                      Cartel &ldquo;Solo Adultos&rdquo;
+                    </span>
+                    <span className="block text-[10px] text-stone-500">
+                      Aclara con elegancia que el evento es sin niños
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={adultsOnly}
+                    onChange={(e) => setAdultsOnly(e.target.checked)}
+                    className="h-4 w-4 accent-stone-900"
+                  />
+                </label>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

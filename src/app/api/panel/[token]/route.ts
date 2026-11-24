@@ -67,6 +67,12 @@ export async function PATCH(
           giftBank: typeof body.giftBank === "string" ? body.giftBank.trim().slice(0, 80) : undefined,
           giftHolder: typeof body.giftHolder === "string" ? body.giftHolder.trim().slice(0, 120) : undefined,
           dressCode: body.dressCode,
+          rsvpDeadline:
+            typeof body.rsvpDeadline === "string"
+              ? body.rsvpDeadline.trim().slice(0, 80)
+              : undefined,
+          adultsOnly:
+            typeof body.adultsOnly === "boolean" ? body.adultsOnly : undefined,
           quote: body.quote,
           parentsOrHosts: body.parentsOrHosts,
           storyTitle: body.storyTitle,

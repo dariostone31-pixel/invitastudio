@@ -41,6 +41,7 @@ export function OrganizerPanelClient({
   const [guestName, setGuestName] = useState("Familia Gómez");
   const [guestPasses, setGuestPasses] = useState("3");
   const [guestTable, setGuestTable] = useState("5");
+  const [guestPase, setGuestPase] = useState<"todo" | "ceremonia" | "fiesta">("todo");
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPanelLink, setCopiedPanelLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
@@ -177,6 +178,7 @@ export function OrganizerPanelClient({
     nombre: guestName.trim() || "Invitado Especial",
     pases: guestPasses || "2",
     ...(guestTable.trim() ? { mesa: guestTable.trim() } : {}),
+    ...(guestPase !== "todo" ? { pase: guestPase } : {}),
   }).toString();
   const personalizedPath = `/i/${event.slug}?${personalizedQuery}`;
   const fullPersonalizedUrl = `${origin}${personalizedPath}`;
@@ -489,16 +491,16 @@ export function OrganizerPanelClient({
               </p>
             </div>
 
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="mb-1 block text-[11px] font-semibold text-stone-700">
-                  Nombre / Familia
+                  Nombre / Familia (separá con | si son varios)
                 </label>
                 <input
                   type="text"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Ej. Familia Gómez"
+                  placeholder="Ej. Juan Pérez | Ana Disalvo"
                   className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
                 />
               </div>
@@ -526,6 +528,22 @@ export function OrganizerPanelClient({
                   placeholder="Ej. 5"
                   className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
                 />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-stone-700">
+                  Momento habilitado
+                </label>
+                <select
+                  value={guestPase}
+                  onChange={(e) =>
+                    setGuestPase(e.target.value as "todo" | "ceremonia" | "fiesta")
+                  }
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                >
+                  <option value="todo">Todo el evento</option>
+                  <option value="ceremonia">Solo Ceremonia</option>
+                  <option value="fiesta">Solo Fiesta / Brindis</option>
+                </select>
               </div>
             </div>
           </div>
@@ -573,6 +591,7 @@ export function OrganizerPanelClient({
                   setGuestName("");
                   setGuestPasses("2");
                   setGuestTable("");
+                  setGuestPase("todo");
                 }}
                 className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100"
               >

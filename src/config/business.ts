@@ -1,31 +1,37 @@
-const rawWhatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
-const isPlaceholderWhatsapp =
-  !rawWhatsapp || rawWhatsapp === "5493884000000" || rawWhatsapp === "5491100000000";
+const DEFAULT_WHATSAPP = "5493885750235";
+const DEFAULT_BANK_ALIAS = "kitdigitales1";
+
+const envWhatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
+const isPlaceholderEnvWa =
+  !envWhatsapp || envWhatsapp === "5493884000000" || envWhatsapp === "5491100000000";
+const rawWhatsapp = isPlaceholderEnvWa ? DEFAULT_WHATSAPP : envWhatsapp;
 
 const rawSupportEmail = (process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "").trim();
 const rawLegalHolder = (process.env.NEXT_PUBLIC_LEGAL_HOLDER || "").trim();
 const rawTaxId = (process.env.NEXT_PUBLIC_TAX_ID || "").trim();
 const rawSupportHours = (process.env.NEXT_PUBLIC_SUPPORT_HOURS || "").trim();
-const rawBankAlias = (process.env.NEXT_PUBLIC_BANK_ALIAS || "").trim();
+const envBankAlias = (process.env.NEXT_PUBLIC_BANK_ALIAS || "").trim();
+const rawBankAlias =
+  envBankAlias && envBankAlias !== "INVITA.STUDIO.AR"
+    ? envBankAlias
+    : DEFAULT_BANK_ALIAS;
 
 export const BUSINESS_CONFIG = {
   brandName: "Invita con Alma",
   brandShortFirst: "Invita",
   brandShortSecond: "con Alma",
   tagline: "Invitaciones digitales interactivas con alma",
-  whatsappNumber: isPlaceholderWhatsapp ? "" : rawWhatsapp,
-  whatsappConfigured: !isPlaceholderWhatsapp,
+  whatsappNumber: rawWhatsapp,
+  whatsappConfigured: Boolean(rawWhatsapp),
   supportEmail: rawSupportEmail,
-  legalHolderName: rawLegalHolder,
+  legalHolderName: rawLegalHolder || "Invita con Alma",
   taxId: rawTaxId,
   supportHours: rawSupportHours,
   bankAlias: rawBankAlias,
-  bankAliasConfigured: Boolean(rawBankAlias && rawBankAlias !== "INVITA.STUDIO.AR"),
-  bankHolder: rawLegalHolder || "Titular pendiente de confirmación",
+  bankAliasConfigured: Boolean(rawBankAlias),
+  bankHolder: rawLegalHolder || "Invita con Alma",
   bankName: "Mercado Pago / Transferencia Bancaria",
-  hasVerifiedProviderData: Boolean(
-    rawLegalHolder && (rawSupportEmail || !isPlaceholderWhatsapp)
-  ),
+  hasVerifiedProviderData: Boolean(rawWhatsapp && rawBankAlias),
 };
 
 export function getWhatsAppHref(message: string): string | null {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -14,6 +14,8 @@ import {
   Sparkles,
   Heart,
   Music,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { InvitationSkin } from "@/templates/catalog";
 import type {
@@ -37,6 +39,8 @@ import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
 import { CollaborativeAlbumSection } from "./CollaborativeAlbumSection";
 import { TriviaSection } from "./TriviaSection";
 import {
+  AnimatedSectionMedallion,
+  CelebrationAdultsIcon,
   CelebrationAttireIcon,
   CelebrationCameraIcon,
   CelebrationCeremonyIcon,
@@ -61,6 +65,7 @@ interface InvitationRendererProps {
   guestName?: string;
   passes?: number;
   table?: string;
+  paseType?: "todo" | "ceremonia" | "fiesta";
   customTitle?: string;
   customDateDisplay?: string;
   customTimeDisplay?: string;
@@ -71,6 +76,8 @@ interface InvitationRendererProps {
   customGiftBank?: string;
   customGiftHolder?: string;
   customDressCode?: string;
+  customRsvpDeadline?: string;
+  customAdultsOnly?: boolean;
   customQuote?: string;
   customParentsOrHosts?: ParentsOrHostsGroup[];
   customStoryTitle?: string;
@@ -205,6 +212,7 @@ export function InvitationRenderer({
   guestName,
   passes,
   table,
+  paseType = "todo",
   customTitle,
   customDateDisplay,
   customTimeDisplay,
@@ -215,6 +223,8 @@ export function InvitationRenderer({
   customGiftBank,
   customGiftHolder,
   customDressCode,
+  customRsvpDeadline,
+  customAdultsOnly = false,
   customQuote,
   customParentsOrHosts,
   customStoryTitle,
@@ -249,7 +259,8 @@ export function InvitationRenderer({
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [giftsExpanded, setGiftsExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<"alias" | "cbu" | null>(null);
-  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [djSongs, setDjSongs] = useState<DjSongItem[]>(initialDjPlaylist);
   const [votedSongIds, setVotedSongIds] = useState<Record<string, boolean>>({});
   const [djGuestName, setDjGuestName] = useState(guestName || "");
@@ -298,6 +309,21 @@ export function InvitationRenderer({
       : "";
   const galleryList =
     customGallery && customGallery.length > 0 ? customGallery : sample.gallery;
+
+  useEffect(() => {
+    if (galleryList.length <= 1 || lightboxIdx !== null) return;
+    const timer = window.setInterval(() => {
+      setActiveGalleryIdx((i) => (i + 1) % galleryList.length);
+    }, 4200);
+    return () => window.clearInterval(timer);
+  }, [galleryList.length, lightboxIdx]);
+
+  const paseLabel =
+    paseType === "ceremonia"
+      ? "Pase válido para Ceremonia"
+      : paseType === "fiesta"
+      ? "Pase válido para Fiesta y Brindis"
+      : "";
   const audioSrc =
     customAudioUrl === "none" ? "" : customAudioUrl || sample.audioUrl;
 
@@ -326,7 +352,7 @@ export function InvitationRenderer({
         wishes: enabledSections?.wishes ?? true,
         djSongs: enabledSections?.djSongs ?? true,
         djVoting: enabledSections?.djVoting ?? true,
-        trivia: enabledSections?.trivia ?? false,
+        trivia: enabledSections?.trivia ?? triviaQuestions.length > 0,
         collaborativeAlbum: enabledSections?.collaborativeAlbum ?? true,
         rsvp: enabledSections?.rsvp ?? true,
       };
@@ -492,6 +518,7 @@ export function InvitationRenderer({
           guestName={guestName}
           passes={passes}
           table={table}
+          paseType={paseType}
           customTitle={customTitle}
           customHeroImage={heroImage}
           customDateDisplay={dateDisplay}
@@ -536,7 +563,7 @@ export function InvitationRenderer({
           </span>{" "}
           {panelUrl && (
             <Link
-              href={panelUrl}
+              href={`${panelUrl}#pago-transferencia`}
               className="ml-1 inline-block rounded-full bg-amber-900 px-3 py-0.5 text-[11px] font-bold text-white hover:bg-amber-800"
             >
               Abonar / Activar
@@ -704,11 +731,13 @@ export function InvitationRenderer({
                   <p className="mt-1 break-words text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
-                  {(passes || table) && (
+                  {(passes || table || paseLabel) && (
                     <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
                       {passes ? `Reservamos ${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
                       {passes && table ? " · " : ""}
                       {table ? `Mesa asignada: ${table}` : ""}
+                      {(passes || table) && paseLabel ? " · " : ""}
+                      {paseLabel}
                     </p>
                   )}
                 </div>
@@ -802,11 +831,13 @@ export function InvitationRenderer({
                   <p className="mt-1 break-words text-base font-semibold" style={{ color: palette.text }}>
                     {guestName}
                   </p>
-                  {(passes || table) && (
+                  {(passes || table || paseLabel) && (
                     <p className="mt-1 text-[13px]" style={{ color: palette.textMuted }}>
                       {passes ? `Reservamos ${passes} ${passes === 1 ? "lugar" : "lugares"}` : ""}
                       {passes && table ? " · " : ""}
                       {table ? `Mesa asignada: ${table}` : ""}
+                      {(passes || table) && paseLabel ? " · " : ""}
+                      {paseLabel}
                     </p>
                   )}
                 </div>
@@ -870,8 +901,10 @@ export function InvitationRenderer({
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section className="text-center">
-                <CelebrationCeremonyIcon category={skin.category} className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
-                <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
+                  <CelebrationCeremonyIcon category={skin.category} className="h-7 w-7" />
+                </AnimatedSectionMedallion>
+                <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   Con la bendición de
                 </h2>
                 <div
@@ -908,7 +941,9 @@ export function InvitationRenderer({
                   backgroundColor: palette.surfaceAlt,
                 }}
               >
-                <CelebrationToastIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnAlt }} />
+                <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
+                  <CelebrationToastIcon className="h-7 w-7" />
+                </AnimatedSectionMedallion>
                 <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                   {storyHeading}
                 </h2>
@@ -924,9 +959,11 @@ export function InvitationRenderer({
             <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
           <section className="space-y-4">
             <div className="text-center">
-              <CelebrationPinIcon className="mx-auto mb-2 h-8 w-8" style={{ color: textAccentOnBg }} />
+              <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
+                <CelebrationPinIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
               <p
-                className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+                className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: textAccentOnBg }}
               >
                 Dónde & Cuándo
@@ -1044,6 +1081,18 @@ export function InvitationRenderer({
                     Programa del Día
                   </p>
                   <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>Itinerario</h2>
+                  {paseLabel && (
+                    <p
+                      className="mt-2 inline-block rounded-full border px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
+                      style={{
+                        borderColor: `${palette.accent}66`,
+                        backgroundColor: palette.surface,
+                        color: textAccentOnSurface,
+                      }}
+                    >
+                      {paseLabel}
+                    </p>
+                  )}
                 </div>
 
                 {/* Mobile <640px: left rail full-width cards; >=640px: center axis alternating */}
@@ -1129,38 +1178,103 @@ export function InvitationRenderer({
             </RevealSection>
           )}
 
-          {/* ================= GALERÍA DE FOTOS ================= */}
+          {/* ================= GALERÍA DE FOTOS CON CROSSFADE + POLAROID MINIATURAS ================= */}
           {sections.gallery && galleryList.length > 0 && (
             <RevealSection>
               <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
               <section>
-                <div className="mb-4 text-center">
-                  <CelebrationCameraIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
-                  <h2 className={`mt-2 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                <div className="mb-5 text-center">
+                  <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
+                    <CelebrationCameraIcon className="h-7 w-7" />
+                  </AnimatedSectionMedallion>
+                  <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                     Momentos Especiales
                   </h2>
                 </div>
-                <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
-                  {galleryList.map((imgUrl, idx) => (
-                    <button
-                      key={imgUrl + idx}
-                      type="button"
-                      onClick={() => setLightboxImg(imgUrl)}
-                      aria-label={`Ampliar foto ${idx + 1}`}
-                      className={`group relative h-60 w-52 flex-shrink-0 snap-center overflow-hidden ${cardRadius} border ${cardShadow}`}
-                      style={{ borderColor: palette.border }}
+
+                {/* Visor principal con transición suave y botón ampliar */}
+                <div
+                  className={`relative overflow-hidden ${cardRadius} border p-2.5 ${cardShadow}`}
+                  style={{
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setLightboxIdx(activeGalleryIdx)}
+                    aria-label="Ampliar foto destacada"
+                    className={`relative block aspect-[4/5] w-full overflow-hidden ${innerRadius}`}
+                  >
+                    <img
+                      key={galleryList[activeGalleryIdx]}
+                      src={galleryList[activeGalleryIdx] || galleryList[0]}
+                      alt={`Momento ${activeGalleryIdx + 1}`}
+                      className={`anim-gallery-slide h-full w-full object-cover ${
+                        skin.imageFilter ?? ""
+                      }`}
+                    />
+                    <span
+                      className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md"
                     >
-                      <img
-                        src={imgUrl}
-                        alt={`Foto ${idx + 1}`}
-                        loading="lazy"
-                        decoding="async"
-                        className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-                          skin.imageFilter ?? ""
-                        }`}
-                      />
-                    </button>
-                  ))}
+                      {activeGalleryIdx + 1} / {galleryList.length} · Tocar para ampliar
+                    </span>
+                  </button>
+
+                  {galleryList.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Foto anterior"
+                        onClick={() =>
+                          setActiveGalleryIdx(
+                            (i) => (i - 1 + galleryList.length) % galleryList.length
+                          )
+                        }
+                        className="absolute left-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Foto siguiente"
+                        onClick={() =>
+                          setActiveGalleryIdx((i) => (i + 1) % galleryList.length)
+                        }
+                        className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/45 text-white backdrop-blur-sm transition-transform hover:scale-105"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+
+                      {/* Tira de miniaturas seleccionables */}
+                      <div className="no-scrollbar mt-2.5 flex gap-2 overflow-x-auto pb-0.5">
+                        {galleryList.map((imgUrl, idx) => {
+                          const isCurrent = idx === activeGalleryIdx;
+                          return (
+                            <button
+                              key={imgUrl + idx}
+                              type="button"
+                              onClick={() => setActiveGalleryIdx(idx)}
+                              aria-label={`Ver foto ${idx + 1}`}
+                              className={`relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+                                isCurrent ? "scale-[1.03] opacity-100" : "opacity-60 hover:opacity-90"
+                              }`}
+                              style={{
+                                borderColor: isCurrent ? palette.accent : palette.border,
+                              }}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`Miniatura ${idx + 1}`}
+                                loading="lazy"
+                                className={`h-full w-full object-cover ${skin.imageFilter ?? ""}`}
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               </section>
             </RevealSection>
@@ -1177,9 +1291,11 @@ export function InvitationRenderer({
                 borderColor: palette.border,
               }}
             >
-              <CelebrationAttireIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnSurface }} />
+              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt}>
+                <CelebrationAttireIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
             <p
-              className="mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
               style={{ color: palette.textMuted }}
             >
               Código de Vestimenta
@@ -1220,6 +1336,36 @@ export function InvitationRenderer({
           </RevealSection>
           )}
 
+          {/* ================= SOLO ADULTOS (OPCIONAL) ================= */}
+          {!isEssentialPlan && customAdultsOnly && (
+          <RevealSection>
+            <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
+            <section
+              className={`${cardRadius} border p-6 text-center ${cardShadow}`}
+              style={{
+                backgroundColor: palette.surfaceAlt,
+                borderColor: palette.border,
+              }}
+            >
+              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
+                <CelebrationAdultsIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
+              <p
+                className="font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                style={{ color: textAccentOnAlt }}
+              >
+                Evento Exclusivo
+              </p>
+              <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                Solo Adultos
+              </h2>
+              <p className="mx-auto mt-2 max-w-xs text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
+                Queremos que esa noche sólo tengas que preocuparte por disfrutar y pasarla increíble.
+              </p>
+            </section>
+          </RevealSection>
+          )}
+
           {/* ================= REGALOS / VAQUITA + COPIAR ALIAS ================= */}
           {sections.gifts && (
           <RevealSection>
@@ -1231,8 +1377,10 @@ export function InvitationRenderer({
                 borderColor: palette.border,
               }}
             >
-              <CelebrationGiftIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnSurface }} />
-            <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt}>
+                <CelebrationGiftIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
+            <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
               {sample.gifts.title}
             </h2>
             <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
@@ -1252,7 +1400,7 @@ export function InvitationRenderer({
                 color: giftsExpanded ? palette.text : palette.accentText,
               }}
             >
-              {giftsExpanded ? "Ocultar datos bancarios" : "Ver datos bancarios / Alias"}
+              {giftsExpanded ? "Ocultar Alias" : "Ver Alias para Regalo"}
             </button>
 
             {giftsExpanded && (
@@ -1263,15 +1411,11 @@ export function InvitationRenderer({
                   borderColor: palette.border,
                 }}
               >
-                <div className="flex justify-between gap-2">
+                <div className="flex justify-between gap-2 border-b pb-2" style={{ borderColor: palette.border }}>
                   <span style={{ color: palette.textMuted }}>Titular:</span>
                   <span className="break-words text-right font-semibold">{giftHolderText}</span>
                 </div>
-                <div className="flex justify-between gap-2">
-                  <span style={{ color: palette.textMuted }}>Entidad:</span>
-                  <span className="break-words text-right font-semibold">{giftBankText}</span>
-                </div>
-                <div className="flex items-center justify-between gap-2 pt-1">
+                <div className="flex items-center justify-between gap-2 pt-0.5">
                   <div className="min-w-0">
                     <span className="block text-[11px]" style={{ color: palette.textMuted }}>
                       ALIAS
@@ -1302,34 +1446,6 @@ export function InvitationRenderer({
                     )}
                   </button>
                 </div>
-                <div className="flex items-center justify-between gap-2 border-t pt-2.5" style={{ borderColor: palette.border }}>
-                  <div className="min-w-0">
-                    <span className="block text-[11px]" style={{ color: palette.textMuted }}>
-                      CBU / CVU
-                    </span>
-                    <span className="block break-all font-mono text-[13px]">{sample.gifts.cbu}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(sample.gifts.cbu, "cbu")}
-                    className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 border px-3.5 py-2 text-[13px] font-medium ${
-                      isNewspaper ? "rounded-none" : "rounded-full"
-                    }`}
-                    style={{ borderColor: palette.border, color: palette.text }}
-                  >
-                    {copiedField === "cbu" ? (
-                      <>
-                        <Check className="h-4 w-4" strokeWidth={1.75} />
-                        Copiado
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" strokeWidth={1.75} />
-                        CBU
-                      </>
-                    )}
-                  </button>
-                </div>
               </div>
             )}
           </section>
@@ -1342,9 +1458,11 @@ export function InvitationRenderer({
             <OrnamentDivider layoutId={layoutId} category={skin.category} color={textAccentOnBg} />
             <section className="space-y-3.5">
               <div className="text-center">
-                <CelebrationWishesIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnBg }} />
+                <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface}>
+                  <CelebrationWishesIcon className="h-7 w-7" />
+                </AnimatedSectionMedallion>
                 <p
-                  className="font-ui-jost mt-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                  className="font-ui-jost mt-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
                   style={{ color: textAccentOnBg }}
                 >
                   Libro de Firmas
@@ -1643,12 +1761,17 @@ export function InvitationRenderer({
                 borderColor: textAccentOnAlt,
               }}
             >
-              <CelebrationCheckIcon className="mx-auto h-9 w-9" style={{ color: textAccentOnAlt }} />
-              <h2 className={`mt-2.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <AnimatedSectionMedallion accentColor={textAccentOnAlt} surfaceColor={palette.surface}>
+                <CelebrationCheckIcon className="h-7 w-7" />
+              </AnimatedSectionMedallion>
+              <h2 className={`mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
                 ¿Contamos con vos?
               </h2>
               <p className="mt-2.5 text-[15px] leading-[1.65]" style={{ color: palette.textMuted }}>
-                {sample.rsvpDeadline}. Podés indicar si asistís, alergias o menús especiales (Sin TACC) y sugerir música.
+                {customRsvpDeadline
+                  ? `Confirmá tu asistencia antes del ${customRsvpDeadline}. `
+                  : `${sample.rsvpDeadline}. `}
+                Podés indicar si asistís, alergias o menús especiales (Sin TACC) y sugerir música.
               </p>
               <button
                 type="button"
@@ -1729,24 +1852,53 @@ export function InvitationRenderer({
         guestList={!isEssentialPlan ? guestList : []}
       />
 
-      {/* Lightbox Galería */}
-      {lightboxImg && (
+      {/* Lightbox Galería con navegación prev/next */}
+      {lightboxIdx !== null && galleryList[lightboxIdx] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
-          onClick={() => setLightboxImg(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxIdx(null)}
         >
           <button
             type="button"
-            onClick={() => setLightboxImg(null)}
+            onClick={() => setLightboxIdx(null)}
             aria-label="Cerrar vista ampliada"
             className="absolute right-5 top-5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
           >
             <X className="h-5 w-5" />
           </button>
+          {galleryList.length > 1 && (
+            <>
+              <button
+                type="button"
+                aria-label="Foto anterior"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIdx((i) =>
+                    i === null ? 0 : (i - 1 + galleryList.length) % galleryList.length
+                  );
+                }}
+                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                aria-label="Foto siguiente"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIdx((i) => (i === null ? 0 : (i + 1) % galleryList.length));
+                }}
+                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
           <img
-            src={lightboxImg}
-            alt="Vista ampliada"
-            className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+            src={galleryList[lightboxIdx]}
+            alt={`Vista ampliada ${lightboxIdx + 1}`}
+            onClick={(e) => e.stopPropagation()}
+            className="anim-gallery-slide max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
           />
         </div>
       )}

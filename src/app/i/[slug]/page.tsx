@@ -11,6 +11,7 @@ interface PublicInvitationProps {
     nombre?: string;
     pases?: string;
     mesa?: string;
+    pase?: string;
   }>;
 }
 
@@ -65,6 +66,8 @@ export default async function PublicInvitationPage({
 
   const skin = getSkinById(event.skinId);
   const passes = sp.pases ? Math.max(1, Math.min(12, Number(sp.pases) || 1)) : undefined;
+  const paseType: "todo" | "ceremonia" | "fiesta" =
+    sp.pase === "ceremonia" || sp.pase === "fiesta" ? sp.pase : "todo";
   const rsvps = await listRsvpsForSlug(event.slug);
   const wishes = rsvps
     .filter((r) => r.message && r.message.trim().length > 0)
@@ -95,6 +98,7 @@ export default async function PublicInvitationPage({
       guestName={sp.nombre || undefined}
       passes={passes}
       table={sp.mesa || undefined}
+      paseType={paseType}
       customTitle={event.eventTitle}
       customDateDisplay={event.dateDisplay}
       customTimeDisplay={event.timeDisplay}
@@ -105,6 +109,8 @@ export default async function PublicInvitationPage({
       customGiftBank={event.giftBank || undefined}
       customGiftHolder={event.giftHolder || undefined}
       customDressCode={event.dressCode || undefined}
+      customRsvpDeadline={event.rsvpDeadline || undefined}
+      customAdultsOnly={Boolean(event.adultsOnly)}
       customQuote={event.quote || undefined}
       customParentsOrHosts={event.parentsOrHosts || undefined}
       customStoryTitle={event.storyTitle || undefined}

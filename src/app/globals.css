@@ -513,6 +513,19 @@ body {
   100% { transform: translateY(0px) scale(1); opacity: 1; }
 }
 
+@keyframes gAdultSpark {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  45% { transform: scale(1.16) rotate(8deg); opacity: 1; }
+}
+@keyframes badgeHalo {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(1.09); opacity: 0.7; }
+}
+@keyframes gallerySlideIn {
+  from { opacity: 0; transform: scale(1.03); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .anim-gift-lid { transform-box: fill-box; transform-origin: center bottom; }
 .anim-cup-left { transform-box: fill-box; transform-origin: bottom center; }
 .anim-cup-right { transform-box: fill-box; transform-origin: bottom center; }
@@ -521,20 +534,24 @@ body {
 .anim-attire-sway { transform-box: fill-box; transform-origin: top center; }
 .anim-pin-drop { transform-box: fill-box; transform-origin: bottom center; }
 .anim-wish-heart { transform-box: fill-box; transform-origin: center; }
+.anim-adult-spark { transform-box: fill-box; transform-origin: center; }
+.anim-badge-halo { animation: badgeHalo 3.2s ease-in-out infinite; }
+.anim-gallery-slide { animation: gallerySlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .anim-check-draw {
   stroke-dasharray: 16;
   stroke-dashoffset: 16;
 }
 
-[data-revealed="true"] .anim-gift-lid { animation: gGiftLid 900ms 120ms ease-in-out 1 both; }
-[data-revealed="true"] .anim-cup-left { animation: gCupLeft 900ms 120ms ease-in-out 1 both; }
-[data-revealed="true"] .anim-cup-right { animation: gCupRight 900ms 120ms ease-in-out 1 both; }
-[data-revealed="true"] .anim-toast-spark { animation: gToastSpark 800ms 180ms ease-out 1 both; }
-[data-revealed="true"] .anim-camera-flash { animation: gCameraFlash 800ms 150ms ease-out 1 both; }
-[data-revealed="true"] .anim-check-draw { animation: gCheckDraw 750ms 150ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards; }
-[data-revealed="true"] .anim-attire-sway { animation: gAttireSway 900ms 120ms ease-in-out 1 both; }
-[data-revealed="true"] .anim-pin-drop { animation: gPinDrop 780ms 120ms ease-out 1 both; }
-[data-revealed="true"] .anim-wish-heart { animation: gWishHeart 800ms 120ms ease-out 1 both; }
+[data-revealed="true"] .anim-gift-lid { animation: gGiftLid 2.8s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-cup-left { animation: gCupLeft 2.8s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-cup-right { animation: gCupRight 2.8s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-toast-spark { animation: gToastSpark 2.8s 180ms ease-in-out infinite; }
+[data-revealed="true"] .anim-camera-flash { animation: gCameraFlash 2.6s 150ms ease-in-out infinite; }
+[data-revealed="true"] .anim-check-draw { animation: gCheckDraw 850ms 150ms cubic-bezier(0.22, 1, 0.36, 1) 1 forwards; }
+[data-revealed="true"] .anim-attire-sway { animation: gAttireSway 3.2s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-pin-drop { animation: gPinDrop 2.6s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-wish-heart { animation: gWishHeart 2.8s 120ms ease-in-out infinite; }
+[data-revealed="true"] .anim-adult-spark { animation: gAdultSpark 3s 150ms ease-in-out infinite; }
 
 .data-critical {
   font-family: var(--font-jost), var(--font-sans), sans-serif;
@@ -600,7 +617,10 @@ body {
   .anim-camera-flash,
   .anim-attire-sway,
   .anim-pin-drop,
-  .anim-wish-heart {
+  .anim-wish-heart,
+  .anim-adult-spark,
+  .anim-badge-halo,
+  .anim-gallery-slide {
     animation: none !important;
   }
   .anim-check-draw {

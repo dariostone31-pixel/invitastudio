@@ -93,6 +93,8 @@ export interface EventRecord {
   giftBank?: string;
   giftHolder?: string;
   dressCode: string;
+  rsvpDeadline?: string;
+  adultsOnly?: boolean;
   quote: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
   storyTitle?: string;
@@ -373,6 +375,8 @@ async function ensurePgReady(): Promise<Pool> {
         alter table public.events add column if not exists alias text not null default '';
         alter table public.events add column if not exists gift_bank text;
         alter table public.events add column if not exists gift_holder text;
+        alter table public.events add column if not exists rsvp_deadline text;
+        alter table public.events add column if not exists adults_only boolean not null default false;
         alter table public.events add column if not exists payment_method text;
         alter table public.events add column if not exists mp_preference_id text;
         alter table public.events add column if not exists mp_payment_id text;
@@ -455,6 +459,8 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     giftBank: row.gift_bank ? String(row.gift_bank) : undefined,
     giftHolder: row.gift_holder ? String(row.gift_holder) : undefined,
     dressCode: String(row.dress_code ?? "Elegante Sport"),
+    rsvpDeadline: row.rsvp_deadline ? String(row.rsvp_deadline) : undefined,
+    adultsOnly: Boolean(row.adults_only),
     quote: String(row.quote ?? ""),
     parentsOrHosts: Array.isArray(row.parents_or_hosts)
       ? (row.parents_or_hosts as ParentsOrHostsGroup[])
@@ -527,7 +533,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       id, order_code, slug, panel_token, skin_id, plan_id, status,
       payment_status, payment_method, mp_preference_id, mp_payment_id, paid_amount,
       event_title, date_iso, date_display, time_display, venue, address, city,
-      alias, gift_bank, gift_holder, dress_code, quote, parents_or_hosts, story_title, story_text, schedule,
+      alias, gift_bank, gift_holder, dress_code, rsvp_deadline, adults_only, quote, parents_or_hosts, story_title, story_text, schedule,
       hero_image_url, hero_overlay_override, gallery_images,
       font_override, accent_override, audio_override, song_request, dj_playlist,
       trivia_title, trivia_questions, trivia_scores, album_url, instagram_handle, event_hashtag, guest_list,
@@ -536,7 +542,7 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55
     )`,
     [
       ev.id,
@@ -562,6 +568,8 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       ev.giftBank ?? null,
       ev.giftHolder ?? null,
       ev.dressCode,
+      ev.rsvpDeadline ?? null,
+      Boolean(ev.adultsOnly),
       ev.quote,
       ev.parentsOrHosts ? JSON.stringify(ev.parentsOrHosts) : null,
       ev.storyTitle ?? null,
@@ -730,6 +738,8 @@ export async function createOrderEvent(input: {
   giftBank?: string;
   giftHolder?: string;
   dressCode: string;
+  rsvpDeadline?: string;
+  adultsOnly?: boolean;
   quote?: string;
   parentsOrHosts?: ParentsOrHostsGroup[];
   storyTitle?: string;
@@ -745,6 +755,7 @@ export async function createOrderEvent(input: {
   albumUrl?: string;
   instagramHandle?: string;
   eventHashtag?: string;
+  triviaQuestions?: TriviaQuestion[];
   enabledSections?: EnabledSectionsConfig;
   termsAccepted: boolean;
   termsVersion: string;
@@ -797,6 +808,8 @@ export async function createOrderEvent(input: {
     giftBank: input.giftBank?.trim() || undefined,
     giftHolder: input.giftHolder?.trim() || undefined,
     dressCode: input.dressCode || "Elegante Sport",
+    rsvpDeadline: input.rsvpDeadline?.trim() || undefined,
+    adultsOnly: Boolean(input.adultsOnly),
     quote:
       input.quote && input.quote.trim()
         ? input.quote.trim()
@@ -818,6 +831,10 @@ export async function createOrderEvent(input: {
     audioOverride: input.audioOverride || undefined,
     songRequest: input.songRequest?.trim() || undefined,
     djPlaylist: [],
+    triviaQuestions:
+      input.triviaQuestions && input.triviaQuestions.length > 0
+        ? input.triviaQuestions
+        : undefined,
     triviaScores: [],
     albumUrl: input.albumUrl?.trim() || undefined,
     instagramHandle: input.instagramHandle?.trim() || undefined,
@@ -866,6 +883,8 @@ export type EventPatch = Partial<
     | "giftBank"
     | "giftHolder"
     | "dressCode"
+    | "rsvpDeadline"
+    | "adultsOnly"
     | "quote"
     | "parentsOrHosts"
     | "storyTitle"
@@ -909,6 +928,8 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   giftBank: { col: "gift_bank" },
   giftHolder: { col: "gift_holder" },
   dressCode: { col: "dress_code" },
+  rsvpDeadline: { col: "rsvp_deadline" },
+  adultsOnly: { col: "adults_only" },
   quote: { col: "quote" },
   parentsOrHosts: { col: "parents_or_hosts", json: true },
   storyTitle: { col: "story_title" },

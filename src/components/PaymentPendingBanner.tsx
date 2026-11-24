@@ -15,6 +15,7 @@ export function PaymentPendingBanner({
   mercadopagoConfigured = false,
 }: PaymentPendingBannerProps) {
   const [copiedAlias, setCopiedAlias] = useState(false);
+  const [copiedSummary, setCopiedSummary] = useState(false);
   const [mpLoading, setMpLoading] = useState(false);
   const [mpError, setMpError] = useState<string | null>(null);
 
@@ -23,9 +24,18 @@ export function PaymentPendingBanner({
   const planObj =
     PRICING_PLANS.find((p) => p.id === event.planId) ?? PRICING_PLANS[1];
 
-  const whatsappHref = getWhatsAppHref(
-    `¡Hola! Te envío el comprobante de transferencia de mi pedido ${event.orderCode} (${planObj.name} · ${planObj.transferPrice} ARS) para activar mi invitación "${event.eventTitle}".`
-  );
+  const paymentSummaryMsg = `¡Hola! Quiero abonar por transferencia mi pedido ${event.orderCode} (${planObj.name} · ${planObj.transferPrice} ARS) para activar mi invitación "${event.eventTitle}".`;
+  const whatsappHref = getWhatsAppHref(paymentSummaryMsg);
+
+  const handleCopySummary = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentSummaryMsg);
+      setCopiedSummary(true);
+      setTimeout(() => setCopiedSummary(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleCopyAlias = async () => {
     if (!BUSINESS_CONFIG.bankAliasConfigured) return;
@@ -64,7 +74,10 @@ export function PaymentPendingBanner({
   };
 
   return (
-    <section className="rounded-3xl border border-amber-300 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm print:hidden">
+    <section
+      id="pago-transferencia"
+      className="rounded-3xl border border-amber-300 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm print:hidden"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-900">
@@ -110,10 +123,22 @@ export function PaymentPendingBanner({
                 </button>
               </div>
             ) : (
-              <p className="mt-1.5 text-[11px] text-stone-500">
-                Soliciá el Alias/CBU actualizado enviando tu código de pedido{" "}
-                <strong className="text-stone-800">{event.orderCode}</strong> y recibí confirmación rápida.
-              </p>
+              <div className="mt-1.5 space-y-2">
+                <p className="text-[11px] text-stone-600">
+                  Soliciá el Alias/CBU enviando tu código{" "}
+                  <strong className="font-mono text-stone-900">{event.orderCode}</strong> y recibí confirmación rápida para activar tu invitación.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCopySummary}
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
+                >
+                  {copiedSummary ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedSummary
+                    ? "¡Mensaje con tu código copiado!"
+                    : `Copiar mensaje de pago (${event.orderCode})`}
+                </button>
+              </div>
             )}
 
             <div className="mt-2.5 flex flex-wrap gap-2">
@@ -125,7 +150,9 @@ export function PaymentPendingBanner({
                   className="inline-flex min-h-[38px] flex-1 items-center justify-center gap-1.5 rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-700"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
-                  Enviar comprobante por WhatsApp
+                  {BUSINESS_CONFIG.bankAliasConfigured
+                    ? "Enviar comprobante por WhatsApp"
+                    : "Pedir Alias y pagar por WhatsApp"}
                 </a>
               )}
               {!whatsappHref && BUSINESS_CONFIG.supportEmail && (
