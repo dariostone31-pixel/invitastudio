@@ -496,6 +496,255 @@ body {
   background-position: 0 0, 9px 9px;
 }
 
+/* Artesanal warm cotton-paper SVG micro-grain for boda-sobre-marfil */
+.cotton-paper-marfil {
+  pointer-events: none;
+  background-color: #FAF7F2;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.72), transparent 55%),
+    radial-gradient(circle at 82% 88%, rgba(230, 218, 198, 0.35), transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.28  0 0 0 0 0.21  0 0 0 0 0.14  0 0 0 0.055 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 180px 180px;
+}
+
+.cotton-paper-pressed {
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.24  0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0.075 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 160px 160px;
+}
+
+/* Papel prensa vintage real (#F3EFE6) con fibras sutiles */
+.newsprint-vintage {
+  pointer-events: none;
+  background-color: #F3EFE6;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255, 252, 244, 0.55), transparent 52%),
+    radial-gradient(circle at 80% 90%, rgba(185, 174, 152, 0.24), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='np'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.12  0 0 0 0 0.11  0 0 0 0 0.09  0 0 0 0.085 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23np)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 180px 180px;
+}
+
+/* Destello diagonal de papel satinado para Edición Tapa de Revista */
+@keyframes magazineGlossSheen {
+  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  20% { opacity: 0.9; }
+  80% { opacity: 0.75; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+.magazine-glossy-sheen {
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.16) 35%,
+    rgba(255, 255, 255, 0.52) 50%,
+    rgba(255, 255, 255, 0.14) 65%,
+    transparent 100%
+  );
+  animation: magazineGlossSheen 2.4s cubic-bezier(0.22, 1, 0.36, 1) 0.25s 1 both;
+}
+
+/* Letra capital ornamental con desvanecimiento de tinta de imprenta */
+@keyframes inkLetterFade {
+  0% { opacity: 0; filter: blur(1.5px); transform: translateY(3px); }
+  100% { opacity: 1; filter: blur(0px); transform: translateY(0); }
+}
+
+.reveal-section[data-revealed="true"] .editorial-drop-cap::first-letter {
+  animation: inkLetterFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.editorial-drop-cap::first-letter {
+  float: left;
+  margin-right: 0.5rem;
+  margin-top: 0.15rem;
+  border: 1.5px solid #1C1B19;
+  padding: 0.28rem 0.5rem;
+  background: #FAF7EE;
+  color: #1C1B19;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 2.35rem;
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+/* Papel lino/arena orgánico para boda-boho-pampas */
+.linen-sand-pampas {
+  pointer-events: none;
+  background-color: #F8F1EA;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255, 252, 248, 0.72), transparent 52%),
+    radial-gradient(circle at 82% 88%, rgba(184, 107, 75, 0.08), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(132, 92, 68, 0.025) 0px, rgba(132, 92, 68, 0.025) 1px, transparent 1px, transparent 5px),
+    repeating-linear-gradient(90deg, rgba(132, 92, 68, 0.02) 0px, rgba(132, 92, 68, 0.02) 1px, transparent 1px, transparent 5px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='lp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.34  0 0 0 0 0.22  0 0 0 0 0.14  0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23lp)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
+  background-size: 100% 100%, 100% 100%, auto, auto, 180px 180px;
+}
+
+/* Papel verjurado marfil con trama horizontal sutil para boda-botanica-eucalipto */
+.laid-paper-botanical {
+  pointer-events: none;
+  background-color: #F7F7F0;
+  background-image:
+    radial-gradient(circle at 22% 10%, rgba(255, 255, 252, 0.78), transparent 55%),
+    radial-gradient(circle at 80% 86%, rgba(95, 125, 91, 0.07), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(95, 125, 91, 0.042) 0px, rgba(95, 125, 91, 0.042) 1px, transparent 1px, transparent 7px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='bp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.18  0 0 0 0 0.24  0 0 0 0 0.17  0 0 0 0.055 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23bp)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
+  background-size: 100% 100%, 100% 100%, auto, 180px 180px;
+}
+
+/* Cartulina satinada premium (#F8F9FA) para boda-boarding-pass */
+.satin-cardstock-boarding {
+  pointer-events: none;
+  background-color: #F8F9FA;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.92), transparent 52%),
+    radial-gradient(circle at 85% 90%, rgba(15, 37, 55, 0.045), transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='sc'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.06  0 0 0 0 0.14  0 0 0 0 0.22  0 0 0 0.032 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23sc)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 180px 180px;
+}
+
+/* Terciopelo negro medianoche (#0B0D12) con halo radial dorado sutil para boda-noche-gala */
+.velvet-midnight-gala {
+  pointer-events: none;
+  background-color: #0B0D12;
+  background-image:
+    radial-gradient(circle at 50% 22%, rgba(212, 175, 55, 0.14), transparent 58%),
+    radial-gradient(circle at 50% 78%, rgba(212, 175, 55, 0.07), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='vg'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.83  0 0 0 0 0.69  0 0 0 0 0.22  0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23vg)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 160px 160px;
+}
+
+@keyframes galaGoldSheen {
+  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  25% { opacity: 0.9; }
+  75% { opacity: 0.85; }
+  100% { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+}
+
+.gala-gold-sheen {
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.08) 32%,
+    rgba(246, 221, 140, 0.36) 50%,
+    rgba(212, 175, 55, 0.08) 68%,
+    transparent 100%
+  );
+  animation: galaGoldSheen 2.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s 1 both;
+}
+
+/* Escenografía de fondo luminosa marfil & champán con pétalos difuminados y destellos dorados */
+.xv-champagne-scenography {
+  pointer-events: none;
+  background-color: #F4EDE2;
+  background-image:
+    radial-gradient(ellipse 68% 36% at 14% 18%, rgba(255, 253, 248, 0.85), transparent 62%),
+    radial-gradient(ellipse 62% 32% at 88% 38%, rgba(226, 198, 152, 0.28), transparent 65%),
+    radial-gradient(ellipse 70% 34% at 18% 66%, rgba(235, 208, 174, 0.3), transparent 64%),
+    radial-gradient(ellipse 65% 30% at 86% 88%, rgba(212, 175, 106, 0.22), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cfilter id='xvp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.45  0 0 0 0 0.34  0 0 0 0 0.22  0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23xvp)'/%3E%3Ccircle cx='38' cy='46' r='2.2' fill='%23D4AF6A' fill-opacity='0.28'/%3E%3Ccircle cx='214' cy='92' r='1.8' fill='%23D4AF6A' fill-opacity='0.25'/%3E%3Ccircle cx='82' cy='188' r='2.5' fill='%23C88B9D' fill-opacity='0.14'/%3E%3Ccircle cx='206' cy='218' r='2' fill='%23D4AF6A' fill-opacity='0.22'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 260px 260px;
+}
+
+/* 1. XV Nocturno & Festival VIP: Fondo carbón #06070B + halos magenta & cian eléctrico */
+.neon-club-scenography {
+  pointer-events: none;
+  background-color: #06070B;
+  background-image:
+    radial-gradient(ellipse 68% 36% at 14% 16%, rgba(236, 72, 153, 0.22), transparent 62%),
+    radial-gradient(ellipse 64% 34% at 88% 34%, rgba(34, 211, 238, 0.2), transparent 64%),
+    radial-gradient(ellipse 66% 36% at 18% 72%, rgba(34, 211, 238, 0.16), transparent 62%),
+    radial-gradient(ellipse 62% 32% at 86% 88%, rgba(236, 72, 153, 0.18), transparent 64%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='ncn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.2  0 0 0 0 0.8  0 0 0 0 0.95  0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23ncn)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 180px 180px;
+}
+
+@keyframes neonFlashSweep {
+  0% { opacity: 0; transform: scale(0.92); }
+  35% { opacity: 0.95; transform: scale(1.06); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+.neon-flash-burst {
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.45) 0%, rgba(236, 72, 153, 0.28) 45%, transparent 72%);
+  animation: neonFlashSweep 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 2. Hombres & +18 Club Lounge: Nogal / cuero carbón #110E0C + reflejo cobre cepillado #C88A4B */
+.club-lounge-walnut {
+  pointer-events: none;
+  background-color: #110E0C;
+  background-image:
+    radial-gradient(ellipse 72% 38% at 50% 14%, rgba(200, 138, 75, 0.16), transparent 62%),
+    radial-gradient(ellipse 68% 36% at 85% 68%, rgba(200, 138, 75, 0.09), transparent 65%),
+    repeating-linear-gradient(
+      96deg,
+      rgba(200, 138, 75, 0.018) 0px,
+      rgba(200, 138, 75, 0.018) 2px,
+      transparent 2px,
+      transparent 11px
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='clw'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.78  0 0 0 0 0.54  0 0 0 0 0.29  0 0 0 0.055 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23clw)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 160px 160px;
+}
+
+/* 3. Niños (Espacio / Dino Nórdico): Azul noche suave o arena nórdica sin saturación chillona */
+.kids-nordic-space {
+  pointer-events: none;
+  background-color: #EEF2F5;
+  background-image:
+    radial-gradient(ellipse 70% 38% at 15% 15%, rgba(64, 92, 128, 0.14), transparent 62%),
+    radial-gradient(ellipse 64% 34% at 86% 42%, rgba(123, 158, 135, 0.16), transparent 64%),
+    radial-gradient(ellipse 68% 32% at 22% 78%, rgba(212, 163, 76, 0.14), transparent 62%);
+}
+
+.kids-nordic-night {
+  pointer-events: none;
+  background-color: #162235;
+  background-image:
+    radial-gradient(ellipse 72% 40% at 18% 18%, rgba(92, 134, 186, 0.24), transparent 62%),
+    radial-gradient(ellipse 64% 34% at 84% 48%, rgba(212, 163, 76, 0.16), transparent 64%),
+    radial-gradient(ellipse 64% 32% at 24% 84%, rgba(123, 158, 135, 0.18), transparent 62%);
+}
+
+/* 4. Niñas (Reino Pastel, Hadas, Sirena): Rosa talco, lavanda suave y destellos dorados */
+.girls-pastel-ethereal {
+  pointer-events: none;
+  background-color: #FDF7F9;
+  background-image:
+    radial-gradient(ellipse 70% 38% at 18% 16%, rgba(235, 190, 206, 0.36), transparent 64%),
+    radial-gradient(ellipse 66% 36% at 86% 42%, rgba(210, 196, 236, 0.34), transparent 64%),
+    radial-gradient(ellipse 64% 34% at 22% 78%, rgba(226, 198, 146, 0.22), transparent 62%);
+}
+
+/* 5. Bautismos & Bebé: Papel algodón cálido + nubes suaves en celeste humo / salvia / lino */
+.baptism-cotton-clouds {
+  pointer-events: none;
+  background-color: #FAF6F0;
+  background-image:
+    radial-gradient(ellipse 72% 38% at 16% 18%, rgba(206, 222, 232, 0.38), transparent 64%),
+    radial-gradient(ellipse 68% 36% at 86% 46%, rgba(214, 226, 214, 0.36), transparent 64%),
+    radial-gradient(ellipse 64% 32% at 20% 82%, rgba(226, 204, 168, 0.26), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='bct'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.55  0 0 0 0 0.45  0 0 0 0 0.35  0 0 0 0.038 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23bct)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 200px 200px;
+}
+
 :focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;

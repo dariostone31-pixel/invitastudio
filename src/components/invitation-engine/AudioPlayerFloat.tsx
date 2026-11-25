@@ -13,6 +13,7 @@ interface AudioPlayerFloatProps {
   textColor: string;
   borderColor: string;
   hasTopChrome?: boolean;
+  compactBottomLeft?: boolean;
 }
 
 export function AudioPlayerFloat({
@@ -25,6 +26,7 @@ export function AudioPlayerFloat({
   textColor,
   borderColor,
   hasTopChrome = false,
+  compactBottomLeft = false,
 }: AudioPlayerFloatProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [actuallyPlaying, setActuallyPlaying] = React.useState(false);
@@ -80,33 +82,51 @@ export function AudioPlayerFloat({
         aria-label={actuallyPlaying ? "Pausar música" : "Reproducir música"}
         aria-pressed={actuallyPlaying}
         title={title}
-        className={`fixed right-3 sm:right-4 z-40 flex min-h-[40px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95 ${
-          hasTopChrome ? "top-14 sm:top-14" : "top-4"
-        }`}
+        className={
+          compactBottomLeft
+            ? "fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_12px_28px_-8px_rgba(45,30,20,0.28)] backdrop-blur-md transition-transform active:scale-95"
+            : `fixed right-3 sm:right-4 z-40 flex min-h-[40px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95 ${
+                hasTopChrome ? "top-14 sm:top-14" : "top-4"
+              }`
+        }
         style={{
-          backgroundColor: `${surfaceColor}E6`,
-          borderColor: borderColor,
+          backgroundColor: compactBottomLeft ? "rgba(250, 246, 240, 0.9)" : `${surfaceColor}E6`,
+          borderColor: compactBottomLeft ? "rgba(183, 138, 78, 0.48)" : borderColor,
           color: textColor,
         }}
       >
-        <span
-          className="flex h-6 w-6 items-center justify-center rounded-full"
-          style={{ backgroundColor: accentColor, color: "#FFFFFF" }}
-        >
-          {actuallyPlaying ? <Pause className="h-3 w-3" /> : <Play className="ml-0.5 h-3 w-3" />}
-        </span>
-
-        {actuallyPlaying ? (
-          <span className="flex items-end gap-[2px] h-3.5 pr-1">
-            <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: accentColor }} />
-            <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: accentColor }} />
-            <span className="w-[2.5px] rounded-full eq-bar-3" style={{ backgroundColor: accentColor }} />
-          </span>
+        {compactBottomLeft ? (
+          actuallyPlaying ? (
+            <span className="flex items-end gap-[2px] h-3.5">
+              <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: accentColor }} />
+              <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: accentColor }} />
+              <span className="w-[2.5px] rounded-full eq-bar-3" style={{ backgroundColor: accentColor }} />
+            </span>
+          ) : (
+            <Volume2 className="h-4 w-4" style={{ color: accentColor }} />
+          )
         ) : (
-          <span className="flex items-center gap-1 pr-1 opacity-80">
-            {actuallyPlaying ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">Música</span>
-          </span>
+          <>
+            <span
+              className="flex h-6 w-6 items-center justify-center rounded-full"
+              style={{ backgroundColor: accentColor, color: "#FFFFFF" }}
+            >
+              {actuallyPlaying ? <Pause className="h-3 w-3" /> : <Play className="ml-0.5 h-3 w-3" />}
+            </span>
+
+            {actuallyPlaying ? (
+              <span className="flex items-end gap-[2px] h-3.5 pr-1">
+                <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: accentColor }} />
+                <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: accentColor }} />
+                <span className="w-[2.5px] rounded-full eq-bar-3" style={{ backgroundColor: accentColor }} />
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 pr-1 opacity-80">
+                {actuallyPlaying ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">Música</span>
+              </span>
+            )}
+          </>
         )}
       </button>
     </>
