@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createOrderEvent, getDbMode, listEvents, listRsvpsForSlug } from "@/lib/db";
 import { verifyAdminPass } from "@/lib/adminAuth";
 import { LEGAL_VERSION } from "@/config/legal";
+import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
 
 export async function GET(req: Request) {
   const pass = req.headers.get("x-admin-pass") || new URL(req.url).searchParams.get("pass");
@@ -113,14 +114,8 @@ export async function POST(req: Request) {
     const validPlan =
       planId === "esencial" || planId === "pro" || planId === "asistido" ? planId : "pro";
     const allowFullCustom = validPlan === "pro" || validPlan === "asistido";
-    const CURATED_AUDIO = new Set([
-      "/audio/romantic-piano.wav",
-      "/audio/lounge-warm.wav",
-      "/audio/playful-celesta.wav",
-      "none",
-    ]);
     const cleanAudio =
-      allowFullCustom && typeof audioOverride === "string" && CURATED_AUDIO.has(audioOverride)
+      allowFullCustom && typeof audioOverride === "string" && CURATED_AUDIO_URLS.has(audioOverride)
         ? audioOverride
         : undefined;
     const cleanSongRequest =

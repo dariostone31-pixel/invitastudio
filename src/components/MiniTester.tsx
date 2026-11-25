@@ -42,19 +42,24 @@ export function MiniTester() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: "some" }}
       transition={{ duration: 0.7, ease: STUDIO_EASE }}
-      className="mx-auto max-w-5xl px-4 py-6 sm:px-6"
+      className="mx-auto max-w-6xl px-4 py-6 sm:px-6"
     >
-      <div className="group overflow-hidden rounded-3xl border border-[#B78A4E]/40 bg-gradient-to-br from-[#FBF1EE] via-[#FFFBFA] to-[#FAF8F5] p-6 shadow-lg transition-shadow duration-300 hover:shadow-[0_20px_44px_-18px_rgba(107,30,48,0.22)] sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="group relative overflow-hidden rounded-[26px] border border-[#B78A4E]/45 bg-gradient-to-br from-[#FBF1EE] via-[#FFFBFA] to-[#F9F4EE] p-6 shadow-[0_18px_42px_-20px_rgba(74,20,32,0.22)] transition-shadow duration-300 hover:shadow-[0_24px_50px_-20px_rgba(107,30,48,0.28)] sm:p-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-2 rounded-[20px] border border-[#B78A4E]/15"
+        />
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
-            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#6B1E30]">
-              <AnimatedIconBox className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B78A4E]/40 bg-white text-[#B78A4E] shadow-sm">
+            <span className="font-ui-jost inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6B1E30]">
+              <AnimatedIconBox className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B78A4E]/45 bg-white text-[#B78A4E] shadow-sm">
                 <Wand2 className="h-3.5 w-3.5" strokeWidth={1.5} />
               </AnimatedIconBox>
               Prueba Instantánea Sin Registro
             </span>
-            <h2 className="font-display-cormorant mt-2 text-3xl font-semibold text-[#2A121B]">
-              Mirá cómo queda con tu nombre en 5 segundos
+            <h2 className="font-display-cormorant mt-2.5 text-3xl font-semibold leading-tight text-[#2A121B]">
+              Mirá cómo queda con tu nombre en{" "}
+              <span className="italic text-[#6B1E30]">5 segundos</span>
             </h2>
             <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">
               No te pedimos tarjeta ni cuenta de Google. Escribí el nombre de tu evento y abrí el sobre al instante.
@@ -63,13 +68,13 @@ export function MiniTester() {
 
           <form onSubmit={handlePreview} className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-[#2A121B]">
+              <label className="font-ui-jost mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7A5A62]">
                 Tipo de evento
               </label>
               <select
                 value={cat}
                 onChange={(e) => setCat(e.target.value as EventCategory)}
-                className="w-full rounded-xl border border-[#2A121B]/20 bg-white px-3.5 py-2.5 text-sm text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
+                className="w-full rounded-xl border border-[#2A121B]/18 bg-white px-3.5 py-2.5 text-sm font-medium text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
               >
                 {(Object.keys(CATEGORY_LABELS) as EventCategory[]).map((k) => (
                   <option key={k} value={k}>
@@ -80,7 +85,7 @@ export function MiniTester() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-[#2A121B]">
+              <label className="font-ui-jost mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7A5A62]">
                 Título del evento
               </label>
               <input
@@ -88,12 +93,12 @@ export function MiniTester() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={currentSkin?.sample.title || "Ej. Sofía & Lucas"}
-                className="w-full rounded-xl border border-[#2A121B]/20 bg-white px-3.5 py-2.5 text-sm text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
+                className="w-full rounded-xl border border-[#2A121B]/18 bg-white px-3.5 py-2.5 text-sm text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-[#2A121B]">
+              <label className="font-ui-jost mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7A5A62]">
                 Nombre de un invitado (opcional)
               </label>
               <input
@@ -101,7 +106,7 @@ export function MiniTester() {
                 value={guest}
                 onChange={(e) => setGuest(e.target.value)}
                 placeholder="Ej. Familia Pérez"
-                className="w-full rounded-xl border border-[#2A121B]/20 bg-white px-3.5 py-2.5 text-sm text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
+                className="w-full rounded-xl border border-[#2A121B]/18 bg-white px-3.5 py-2.5 text-sm text-[#2A121B] outline-none transition-colors focus:border-[#6B1E30]"
               />
             </div>
 

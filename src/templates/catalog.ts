@@ -174,8 +174,8 @@ const BODA_SAMPLE: SampleEventData = {
     "/images/gallery/boda-2.webp",
     "/images/gallery/boda-3.webp",
   ],
-  audioTitle: "Vals en Piano — Instrumental",
-  audioUrl: "/audio/romantic-piano.wav",
+  audioTitle: "Perfect – Ed Sheeran",
+  audioUrl: "/audio/boda-perfect.mp3",
 };
 
 const XV_SAMPLE: SampleEventData = {
@@ -229,8 +229,8 @@ const XV_SAMPLE: SampleEventData = {
     "/images/templates/xv-gala-rosa.webp",
     "/images/templates/xv-editorial-vogue.webp",
   ],
-  audioTitle: "Melodía Nocturna — Instrumental",
-  audioUrl: "/audio/romantic-piano.wav",
+  audioTitle: "Enchanted – Taylor Swift",
+  audioUrl: "/audio/xv-enchanted.mp3",
 };
 
 const HOMBRE_SAMPLE: SampleEventData = {
@@ -282,8 +282,8 @@ const HOMBRE_SAMPLE: SampleEventData = {
     "/images/templates/hombre-whisky-gold.webp",
     "/images/templates/hombre-asado-lounge.webp",
   ],
-  audioTitle: "Lounge & Jazz Nocturno",
-  audioUrl: "/audio/lounge-warm.wav",
+  audioTitle: "De Música Ligera – Soda Stereo",
+  audioUrl: "/audio/hombre-de-musica-ligera.mp3",
 };
 
 const HOMBRE_18_SAMPLE: SampleEventData = {
@@ -335,8 +335,8 @@ const HOMBRE_18_SAMPLE: SampleEventData = {
     "/images/templates/hombre-18-rooftop.webp",
     "/images/templates/hombre-editorial-mono.webp",
   ],
-  audioTitle: "Rooftop Beat — Instrumental",
-  audioUrl: "/audio/lounge-warm.wav",
+  audioTitle: "Blinding Lights – The Weeknd",
+  audioUrl: "/audio/hombre-blinding-lights.mp3",
 };
 
 const NINO_SAMPLE: SampleEventData = {
@@ -549,6 +549,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       ...BODA_SAMPLE,
       eyebrow: "Edición Especial · Nupcias",
       badgeText: "EDICIÓN N° 01",
+      audioTitle: "Para Siempre – Benjamín Amadeo",
+      audioUrl: "/audio/boda-para-siempre.mp3",
     },
   },
   {
@@ -570,7 +572,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#E3CDBE",
       isDark: false,
     },
-    sample: BODA_SAMPLE,
+    sample: {
+      ...BODA_SAMPLE,
+      audioTitle: "Para Siempre – Benjamín Amadeo",
+      audioUrl: "/audio/boda-para-siempre.mp3",
+    },
   },
   {
     id: "boda-noche-gala",
@@ -612,7 +618,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#D5DFD0",
       isDark: false,
     },
-    sample: BODA_SAMPLE,
+    sample: {
+      ...BODA_SAMPLE,
+      audioTitle: "A Thousand Years – Christina Perri",
+      audioUrl: "/audio/boda-a-thousand-years.mp3",
+    },
   },
   {
     id: "boda-acuarela-azul",
@@ -633,7 +643,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#CBD9E8",
       isDark: false,
     },
-    sample: BODA_SAMPLE,
+    sample: {
+      ...BODA_SAMPLE,
+      audioTitle: "A Thousand Years – Christina Perri",
+      audioUrl: "/audio/boda-a-thousand-years.mp3",
+    },
   },
   {
     id: "boda-playa-brisa",
@@ -654,7 +668,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#DFDBD0",
       isDark: false,
     },
-    sample: BODA_SAMPLE,
+    sample: {
+      ...BODA_SAMPLE,
+      audioTitle: "A Thousand Years – Christina Perri",
+      audioUrl: "/audio/boda-a-thousand-years.mp3",
+    },
   },
   {
     id: "boda-boarding-pass",
@@ -724,7 +742,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#382864",
       isDark: true,
     },
-    sample: XV_SAMPLE,
+    sample: {
+      ...XV_SAMPLE,
+      audioTitle: "A Sky Full of Stars – Coldplay",
+      audioUrl: "/audio/xv-a-sky-full-of-stars.mp3",
+    },
   },
   {
     id: "xv-festival-pass",
@@ -749,6 +771,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       ...XV_SAMPLE,
       eyebrow: "ALL ACCESS · XV TOUR 2027",
       badgeText: "VIP PASS",
+      audioTitle: "A Sky Full of Stars – Coldplay",
+      audioUrl: "/audio/xv-a-sky-full-of-stars.mp3",
     },
   },
   {
@@ -770,7 +794,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#EAD3DC",
       isDark: false,
     },
-    sample: XV_SAMPLE,
+    sample: {
+      ...XV_SAMPLE,
+      audioTitle: "No Crezcas Más – Tercer Cielo",
+      audioUrl: "/audio/xv-no-crezcas-mas.mp3",
+    },
   },
   {
     id: "xv-mariposas-lila",
@@ -791,7 +819,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#432F6B",
       isDark: true,
     },
-    sample: XV_SAMPLE,
+    sample: {
+      ...XV_SAMPLE,
+      audioTitle: "Quinceañera – Thalía",
+      audioUrl: "/audio/xv-quinceanera.mp3",
+    },
   },
   {
     id: "xv-esmeralda-real",
@@ -812,7 +844,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#2B594D",
       isDark: true,
     },
-    sample: XV_SAMPLE,
+    sample: {
+      ...XV_SAMPLE,
+      audioTitle: "Quinceañera – Thalía",
+      audioUrl: "/audio/xv-quinceanera.mp3",
+    },
   },
   {
     id: "xv-editorial-vogue",
@@ -909,6 +945,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       title: "Lucas #18",
       monogram: "18",
       badgeText: "PASS #18",
+      audioTitle: "I Gotta Feeling – Black Eyed Peas",
+      audioUrl: "/audio/hombre-i-gotta-feeling.mp3",
       gifts: {
         ...HOMBRE_18_SAMPLE.gifts,
         holder: "Lucas Pérez",
@@ -935,7 +973,11 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       border: "#363024",
       isDark: true,
     },
-    sample: HOMBRE_SAMPLE,
+    sample: {
+      ...HOMBRE_SAMPLE,
+      audioTitle: "Viva La Vida – Coldplay",
+      audioUrl: "/audio/hombre-viva-la-vida.mp3",
+    },
   },
   {
     id: "hombre-estadio-vip",
@@ -1014,6 +1056,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       eyebrow: "EDICIÓN CONMEMORATIVA · 60 AÑOS",
       title: "Don Carlos · 60",
       badgeText: "EDICIÓN DE ORO",
+      audioTitle: "Viva La Vida – Coldplay",
+      audioUrl: "/audio/hombre-viva-la-vida.mp3",
     },
   },
   {
@@ -1040,6 +1084,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       eyebrow: "AFTER OFFICE & BAR",
       title: "Tomás · 35",
       monogram: "T · 35",
+      audioTitle: "I Gotta Feeling – Black Eyed Peas",
+      audioUrl: "/audio/hombre-i-gotta-feeling.mp3",
     },
   },
   {
@@ -1066,6 +1112,8 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       eyebrow: "CELEBRACIÓN · 40 AÑOS",
       title: "Nicolás · XL",
       monogram: "N · XL",
+      audioTitle: "Viva La Vida – Coldplay",
+      audioUrl: "/audio/hombre-viva-la-vida.mp3",
     },
   },
 

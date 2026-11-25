@@ -19,6 +19,7 @@ import {
   PenLine,
   Eye,
   Share2,
+  ShieldCheck,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MotionHeroBlock, MotionSection } from "@/components/MotionReveal";
@@ -100,26 +101,31 @@ const HOW_IT_WORKS = [
 
 const MORE_THAN_INVITE = [
   {
+    num: "01",
     icon: Users,
     title: "Cada invitado recibe la suya",
     desc: "Sobre animado con su nombre grande en la tapa y acceso diferenciado (todo el evento, ceremonia o fiesta).",
   },
   {
+    num: "02",
     icon: MapPin,
     title: "Que nadie pregunte “¿a qué hora era?”",
     desc: "Cuenta regresiva, mapa en 1 toque, dress code, Solo Adultos opcional y agendar directo al calendario.",
   },
   {
+    num: "03",
     icon: CheckCircle2,
     title: "La lista se arma sola",
     desc: "Confirmación grupal con acompañantes y alergias (Sin TACC), todo ordenado al instante en tu Excel (.xlsx).",
   },
   {
+    num: "04",
     icon: Music,
     title: "Que no falte ninguna canción",
     desc: "Música al abrir el sobre + Playlist DJ donde tus invitados sugieren y votan sus temas con pulso en vivo.",
   },
   {
+    num: "05",
     icon: Camera,
     title: "Juegos, firmas y Álbum QR",
     desc: "Mini-Trivia con ranking Top 5, mural de buenos deseos, galería con transiciones y Modo Recuerdo.",
@@ -163,32 +169,47 @@ export default function HomePage() {
       />
 
       {/* ================= HEADER BLUR EDITORIAL ================= */}
-      <header className="sticky top-0 z-40 border-b border-[#2A121B]/12 bg-[#FFFBFA]/90 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <Link href="/" aria-label="Invita con Alma - Inicio">
+      <header className="sticky top-0 z-40 border-b border-[#2A121B]/10 bg-[#FFFBFA]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:gap-8 lg:px-8">
+          <Link href="/" aria-label="Invita con Alma - Inicio" className="shrink-0">
             <BrandLogo />
           </Link>
 
-          <nav className="font-ui-jost hidden items-center gap-6 text-xs font-medium uppercase tracking-[0.18em] text-[#7A5A62] md:flex">
-            <a href="#modelos" className="transition-colors hover:text-[#6B1E30]">
+          <nav
+            aria-label="Navegación principal"
+            className="font-ui-jost hidden items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6F5058] lg:flex xl:gap-8"
+          >
+            <a
+              href="#modelos"
+              className="whitespace-nowrap py-1.5 transition-colors hover:text-[#6B1E30]"
+            >
               Modelos (42)
             </a>
-            <a href="#como-funciona" className="transition-colors hover:text-[#6B1E30]">
+            <a
+              href="#como-funciona"
+              className="whitespace-nowrap py-1.5 transition-colors hover:text-[#6B1E30]"
+            >
               Cómo funciona
             </a>
-            <Link href="/personalizar/demo-boda" className="transition-colors hover:text-[#6B1E30]">
+            <Link
+              href="/personalizar/demo-boda"
+              className="whitespace-nowrap py-1.5 transition-colors hover:text-[#6B1E30]"
+            >
               Personalizador
             </Link>
-            <a href="#precios" className="transition-colors hover:text-[#6B1E30]">
+            <a
+              href="#precios"
+              className="whitespace-nowrap py-1.5 transition-colors hover:text-[#6B1E30]"
+            >
               Precios ARS
             </a>
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
             <MotionTap className="hidden sm:block">
               <Link
                 href="/mi-panel"
-                className="inline-flex rounded-full border border-[#2A121B]/20 bg-white px-4 py-2.5 text-xs font-semibold text-[#2A121B] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:text-[#6B1E30]"
+                className="inline-flex whitespace-nowrap rounded-full border border-[#2A121B]/18 bg-white px-4 py-2 text-xs font-semibold text-[#2A121B] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:text-[#6B1E30]"
               >
                 Mi Panel
               </Link>
@@ -196,7 +217,7 @@ export default function HomePage() {
             <MotionTap>
               <Link
                 href="/encargar"
-                className="btn-gold-shimmer inline-flex rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_30px_-10px_rgba(107,30,48,0.7)]"
+                className="btn-gold-shimmer inline-flex whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_30px_-10px_rgba(107,30,48,0.7)] sm:px-5 sm:py-2.5"
               >
                 Encargar Ahora
               </Link>
@@ -204,34 +225,52 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mobile quick-anchor strip */}
+        {/* Mobile & Tablet quick-anchor strip */}
         <nav
           aria-label="Navegación rápida móvil"
-          className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-[#2A121B]/8 bg-[#FBF1EE]/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B1E30] md:hidden"
+          className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-[#2A121B]/8 bg-[#FBF1EE]/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B1E30] lg:hidden"
         >
-          <a href="#modelos" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <a
+            href="#modelos"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             Modelos (42)
           </a>
-          <Link href="/mi-panel" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <Link
+            href="/mi-panel"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             Mi Panel
           </Link>
-          <a href="#como-funciona" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <a
+            href="#como-funciona"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             Cómo funciona
           </a>
-          <a href="#precios" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <a
+            href="#precios"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             Precios
           </a>
-          <Link href="/personalizar/demo-boda" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <Link
+            href="/personalizar/demo-boda"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             Personalizador
           </Link>
-          <a href="#faq" className="whitespace-nowrap rounded-full bg-white px-3 py-1 shadow-sm">
+          <a
+            href="#faq"
+            className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
+          >
             FAQ
           </a>
         </nav>
       </header>
 
       {/* ================= HERO EDITORIAL ================= */}
-      <section className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-12 pt-10 sm:px-6 lg:pt-16">
+      <section className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-12 pt-9 sm:px-6 lg:pb-16 lg:pt-14">
         <div
           aria-hidden="true"
           className="animate-drift-1 pointer-events-none absolute -left-24 -top-10 h-80 w-80 rounded-full bg-[#E7AFC0]/35 blur-3xl"
@@ -241,26 +280,27 @@ export default function HomePage() {
           className="animate-drift-2 pointer-events-none absolute -right-24 top-16 h-96 w-96 rounded-full bg-[#B78A4E]/20 blur-3xl"
         />
 
-        <div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+        <div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-7">
             <MotionHeroBlock delay={0}>
-              <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#6B1E30] shadow-sm">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E]">
+              <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/45 bg-[#FFFBFA]/95 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B1E30] shadow-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E]">
                   <Sparkles className="h-3 w-3" strokeWidth={1.5} />
                 </span>
-                Invitaciones digitales de autor · Argentina
+                Invitaciones Digitales de Autor · Argentina
               </span>
             </MotionHeroBlock>
 
             <MotionHeroBlock delay={0.08}>
-              <h1 className="font-display-cormorant mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-[#2A121B] sm:text-7xl">
-                Tu evento empieza desde el<span className="gold-underline ml-[0.22em] italic text-[#6B1E30]">primer clic.</span>
+              <h1 className="font-display-cormorant mt-5 text-[42px] font-semibold leading-[1.03] tracking-tight text-[#2A121B] sm:text-6xl lg:text-[66px]">
+                Tu evento empieza desde el{" "}
+                <span className="gold-underline italic text-[#6B1E30]">primer clic.</span>
               </h1>
             </MotionHeroBlock>
 
             <MotionHeroBlock delay={0.16}>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-[#7A5A62] sm:text-lg">
-                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de estudio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#6E4F57] sm:text-lg">
+                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de autor con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
               </p>
             </MotionHeroBlock>
 
@@ -269,7 +309,7 @@ export default function HomePage() {
                 <MotionTap>
                   <a
                     href="#modelos"
-                    className="btn-gold-shimmer inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
+                    className="btn-gold-shimmer inline-flex min-h-[48px] items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
                   >
                     Explorar 42 Modelos en Vivo
                     <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
@@ -278,7 +318,7 @@ export default function HomePage() {
                 <MotionTap>
                   <a
                     href="#como-funciona"
-                    className="btn-shimmer-hover group inline-flex items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
+                    className="btn-shimmer-hover group inline-flex min-h-[48px] items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
                       <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -287,21 +327,31 @@ export default function HomePage() {
                   </a>
                 </MotionTap>
               </div>
+              <p className="mt-3.5 flex items-center gap-1.5 text-xs font-medium text-[#7A5A62]">
+                <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-[#B78A4E]" strokeWidth={1.6} />
+                <span>Pago único por evento · Borrador inmediato · Editable desde tu celular</span>
+              </p>
             </MotionHeroBlock>
 
             <MotionHeroBlock delay={0.32}>
-              <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[#2A121B]/12 pt-6 text-xs text-[#7A5A62]">
-                <div>
-                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">&lt; 24 hs</p>
-                  <p>Entrega garantizada</p>
+              <div className="mt-8 grid grid-cols-3 divide-x divide-[#2A121B]/12 rounded-2xl border border-[#2A121B]/10 bg-[#FFFBFA]/75 px-1.5 py-4 shadow-sm backdrop-blur-sm sm:px-4">
+                <div className="px-2 sm:px-4">
+                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">&lt; 24 hs</p>
+                  <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
+                    Entrega hábil
+                  </p>
                 </div>
-                <div>
-                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">25% OFF</p>
-                  <p>Pagando por Transferencia</p>
+                <div className="px-2 sm:px-4">
+                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">25% OFF</p>
+                  <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
+                    Transferencia
+                  </p>
                 </div>
-                <div>
-                  <p className="font-display-cormorant text-2xl font-bold text-[#6B1E30]">42 Modelos</p>
-                  <p>Sin apps ni logins</p>
+                <div className="px-2 sm:px-4">
+                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">42 Diseños</p>
+                  <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
+                    Sin apps
+                  </p>
                 </div>
               </div>
             </MotionHeroBlock>
@@ -340,14 +390,19 @@ export default function HomePage() {
               const Icon = card.icon;
               return (
                 <MotionSection key={card.title} delay={idx * 0.06}>
-                  <div className="group shadow-bordo-lg flex h-full flex-col rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FBF1EE]/65 p-5 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#FFFBFA] hover:shadow-[0_20px_38px_-18px_rgba(107,30,48,0.3)]">
-                    <AnimatedIconBox
-                      index={idx}
-                      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#B78A4E]/45 bg-white text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:border-[#6B1E30] group-hover:bg-[#6B1E30] group-hover:text-white"
-                    >
-                      <Icon className="h-5 w-5" strokeWidth={1.5} />
-                    </AnimatedIconBox>
-                    <h3 className="mt-3.5 text-sm font-bold text-[#2A121B]">{card.title}</h3>
+                  <div className="group shadow-bordo-lg flex h-full flex-col rounded-[20px] border border-[#2A121B]/12 border-t-2 border-t-[#B78A4E] bg-[#FBF1EE]/60 p-5 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#FFFBFA] hover:shadow-[0_20px_38px_-18px_rgba(107,30,48,0.3)]">
+                    <div className="flex items-center justify-between">
+                      <AnimatedIconBox
+                        index={idx}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/45 bg-white text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:border-[#6B1E30] group-hover:bg-[#6B1E30] group-hover:text-white"
+                      >
+                        <Icon className="h-5 w-5" strokeWidth={1.5} />
+                      </AnimatedIconBox>
+                      <span className="font-display-cormorant text-xl font-semibold italic text-[#B78A4E]/80">
+                        {card.num}
+                      </span>
+                    </div>
+                    <h3 className="mt-4 text-sm font-bold leading-snug text-[#2A121B]">{card.title}</h3>
                     <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{card.desc}</p>
                   </div>
                 </MotionSection>
@@ -357,7 +412,7 @@ export default function HomePage() {
 
           {/* Compromiso & Garantías Verificables + Demo Panel */}
           <MotionSection delay={0.1}>
-            <div className="mt-8 grid grid-cols-1 gap-4 rounded-[20px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-4 rounded-[22px] border border-[#B78A4E]/35 bg-[#FBF1EE] p-6 sm:grid-cols-3">
               {GUARANTEES.map((g, idx) => (
                 <div key={g.title} className="group flex items-start gap-3">
                   <AnimatedIconBox
@@ -376,7 +431,7 @@ export default function HomePage() {
           </MotionSection>
 
           <MotionSection delay={0.14}>
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-[#2A121B]/12 bg-[#FFFBFA] px-6 py-4 shadow-sm">
               <div className="flex items-center gap-3">
                 <AnimatedIconBox className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm">
                   <BarChart3 className="h-5 w-5" strokeWidth={1.5} />
@@ -389,7 +444,7 @@ export default function HomePage() {
               <MotionTap>
                 <Link
                   href="/panel/demo-boda"
-                  className="btn-shimmer-hover inline-flex rounded-full border border-[#6B1E30]/35 px-5 py-2.5 text-xs font-semibold text-[#6B1E30] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
+                  className="btn-shimmer-hover inline-flex min-h-[42px] items-center rounded-full border border-[#6B1E30]/35 px-5 py-2.5 text-xs font-semibold text-[#6B1E30] transition-all duration-300 hover:scale-[1.03] hover:border-[#6B1E30] hover:bg-[#FBF1EE]"
                 >
                   Probar Panel Demo
                 </Link>
@@ -407,33 +462,39 @@ export default function HomePage() {
               Cómo funciona
             </span>
             <h2 className="font-display-cormorant mt-2 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
-              De la idea al WhatsApp en 4 pasos
+              De la idea al WhatsApp en <span className="italic text-[#6B1E30]">4 pasos</span>
             </h2>
           </MotionSection>
 
-          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {HOW_IT_WORKS.map((item, idx) => {
-              const StepIcon = item.icon;
-              return (
-                <MotionSection key={item.step} delay={idx * 0.07}>
-                  <div className="group flex h-full flex-col rounded-[18px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FFFBFA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(107,30,48,0.28)]">
-                    <div className="flex items-center justify-between">
-                      <span className="font-display-cormorant text-3xl font-semibold italic text-[#B78A4E]">
-                        {item.step}
-                      </span>
-                      <AnimatedIconBox
-                        index={idx}
-                        className="flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
-                      >
-                        <StepIcon className="h-4 w-4" strokeWidth={1.5} />
-                      </AnimatedIconBox>
+          <div className="relative mt-10">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-[12%] right-[12%] top-12 hidden h-px border-t border-dashed border-[#B78A4E]/55 lg:block"
+            />
+            <div className="relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {HOW_IT_WORKS.map((item, idx) => {
+                const StepIcon = item.icon;
+                return (
+                  <MotionSection key={item.step} delay={idx * 0.07}>
+                    <div className="group flex h-full flex-col rounded-[20px] border border-[#2A121B]/12 border-l-2 border-l-[#B78A4E] bg-[#FFFBFA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(107,30,48,0.28)]">
+                      <div className="flex items-center justify-between">
+                        <span className="font-display-cormorant text-3xl font-semibold italic text-[#B78A4E]">
+                          {item.step}
+                        </span>
+                        <AnimatedIconBox
+                          index={idx}
+                          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
+                        >
+                          <StepIcon className="h-4 w-4" strokeWidth={1.5} />
+                        </AnimatedIconBox>
+                      </div>
+                      <h3 className="mt-3 text-base font-bold text-[#2A121B]">{item.title}</h3>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{item.desc}</p>
                     </div>
-                    <h3 className="mt-3 text-base font-bold text-[#2A121B]">{item.title}</h3>
-                    <p className="mt-1.5 text-xs leading-relaxed text-[#7A5A62]">{item.desc}</p>
-                  </div>
-                </MotionSection>
-              );
-            })}
+                  </MotionSection>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -460,7 +521,7 @@ export default function HomePage() {
               <div
                 className={`relative flex w-full flex-col justify-between rounded-[24px] border p-7 transition-all duration-300 hover:-translate-y-1.5 ${
                   plan.highlight
-                    ? "shadow-bordo-lg border-[#B78A4E] bg-[#4A1420] text-white ring-2 ring-[#E7AFC0]/40 lg:scale-[1.03]"
+                    ? "shadow-bordo-lg border-[#B78A4E] bg-gradient-to-b from-[#551726] via-[#4A1420] to-[#390E18] text-white ring-2 ring-[#E7AFC0]/40 lg:scale-[1.03]"
                     : "border-[#2A121B]/12 bg-[#FFFBFA] text-[#2A121B] shadow-sm hover:border-[#B78A4E]/50 hover:shadow-[0_20px_40px_-18px_rgba(107,30,48,0.28)]"
                 }`}
               >
@@ -569,17 +630,21 @@ export default function HomePage() {
 
           {/* CTA Final */}
           <MotionSection delay={0.1}>
-            <div className="shadow-bordo-lg mt-12 rounded-[26px] bg-[#4A1420] p-8 text-center text-white sm:p-10">
-              <AnimatedIconBox className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#E7AFC0]/40 bg-white/10 text-[#E7AFC0]">
+            <div className="shadow-bordo-lg relative mt-12 overflow-hidden rounded-[26px] border border-[#B78A4E]/35 bg-gradient-to-br from-[#551726] via-[#4A1420] to-[#320C15] p-8 text-center text-white sm:p-10">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-[#B78A4E]/20 blur-2xl"
+              />
+              <AnimatedIconBox className="relative z-10 mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#E7AFC0]/40 bg-white/10 text-[#E7AFC0]">
                 <Clock className="h-6 w-6" strokeWidth={1.5} />
               </AnimatedIconBox>
-              <h3 className="font-display-cormorant mt-3 text-3xl font-semibold sm:text-4xl">
+              <h3 className="font-display-cormorant relative z-10 mt-3 text-3xl font-semibold sm:text-4xl">
                 ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
               </h3>
-              <p className="mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
+              <p className="relative z-10 mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
                 Elegí uno de nuestros 42 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
               </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <div className="relative z-10 mt-6 flex flex-wrap justify-center gap-3">
                 <MotionTap>
                   <Link
                     href="/encargar"
@@ -613,17 +678,18 @@ export default function HomePage() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t border-[#2A121B]/12 bg-[#FBF1EE] py-8 text-xs text-[#7A5A62]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 sm:px-6">
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <footer className="border-t border-[#2A121B]/12 bg-[#FBF1EE] py-10 text-xs text-[#7A5A62]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <BrandLogo size="sm" />
+                <span className="hidden h-4 w-px bg-[#2A121B]/15 sm:inline-block" />
                 <span className="text-[11px] font-medium text-[#7A5A62]">
-                  · {BUSINESS_CONFIG.tagline} (Argentina)
+                  {BUSINESS_CONFIG.tagline} (Argentina)
                 </span>
               </div>
-              <p className="mt-2 text-[11px] text-[#7A5A62]">
+              <p className="mt-3 text-[11px] text-[#7A5A62]">
                 Responsable: {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación"} ·{" "}
                 Soporte:{" "}
                 {BUSINESS_CONFIG.supportEmail ||
@@ -634,11 +700,11 @@ export default function HomePage() {
               </p>
             </div>
 
-            <nav aria-label="Enlaces legales y demos" className="flex flex-wrap items-center gap-4 font-medium">
-              <Link href="/privacidad" className="py-1 underline hover:text-[#6B1E30]">
+            <nav aria-label="Enlaces legales y demos" className="flex flex-wrap items-center gap-x-5 gap-y-2 font-medium">
+              <Link href="/privacidad" className="py-1 underline decoration-[#B78A4E]/60 underline-offset-4 hover:text-[#6B1E30]">
                 Política de Privacidad
               </Link>
-              <Link href="/condiciones" className="py-1 underline hover:text-[#6B1E30]">
+              <Link href="/condiciones" className="py-1 underline decoration-[#B78A4E]/60 underline-offset-4 hover:text-[#6B1E30]">
                 Condiciones del Servicio
               </Link>
               <Link href="/panel/demo-boda" className="py-1 hover:text-[#6B1E30]">

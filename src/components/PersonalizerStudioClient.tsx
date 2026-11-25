@@ -34,6 +34,7 @@ import {
   getSkinById,
   InvitationSkin,
 } from "@/templates/catalog";
+import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
 import { prepareImageForUpload } from "@/lib/imageUpload";
 import {
   getCompatibleCategories,
@@ -68,14 +69,6 @@ const ACCENT_SWATCHES = [
   { name: "Dorado VIP", hex: "#D4AF37" },
   { name: "Fucsia Neón", hex: "#FF2E93" },
   { name: "Coral Alegre", hex: "#E87A70" },
-];
-
-const AUDIO_OPTIONS = [
-  { label: "Usar música predeterminada del diseño", value: "" },
-  { label: "Piano Romántico (Instrumental)", value: "/audio/romantic-piano.wav" },
-  { label: "Lounge Cálido (Eventos & Hombres)", value: "/audio/lounge-warm.wav" },
-  { label: "Celesta Alegre (Infantil & Bebé)", value: "/audio/playful-celesta.wav" },
-  { label: "Sin música de fondo", value: "none" },
 ];
 
 const HERO_OVERLAY_OPTIONS: { id: HeroOverlayStyle; label: string; desc: string }[] = [
@@ -1141,24 +1134,21 @@ export function PersonalizerStudioClient({
                   <Music className="h-3.5 w-3.5 text-amber-600" />
                   Pista Musical de Fondo
                 </label>
-                <select
+                <MusicCatalogPicker
                   value={audioOverride}
-                  onChange={(e) => setAudioOverride(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-                >
-                  {AUDIO_OPTIONS.map((opt) => (
-                    <option key={opt.label} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                  {event.planId === "asistido" &&
-                    audioOverride &&
-                    !AUDIO_OPTIONS.some((o) => o.value === audioOverride) && (
-                      <option value={audioOverride}>
-                        Canción personalizada cargada por el estudio
-                      </option>
-                    )}
-                </select>
+                  onChange={setAudioOverride}
+                  skinCategory={selectedSkin.category}
+                  defaultTrackLabel={selectedSkin.sample.audioTitle}
+                  defaultTrackUrl={selectedSkin.sample.audioUrl}
+                  customUploadedOption={
+                    event.planId === "asistido" && audioOverride
+                      ? {
+                          value: audioOverride,
+                          label: "Canción personalizada cargada por el estudio",
+                        }
+                      : null
+                  }
+                />
                 {event.planId === "asistido" && (
                   <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5">
                     <label className="mb-1 block text-xs font-bold text-amber-950">

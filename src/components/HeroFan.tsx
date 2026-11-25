@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { INVITATION_SKINS } from "@/templates/catalog";
+import { INVITATION_SKINS, CATEGORY_LABELS } from "@/templates/catalog";
 import { ensureContrast } from "@/lib/contrast";
 
 const FAN_IDS = [
@@ -53,23 +53,26 @@ export function HeroFan() {
         transition={{ duration: 0.7, delay: 0.08, ease: STUDIO_EASE }}
         className="group/fan flex items-center justify-center py-6"
       >
-        <div className="flex items-center justify-center -space-x-12 sm:-space-x-6">
+        <div className="flex items-center justify-center -space-x-10 sm:-space-x-5">
           {skins.map((skin, idx) => {
             const fanAccent = ensureContrast(skin.palette.accent, skin.palette.bg, 4.6);
             return (
               <Link
                 key={skin.id}
                 href={`/demo/${skin.id}`}
-                className={`group/card relative h-64 w-40 overflow-hidden rounded-[26px] border-[5px] border-stone-900 bg-white shadow-[0_28px_55px_-18px_rgba(24,20,16,0.38)] transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:z-40 hover:-translate-y-4 hover:rotate-0 hover:scale-105 group-hover/fan:mx-1 sm:h-72 sm:w-44 ${ROTATIONS[idx]}`}
+                className={`group/card relative h-64 w-36 overflow-hidden rounded-[26px] border-[5px] border-[#2A121B] bg-white shadow-[0_28px_55px_-18px_rgba(74,20,32,0.38)] transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:z-40 hover:-translate-y-4 hover:rotate-0 hover:scale-105 group-hover/fan:mx-1 sm:h-72 sm:w-44 ${ROTATIONS[idx]}`}
                 style={{ backgroundColor: skin.palette.bg }}
               >
-                <div className="h-36 w-full overflow-hidden">
+                <div className="relative h-36 w-full overflow-hidden">
                   <img
                     src={skin.heroImage}
                     alt={skin.name}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                   />
+                  <span className="absolute right-2 top-2 rounded-full border border-white/30 bg-black/45 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+                    {CATEGORY_LABELS[skin.category]}
+                  </span>
                 </div>
                 <div
                   className="px-3 pt-2.5 text-center"

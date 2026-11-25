@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getEventByPanelToken, updateEventByPanelToken } from "@/lib/db";
+import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
 
 export async function GET(
   _req: Request,
@@ -27,13 +28,7 @@ export async function PATCH(
     const body = await req.json();
     const isEssential = existing.planId === "esencial";
     const isAsistido = existing.planId === "asistido";
-    const CURATED_AUDIO = new Set([
-      "",
-      "/audio/romantic-piano.wav",
-      "/audio/lounge-warm.wav",
-      "/audio/playful-celesta.wav",
-      "none",
-    ]);
+    const CURATED_AUDIO = new Set(["", ...CURATED_AUDIO_URLS]);
     const requestedAudio = typeof body.audioOverride === "string" ? body.audioOverride : undefined;
     // PRO solo puede elegir del catálogo curado o mantener el actual; Llave en Mano mantiene el audio personalizado subido por admin si elige conservarlo
     const safeAudio =

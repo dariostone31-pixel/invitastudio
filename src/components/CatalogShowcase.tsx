@@ -76,7 +76,7 @@ export function CatalogShowcase() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.7, delay: 0.08, ease: STUDIO_EASE }}
-        className="mt-8 flex flex-wrap items-center justify-center gap-2"
+        className="mt-8 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2"
       >
         {CATEGORIES.map((cat) => {
           const active = selectedCat === cat;
@@ -91,7 +91,7 @@ export function CatalogShowcase() {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedCat(cat)}
-              className={`font-ui-jost inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 ${
+              className={`font-ui-jost inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all duration-300 sm:px-4 ${
                 active
                   ? "scale-[1.03] bg-[#6B1E30] text-white shadow-[0_10px_24px_-10px_rgba(107,30,48,0.55)]"
                   : "border border-[#2A121B]/15 bg-[#FFFBFA] text-[#2A121B] hover:-translate-y-0.5 hover:border-[#B78A4E]/70 hover:shadow-sm"
@@ -105,8 +105,20 @@ export function CatalogShowcase() {
         })}
       </motion.div>
 
+      {/* Subtle status & instruction bar */}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-b border-[#2A121B]/10 pb-3 text-[11px] text-[#7A5A62]">
+        <span className="font-ui-jost font-medium uppercase tracking-[0.14em]">
+          Mostrando <strong className="text-[#6B1E30]">{filtered.length}</strong>{" "}
+          {filtered.length === 1 ? "diseño" : "diseños"}{" "}
+          {selectedCat !== "all" ? `en ${CATEGORY_LABELS[selectedCat]}` : "de colección"}
+        </span>
+        <span className="hidden sm:inline">
+          Cada modelo incluye sobre 3D, música, mapa y RSVP en vivo
+        </span>
+      </div>
+
       {/* 42 Editorial Full-Bleed 4:5 Cards (Zero Phone Frames) */}
-      <div key={selectedCat} className="mt-10 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
+      <div key={selectedCat} className="mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((skin, idx) => {
           const fontClass = FONT_MAP[skin.fontDisplay];
           return (

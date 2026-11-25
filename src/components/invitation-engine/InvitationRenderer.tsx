@@ -19,6 +19,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { InvitationSkin } from "@/templates/catalog";
+import { getMusicTrackByUrl } from "@/config/musicCatalog";
 import type {
   DjSongItem,
   EnabledSectionsConfig,
@@ -629,6 +630,7 @@ export function InvitationRenderer({
       : "";
   const audioSrc =
     customAudioUrl === "none" ? "" : customAudioUrl || sample.audioUrl;
+  const audioLabel = getMusicTrackByUrl(audioSrc)?.label || sample.audioTitle;
 
   const sections: EnabledSectionsConfig = isEssentialPlan
     ? {
@@ -837,7 +839,7 @@ export function InvitationRenderer({
       {audioSrc && (
         <AudioPlayerFloat
           src={audioSrc}
-          title={sample.audioTitle}
+          title={audioLabel}
           isPlaying={isPlaying}
           onToggle={() => setIsPlaying((p) => !p)}
           accentColor={buttonBg}

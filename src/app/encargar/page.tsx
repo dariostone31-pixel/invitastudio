@@ -20,6 +20,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } from "@/templates/catalog";
+import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
 import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 import { LEGAL_VERSION } from "@/config/legal";
 import { prepareImageForUpload } from "@/lib/imageUpload";
@@ -61,14 +62,6 @@ const HERO_OVERLAY_CHOICES: { id: HeroOverlayStyle; label: string; desc: string 
   { id: "velo-editorial", label: "Velo editorial", desc: "Estilo revista" },
   { id: "cinematico", label: "Cinemático", desc: "Contraste profundo" },
   { id: "bn-editorial", label: "B&N editorial", desc: "Blanco y negro" },
-];
-
-const AUDIO_CHOICES = [
-  { label: "Música predeterminada del modelo", value: "" },
-  { label: "Piano Romántico (Instrumental)", value: "/audio/romantic-piano.wav" },
-  { label: "Lounge Cálido (Eventos & Hombres)", value: "/audio/lounge-warm.wav" },
-  { label: "Celesta Alegre (Infantil & Bebé)", value: "/audio/playful-celesta.wav" },
-  { label: "Sin música de fondo", value: "none" },
 ];
 
 function EncargarForm() {
@@ -890,17 +883,14 @@ function EncargarForm() {
                       <label className="mb-1 block text-xs font-semibold text-stone-700">
                         Música de Fondo
                       </label>
-                      <select
+                      <MusicCatalogPicker
                         value={audioOverride}
-                        onChange={(e) => setAudioOverride(e.target.value)}
-                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
-                      >
-                        {AUDIO_CHOICES.map((opt) => (
-                          <option key={opt.label} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setAudioOverride}
+                        skinCategory={skinObj.category}
+                        defaultTrackLabel={skinObj.sample.audioTitle}
+                        defaultTrackUrl={skinObj.sample.audioUrl}
+                        compact
+                      />
                     </div>
 
                     {selectedPlan === "asistido" && (

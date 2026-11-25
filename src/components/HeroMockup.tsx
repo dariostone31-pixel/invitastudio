@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { INVITATION_SKINS } from "@/templates/catalog";
-import { Play, MapPin, CheckCircle2, Sparkles } from "lucide-react";
+import { Play, MapPin, CheckCircle2, Sparkles, Music2 } from "lucide-react";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
@@ -37,18 +37,18 @@ export function HeroMockup() {
   const accentOnSurface = ensureContrast(active.palette.accent, active.palette.surface, 4.6);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="relative flex flex-col items-center">
       {/* Category Switcher Pills */}
-      <div className="mb-5 flex flex-wrap justify-center gap-1.5">
+      <div className="relative z-10 mb-5 flex flex-wrap justify-center gap-1.5">
         {FEATURED.map((item, idx) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setActiveIdx(idx)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all duration-300 ${
               idx === activeIdx
-                ? "bg-[#6B1E30] text-white shadow-md"
-                : "border border-[#2A121B]/15 bg-[#FFFBFA] text-[#7A5A62] hover:border-[#6B1E30]/50 hover:text-[#2A121B]"
+                ? "bg-[#6B1E30] text-white shadow-[0_8px_20px_-6px_rgba(107,30,48,0.55)]"
+                : "border border-[#2A121B]/15 bg-[#FFFBFA]/90 text-[#7A5A62] hover:border-[#6B1E30]/50 hover:text-[#2A121B]"
             }`}
           >
             <AnimatedCategoryIcon category={item.category} className="h-3.5 w-3.5" />
@@ -57,103 +57,151 @@ export function HeroMockup() {
         ))}
       </div>
 
-      {/* Realistic Phone Frame with interactive editorial tilt & warm bordó shadow */}
-      <div className="phone-wrap animate-phone-in">
-        <div className="phone-tilt shadow-bordo-phone relative w-[290px] rounded-[38px] border-[9px] border-[#2A121B] bg-[#2A121B] p-1">
-          <div className="absolute left-1/2 top-2.5 z-20 h-4 w-20 -translate-x-1/2 rounded-full bg-[#2A121B]" />
-          <div
-            className="relative h-[505px] overflow-hidden rounded-[28px] transition-colors duration-300"
-            style={{ backgroundColor: active.palette.bg, color: active.palette.text }}
-          >
-          {/* Floating music badge */}
-          <div
-            className="absolute right-3 top-6 z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm"
-            style={{
-              backgroundColor: active.palette.surface,
-              borderColor: active.palette.border,
-              color: active.palette.text,
-            }}
-          >
-            <span
-              className="flex h-4 w-4 items-center justify-center rounded-full"
-              style={{ backgroundColor: buttonBg, color: active.palette.accentText }}
-            >
-              <Play className="h-2.5 w-2.5" />
+      {/* Editorial Stage Halo & Orbital Ring behind the Phone */}
+      <div className="relative flex items-center justify-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(231,175,192,0.42)_0%,rgba(183,138,78,0.16)_48%,transparent_72%)] blur-xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute h-[380px] w-[380px] rounded-full border border-[#B78A4E]/25 sm:h-[420px] sm:w-[420px]"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute h-[330px] w-[330px] rounded-full border border-dashed border-[#6B1E30]/15 sm:h-[360px] sm:w-[360px]"
+        />
+
+        {/* Floating editorial micro-callout (top-left, desktop) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-20 top-14 z-30 hidden items-center gap-2 rounded-2xl border border-[#B78A4E]/40 bg-[#FFFBFA]/95 px-3 py-2 text-[11px] font-semibold text-[#2A121B] shadow-[0_14px_30px_-12px_rgba(74,20,32,0.35)] backdrop-blur-md xl:flex"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#6B1E30]">
+            <Music2 className="h-3.5 w-3.5" strokeWidth={1.6} />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-[9px] uppercase tracking-[0.14em] text-[#9A713C]">
+              Sobre 3D
             </span>
-            Música
-          </div>
+            Música al abrir
+          </span>
+        </div>
 
-          <img
-            src={active.heroImage}
-            alt={active.name}
-            className="h-56 w-full object-cover"
-          />
+        {/* Floating editorial micro-callout (mid-right, clear of CTA button) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 top-48 z-30 hidden items-center gap-2 rounded-2xl border border-[#B78A4E]/40 bg-[#FFFBFA]/95 px-3 py-2 text-[11px] font-semibold text-[#2A121B] shadow-[0_14px_30px_-12px_rgba(74,20,32,0.35)] backdrop-blur-md xl:flex"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#6B1E30] text-white">
+            <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.6} />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-[9px] uppercase tracking-[0.14em] text-[#9A713C]">
+              Tiempo real
+            </span>
+            RSVP + Excel
+          </span>
+        </div>
 
-          <div className="relative -mt-8 px-4 text-center">
+        {/* Realistic Phone Frame with interactive editorial tilt & warm bordó shadow */}
+        <div className="phone-wrap animate-phone-in relative z-10">
+          <div className="phone-tilt shadow-bordo-phone relative w-[286px] rounded-[38px] border-[9px] border-[#2A121B] bg-[#2A121B] p-1 sm:w-[294px]">
+            <div className="absolute left-1/2 top-2.5 z-20 h-4 w-20 -translate-x-1/2 rounded-full bg-[#2A121B]" />
             <div
-              className="mx-auto inline-block rounded-full border px-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
-              style={{
-                backgroundColor: active.palette.surface,
-                borderColor: active.palette.border,
-                color: accentOnSurface,
-              }}
+              className="relative h-[505px] overflow-hidden rounded-[28px] transition-colors duration-300"
+              style={{ backgroundColor: active.palette.bg, color: active.palette.text }}
             >
-              {active.sample.eyebrow}
-            </div>
-            <h3 className={`mt-2 break-words text-3xl font-semibold leading-tight ${titleFont}`}>
-              {active.sample.title}
-            </h3>
-            <p className="mt-1 text-[11px] uppercase tracking-wider" style={{ color: active.palette.textMuted }}>
-              {active.sample.dateDisplay}
-            </p>
-
-            {/* Mini preview of guest pass + actions */}
-            <div
-              className="mt-3 rounded-2xl border p-3 text-left text-[11px]"
-              style={{
-                backgroundColor: active.palette.surface,
-                borderColor: active.palette.border,
-              }}
-            >
-              <div className="flex items-center justify-between font-semibold">
-                <span className="inline-flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" style={{ color: accentOnSurface }} />
-                  Pase Familia García
-                </span>
-                <span style={{ color: accentOnSurface }}>4 lugares</span>
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {/* Floating music badge */}
+              <div
+                className="absolute right-3 top-6 z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm"
+                style={{
+                  backgroundColor: active.palette.surface,
+                  borderColor: active.palette.border,
+                  color: active.palette.text,
+                }}
+              >
                 <span
-                  className="inline-flex items-center justify-center gap-1 rounded-lg border py-1.5 font-medium"
-                  style={{ borderColor: active.palette.border }}
+                  className="flex h-4 w-4 items-center justify-center rounded-full"
+                  style={{ backgroundColor: buttonBg, color: active.palette.accentText }}
                 >
-                  <MapPin className="h-3 w-3" style={{ color: accentOnSurface }} />
-                  Mapa
+                  <Play className="h-2.5 w-2.5" />
                 </span>
-                <span
-                  className="inline-flex items-center justify-center gap-1 rounded-lg py-1.5 font-semibold"
+                Música
+              </div>
+
+              <img
+                src={active.heroImage}
+                alt={active.name}
+                className="h-56 w-full object-cover"
+              />
+
+              <div className="relative -mt-8 px-4 text-center">
+                <div
+                  className="mx-auto inline-block rounded-full border px-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                  style={{
+                    backgroundColor: active.palette.surface,
+                    borderColor: active.palette.border,
+                    color: accentOnSurface,
+                  }}
+                >
+                  {active.sample.eyebrow}
+                </div>
+                <h3 className={`mt-2 break-words text-3xl font-semibold leading-tight ${titleFont}`}>
+                  {active.sample.title}
+                </h3>
+                <p className="mt-1 text-[11px] uppercase tracking-wider" style={{ color: active.palette.textMuted }}>
+                  {active.sample.dateDisplay}
+                </p>
+
+                {/* Mini preview of guest pass + actions */}
+                <div
+                  className="mt-3 rounded-2xl border p-3 text-left text-[11px]"
+                  style={{
+                    backgroundColor: active.palette.surface,
+                    borderColor: active.palette.border,
+                  }}
+                >
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="inline-flex items-center gap-1">
+                      <Sparkles className="h-3 w-3" style={{ color: accentOnSurface }} />
+                      Pase Familia García
+                    </span>
+                    <span style={{ color: accentOnSurface }}>4 lugares</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    <span
+                      className="inline-flex items-center justify-center gap-1 rounded-lg border py-1.5 font-medium"
+                      style={{ borderColor: active.palette.border }}
+                    >
+                      <MapPin className="h-3 w-3" style={{ color: accentOnSurface }} />
+                      Mapa
+                    </span>
+                    <span
+                      className="inline-flex items-center justify-center gap-1 rounded-lg py-1.5 font-semibold"
+                      style={{
+                        backgroundColor: buttonBg,
+                        color: active.palette.accentText,
+                      }}
+                    >
+                      <CheckCircle2 className="h-3 w-3" />
+                      Confirmar
+                    </span>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/demo/${active.id}`}
+                  className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-full py-2.5 text-center text-[12px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.02]"
                   style={{
                     backgroundColor: buttonBg,
                     color: active.palette.accentText,
                   }}
                 >
-                  <CheckCircle2 className="h-3 w-3" />
-                  Confirmar
-                </span>
+                  Probar Demo en Vivo
+                </Link>
               </div>
             </div>
-
-            <Link
-              href={`/demo/${active.id}`}
-              className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-full py-2.5 text-center text-[12px] font-bold uppercase tracking-[0.14em] shadow-md transition-transform hover:scale-[1.02]"
-              style={{
-                backgroundColor: buttonBg,
-                color: active.palette.accentText,
-              }}
-            >
-              Probar Demo en Vivo
-            </Link>
-          </div>
           </div>
         </div>
       </div>
