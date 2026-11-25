@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { INVITATION_SKINS } from "@/templates/catalog";
-import { Play, MapPin, CheckCircle2, Sparkles, Music2 } from "lucide-react";
+import { Play, MapPin, CheckCircle2, Music2 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
@@ -164,7 +165,7 @@ export function HeroMockup() {
                 >
                   <div className="flex items-center justify-between font-semibold">
                     <span className="inline-flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" style={{ color: accentOnSurface }} />
+                      <EditorialDiamondIcon className="h-3 w-3" style={{ color: accentOnSurface }} />
                       Pase Familia García
                     </span>
                     <span style={{ color: accentOnSurface }}>4 lugares</span>

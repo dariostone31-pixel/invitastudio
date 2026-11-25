@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { InvitationSkin } from "@/templates/catalog";
-import { Sparkles, Ticket, Newspaper, LockOpen, Star } from "lucide-react";
+import { Ticket, Newspaper, LockOpen, Star } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 
 interface EnvelopeGateProps {
@@ -203,14 +204,14 @@ export function EnvelopeGate({
         style={{ backgroundImage: `url(${heroImage})` }}
       />
 
-      {/* Ambient floating sparkles for night / magic / girls themes */}
+      {/* Ambient floating ornaments for night / magic / girls themes */}
       {showGateSparkles && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <Sparkles
+          <EditorialDiamondIcon
             className="animate-particle-float absolute left-[12%] top-[18%] h-4 w-4 opacity-55"
             style={{ color: palette.accent }}
           />
-          <Sparkles
+          <EditorialDiamondIcon
             className="animate-particle-float absolute right-[15%] top-[24%] h-5 w-5 opacity-50"
             style={{ color: palette.accent, animationDelay: "1.2s" }}
           />
@@ -976,7 +977,7 @@ export function EnvelopeGate({
                 onClick={handleTap}
                 className="btn-shimmer-hover flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-stone-900 shadow-xl transition-transform hover:scale-[1.02]"
               >
-                <Sparkles className="h-4 w-4 text-amber-700" strokeWidth={1.5} />
+                <EditorialDiamondIcon className="h-4 w-4 text-amber-700" />
                 Abrir Invitación
               </motion.button>
             </div>
@@ -1124,7 +1125,7 @@ export function EnvelopeGate({
                 background: "linear-gradient(135deg, #EC4899 0%, #0891B2 100%)",
               }}
             >
-              <Sparkles className="h-4 w-4" strokeWidth={1.6} />
+              <EditorialDiamondIcon className="h-4 w-4" />
               Activar Pase VIP
             </motion.button>
           </div>
@@ -1902,7 +1903,7 @@ export function EnvelopeGate({
                     : "linear-gradient(135deg, #C9A46A, #A58046)",
               }}
             >
-              <Sparkles className="h-4 w-4" strokeWidth={1.6} />
+              <EditorialDiamondIcon className="h-4 w-4" />
               Tocar la medalla para abrir
             </motion.button>
           </div>

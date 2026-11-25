@@ -386,8 +386,8 @@ const NINO_SAMPLE: SampleEventData = {
   kidsNote: "Los papás que deseen quedarse a tomar unos mates en el patio del salón son bienvenidos.",
   rsvpDeadline: "Confirmar antes del 4 de Junio (indicar alergias del peque)",
   gallery: ["/images/templates/nino-dino-aventura.webp"],
-  audioTitle: "Cajita Alegre — Instrumental",
-  audioUrl: "/audio/playful-celesta.wav",
+  audioTitle: "No Crezcas Más — Tercer Cielo",
+  audioUrl: "/audio/xv-no-crezcas-mas.mp3",
 };
 
 const NINA_SAMPLE: SampleEventData = {
@@ -437,8 +437,8 @@ const NINA_SAMPLE: SampleEventData = {
   kidsNote: "Horario puntual. Papás invitados a quedarse en el sector cafetería.",
   rsvpDeadline: "Confirmar antes del 2 de Julio",
   gallery: ["/images/templates/nina-reino-pastel.webp"],
-  audioTitle: "Melodía Encantada",
-  audioUrl: "/audio/playful-celesta.wav",
+  audioTitle: "No Crezcas Más — Tercer Cielo",
+  audioUrl: "/audio/xv-no-crezcas-mas.mp3",
 };
 
 const BAUTISMO_SAMPLE: SampleEventData = {
@@ -498,8 +498,8 @@ const BAUTISMO_SAMPLE: SampleEventData = {
   },
   rsvpDeadline: "Confirmar asistencia antes del 1 de Agosto",
   gallery: ["/images/templates/bebe-lino-natural.webp"],
-  audioTitle: "Piano de Cuna — Instrumental",
-  audioUrl: "/audio/romantic-piano.wav",
+  audioTitle: "A Thousand Years — Christina Perri",
+  audioUrl: "/audio/boda-a-thousand-years.mp3",
 };
 
 export const INVITATION_SKINS: InvitationSkin[] = [

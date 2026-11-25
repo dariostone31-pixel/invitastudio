@@ -12,12 +12,13 @@ import {
   Check,
   X,
   ArrowLeft,
-  Sparkles,
   Heart,
   Music,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
+import { buildMapsSearchUrl, deriveInitialsMonogram } from "@/lib/locationUtils";
 import { InvitationSkin } from "@/templates/catalog";
 import { getMusicTrackByUrl } from "@/config/musicCatalog";
 import type {
@@ -629,7 +630,9 @@ export function InvitationRenderer({
       ? "Pase válido para Fiesta y Brindis"
       : "";
   const audioSrc =
-    customAudioUrl === "none" ? "" : customAudioUrl || sample.audioUrl;
+    customAudioUrl === "none" || customAudioUrl === "null"
+      ? ""
+      : customAudioUrl || sample.audioUrl;
   const audioLabel = getMusicTrackByUrl(audioSrc)?.label || sample.audioTitle;
 
   const sections: EnabledSectionsConfig = isEssentialPlan
@@ -657,7 +660,10 @@ export function InvitationRenderer({
         wishes: enabledSections?.wishes ?? true,
         djSongs: enabledSections?.djSongs ?? true,
         djVoting: enabledSections?.djVoting ?? true,
-        trivia: enabledSections?.trivia ?? triviaQuestions.length > 0,
+        trivia:
+          planId === "asistido"
+            ? enabledSections?.trivia ?? triviaQuestions.length > 0
+            : false,
         collaborativeAlbum: enabledSections?.collaborativeAlbum ?? true,
         rsvp: enabledSections?.rsvp ?? true,
       };
@@ -782,20 +788,39 @@ export function InvitationRenderer({
   const giftBankText = customGiftBank?.trim() || sample.gifts.bank;
   const giftHolderText = customGiftHolder?.trim() || sample.gifts.holder;
 
-  const locations = customVenue
-    ? [
-        {
-          label: "Recepción / Evento",
-          venue: customVenue,
-          address: customAddress || "Dirección a confirmar",
+  const dynamicMonogram = deriveInitialsMonogram(customTitle, sample.monogram);
+
+  const customLocsRaw = Array.isArray(enabledSections?.locations)
+    ? enabledSections.locations.filter((l) => l && l.venue && l.venue.trim().length > 0)
+    : [];
+  const customLocsLimited = isEssentialPlan
+    ? customLocsRaw.slice(0, 1)
+    : customLocsRaw.slice(0, 2);
+
+  const locations =
+    customLocsLimited.length > 0
+      ? customLocsLimited.map((l, idx) => ({
+          label: l.label || (idx === 0 ? "Ceremonia" : "Fiesta"),
+          venue: l.venue,
+          address: l.address || "Dirección a confirmar",
           city: "Argentina",
-          time: timeDisplay,
-          mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            `${customVenue} ${customAddress || ""}`
-          )}`,
-        },
-      ]
-    : sample.locations;
+          time: l.time || timeDisplay,
+          mapsUrl: l.mapsUrl || buildMapsSearchUrl(l.venue, l.address),
+        }))
+      : customVenue
+      ? [
+          {
+            label: "Recepción / Evento",
+            venue: customVenue,
+            address: customAddress || "Dirección a confirmar",
+            city: "Argentina",
+            time: timeDisplay,
+            mapsUrl: buildMapsSearchUrl(customVenue, customAddress),
+          },
+        ]
+      : isEssentialPlan
+      ? sample.locations.slice(0, 1)
+      : sample.locations;
 
   const mainVenue = locations[locations.length - 1];
   const fullAddress = `${mainVenue.venue}, ${mainVenue.address}, ${mainVenue.city}`;
@@ -829,7 +854,7 @@ export function InvitationRenderer({
           customTimeDisplay={timeDisplay}
           fontDisplayClass={displayFont}
           onOpen={() => {
-            setIsPlaying(true);
+            if (audioSrc) setIsPlaying(true);
             setGateOpened(true);
           }}
         />
@@ -847,6 +872,7 @@ export function InvitationRenderer({
           textColor={palette.text}
           borderColor={palette.border}
           hasTopChrome={showPreviewChrome}
+          hasDraftBanner={isDraftPreview}
           compactBottomLeft={isXvStar}
         />
       )}
@@ -1264,7 +1290,7 @@ export function InvitationRenderer({
             </motion.div>
 
             <div className="px-4 pb-2 pt-5 text-center">
-              <CircularSaveSeal monogram={sample.monogram} color="#9C5538" />
+              <CircularSaveSeal monogram={dynamicMonogram} color="#9C5538" />
               {guestName && (
                 <div
                   className="mt-5 rounded-[22px] border px-5 py-4"
@@ -1343,14 +1369,14 @@ export function InvitationRenderer({
                 </>
               )}
 
-              {/* Framed plaque: ivory paper plaque on editorial-sobre, fine double hairline glass on fullscreen photographic hero */}
-              <div className="absolute inset-0 flex items-center justify-center px-6">
+              {/* Framed plaque: ivory paper plaque on editorial-sobre, fine double hairline glass on fullscreen photographic hero — positioned low so faces remain clear */}
+              <div className="absolute inset-0 flex items-end justify-center px-4 pb-8 sm:px-6 sm:pb-10">
                 {isMarfil ? (
                   <motion.div
                     initial={{ opacity: 0, y: 14 }}
                     animate={gateOpened ? { opacity: 1, y: 0 } : { opacity: 0.92, y: 8 }}
                     transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative w-full max-w-[336px] rounded-[20px] bg-[#FFFDFA]/95 px-6 py-8 text-center"
+                    className="relative w-full max-w-[324px] rounded-[20px] bg-[#FFFDFA]/95 px-5 py-5 text-center sm:px-6 sm:py-6"
                     style={{
                       border: "1px solid rgba(183, 138, 78, 0.45)",
                       boxShadow: "0 18px 40px -15px rgba(45, 30, 20, 0.12)",
@@ -1410,7 +1436,7 @@ export function InvitationRenderer({
                     initial={{ opacity: 0, y: 16 }}
                     animate={gateOpened ? { opacity: 1, y: 0 } : { opacity: 0.94, y: 6 }}
                     transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative w-full max-w-[334px] rounded-[20px] bg-white/75 px-6 py-7 text-center backdrop-blur-[8px]"
+                    className="relative w-full max-w-[324px] rounded-[20px] bg-white/80 px-5 py-5 text-center backdrop-blur-[8px] sm:px-6 sm:py-6"
                     style={{
                       border: "1px solid rgba(95, 125, 91, 0.48)",
                       boxShadow: "0 18px 40px -16px rgba(36, 48, 36, 0.16)",
@@ -1460,7 +1486,7 @@ export function InvitationRenderer({
                   </motion.div>
                 ) : isEditorialPaper ? (
                   <div
-                    className="relative w-full max-w-[332px] rounded-[20px] border px-5 py-7 text-center shadow-[0_18px_38px_-16px_rgba(42,36,32,0.22)]"
+                    className="relative w-full max-w-[324px] rounded-[20px] border px-5 py-5 text-center shadow-[0_18px_38px_-16px_rgba(42,36,32,0.22)] sm:px-6 sm:py-6"
                     style={{
                       backgroundColor: `${palette.surface}F2`,
                       borderColor: palette.border,
@@ -1547,7 +1573,7 @@ export function InvitationRenderer({
             </div>
 
             <div className="px-6 pb-4 pt-5 text-center">
-              <CircularSaveSeal monogram={sample.monogram} color={textAccentOnBg} />
+              <CircularSaveSeal monogram={dynamicMonogram} color={textAccentOnBg} />
 
               {guestName && (
                 <div
@@ -2027,7 +2053,7 @@ export function InvitationRenderer({
             </div>
 
             <div className="px-4 pt-5">
-              <CircularSaveSeal monogram={sample.monogram} color="#D4AF37" />
+              <CircularSaveSeal monogram={dynamicMonogram} color="#D4AF37" />
               {guestName && (
                 <div
                   className="mt-5 border bg-[#12151E]/75 px-5 py-4 backdrop-blur-md"
@@ -2345,7 +2371,7 @@ export function InvitationRenderer({
 
               {!isInfantil && (
                 <CircularSaveSeal
-                  monogram={sample.monogram}
+                  monogram={dynamicMonogram}
                   color={textAccentOnBg}
                 />
               )}
@@ -2757,7 +2783,7 @@ export function InvitationRenderer({
             <div className="space-y-4">
               {locations.map((loc, idx) => (
                 <motion.div
-                  key={loc.label}
+                  key={`${loc.label}-${idx}`}
                   variants={
                     isBotanica || isBoardingPass
                       ? {
@@ -4415,7 +4441,7 @@ export function InvitationRenderer({
                 color: palette.text,
               }}
             >
-              <Sparkles className="h-3.5 w-3.5" style={{ color: textAccentOnSurface }} />
+              <EditorialDiamondIcon className="h-3.5 w-3.5" style={{ color: textAccentOnSurface }} />
               <span>
                 Creado con <strong style={{ color: textAccentOnSurface }}>Invita con el Alma</strong> · Creá la tuya
               </span>

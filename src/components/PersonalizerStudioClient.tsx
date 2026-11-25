@@ -13,12 +13,13 @@ import {
   Sliders,
   ExternalLink,
   Upload,
-  Sparkles,
   FileText,
   Plus,
   Trash2,
   AlertCircle,
+  MapPin,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import type {
   EventRecord,
   EnabledSectionsConfig,
@@ -104,6 +105,7 @@ export function PersonalizerStudioClient({
   mercadopagoConfigured = false,
 }: PersonalizerStudioClientProps) {
   const isEssentialPlan = event.planId === "esencial";
+  const isAsistidoPlan = event.planId === "asistido";
   const [activeTab, setActiveTab] = useState<
     "estilo" | "textos" | "fotos" | "modulos"
   >(isEssentialPlan ? "textos" : "estilo");
@@ -112,8 +114,16 @@ export function PersonalizerStudioClient({
   const [eventTitle, setEventTitle] = useState(event.eventTitle);
   const [dateDisplay, setDateDisplay] = useState(event.dateDisplay);
   const [timeDisplay, setTimeDisplay] = useState(event.timeDisplay);
-  const [venue, setVenue] = useState(event.venue);
-  const [address, setAddress] = useState(event.address);
+  const initialLocs = event.enabledSections?.locations || [];
+  const [venue, setVenue] = useState(initialLocs[0]?.venue || event.venue);
+  const [address, setAddress] = useState(initialLocs[0]?.address || event.address);
+  const [loc1Label, setLoc1Label] = useState(initialLocs[0]?.label || "Ceremonia / Civil");
+  const [loc1MapsUrl, setLoc1MapsUrl] = useState(initialLocs[0]?.mapsUrl || "");
+  const [loc2Label, setLoc2Label] = useState(initialLocs[1]?.label || "Fiesta / Recepción");
+  const [loc2Venue, setLoc2Venue] = useState(initialLocs[1]?.venue || "");
+  const [loc2Address, setLoc2Address] = useState(initialLocs[1]?.address || "");
+  const [loc2Time, setLoc2Time] = useState(initialLocs[1]?.time || "");
+  const [loc2MapsUrl, setLoc2MapsUrl] = useState(initialLocs[1]?.mapsUrl || "");
   const [alias, setAlias] = useState(event.alias);
   const [giftBank, setGiftBank] = useState(event.giftBank || "");
   const [customBankMode, setCustomBankMode] = useState<boolean>(() =>
@@ -198,10 +208,35 @@ export function PersonalizerStudioClient({
     wishes: event.enabledSections?.wishes ?? true,
     djSongs: event.enabledSections?.djSongs ?? !isEssentialPlan,
     djVoting: event.enabledSections?.djVoting ?? !isEssentialPlan,
-    trivia: event.enabledSections?.trivia ?? false,
+    trivia: isAsistidoPlan ? event.enabledSections?.trivia ?? false : false,
     collaborativeAlbum: event.enabledSections?.collaborativeAlbum ?? !isEssentialPlan,
     rsvp: event.enabledSections?.rsvp ?? true,
   });
+
+  const liveLocations = [
+    ...(venue.trim()
+      ? [
+          {
+            label: !isEssentialPlan ? loc1Label.trim() || "Ceremonia / Civil" : "Recepción / Evento",
+            venue: venue.trim(),
+            address: address.trim(),
+            time: timeDisplay.trim(),
+            ...(loc1MapsUrl.trim() ? { mapsUrl: loc1MapsUrl.trim() } : {}),
+          },
+        ]
+      : []),
+    ...(!isEssentialPlan && loc2Venue.trim()
+      ? [
+          {
+            label: loc2Label.trim() || "Fiesta / Recepción",
+            venue: loc2Venue.trim(),
+            address: loc2Address.trim(),
+            time: loc2Time.trim() || timeDisplay.trim(),
+            ...(loc2MapsUrl.trim() ? { mapsUrl: loc2MapsUrl.trim() } : {}),
+          },
+        ]
+      : []),
+  ];
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -307,14 +342,16 @@ export function PersonalizerStudioClient({
           fontOverride,
           accentOverride,
           audioOverride,
-          ...(event.planId === "asistido" ? { songRequest } : {}),
           albumUrl,
           instagramHandle,
           eventHashtag,
-          triviaTitle,
-          triviaQuestions,
+          ...(isAsistidoPlan ? { songRequest, triviaTitle, triviaQuestions } : {}),
           memoryMode,
-          enabledSections: sections,
+          enabledSections: {
+            ...sections,
+            trivia: isAsistidoPlan ? Boolean(sections.trivia) : false,
+            locations: liveLocations,
+          },
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -345,7 +382,7 @@ export function PersonalizerStudioClient({
             </Link>
             <div>
               <h1 className="flex items-center gap-1.5 text-sm font-bold text-stone-900 sm:text-base">
-                <Sparkles className="h-4 w-4 text-amber-600" />
+                <EditorialDiamondIcon className="h-4 w-4 text-amber-600" />
                 Estudio de Personalización · {eventTitle}
               </h1>
               <p className="text-[11px] text-stone-500">
@@ -452,7 +489,7 @@ export function PersonalizerStudioClient({
               <div>
                 <label className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-stone-700">
                   <span className="inline-flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                    <EditorialDiamondIcon className="h-3.5 w-3.5 text-amber-600" />
                     Modelos de esta categoría ({filteredSkins.length})
                   </span>
                   <span className="text-[11px] font-medium normal-case text-stone-500">
@@ -610,27 +647,136 @@ export function PersonalizerStudioClient({
                   className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
                 />
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-stone-700">
-                  Salón / Lugar
-                </label>
-                <input
-                  type="text"
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-stone-700">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
-                />
+              <div className="sm:col-span-2 rounded-2xl border border-stone-200 bg-stone-50/80 p-3.5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-700">
+                    <MapPin className="h-3.5 w-3.5 text-amber-700" />
+                    {isEssentialPlan
+                      ? "Coordenada del Evento (1 ubicación)"
+                      : "Coordenadas del Evento (hasta 2 lugares)"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 rounded-xl border border-stone-200 bg-white p-3 sm:grid-cols-2">
+                  {!isEssentialPlan && (
+                    <div className="sm:col-span-2 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                        Coordenada 1 · Lugar Principal
+                      </span>
+                      <input
+                        type="text"
+                        value={loc1Label}
+                        onChange={(e) => setLoc1Label(e.target.value)}
+                        placeholder="Ej. Ceremonia / Civil"
+                        className="w-40 rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-stone-700">
+                      Salón / Lugar
+                    </label>
+                    <input
+                      type="text"
+                      value={venue}
+                      onChange={(e) => setVenue(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-stone-700">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                      Link de Google Maps (opcional)
+                    </label>
+                    <input
+                      type="url"
+                      value={loc1MapsUrl}
+                      onChange={(e) => setLoc1MapsUrl(e.target.value)}
+                      placeholder="https://maps.app.goo.gl/..."
+                      className="w-full rounded-xl border border-stone-300 px-3 py-1.5 text-xs outline-none focus:border-stone-900"
+                    />
+                  </div>
+                </div>
+
+                {!isEssentialPlan && (
+                  <div className="grid grid-cols-1 gap-3 rounded-xl border border-stone-200 bg-white p-3 sm:grid-cols-2">
+                    <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                          Coordenada 2 · Segundo Lugar (opcional)
+                        </span>
+                        <p className="text-[11px] text-stone-500">
+                          Si dejás el nombre vacío, la segunda tarjeta se oculta automáticamente.
+                        </p>
+                      </div>
+                      <input
+                        type="text"
+                        value={loc2Label}
+                        onChange={(e) => setLoc2Label(e.target.value)}
+                        placeholder="Ej. Fiesta / Salón"
+                        className="w-40 rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold outline-none focus:border-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold text-stone-700">
+                        Salón / Lugar 2
+                      </label>
+                      <input
+                        type="text"
+                        value={loc2Venue}
+                        onChange={(e) => setLoc2Venue(e.target.value)}
+                        placeholder="Ej. Salón Las Magnolias"
+                        className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold text-stone-700">
+                        Dirección 2
+                      </label>
+                      <input
+                        type="text"
+                        value={loc2Address}
+                        onChange={(e) => setLoc2Address(e.target.value)}
+                        placeholder="Ej. Ruta 9 Km 4"
+                        className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                        Horario del 2do lugar
+                      </label>
+                      <input
+                        type="text"
+                        value={loc2Time}
+                        onChange={(e) => setLoc2Time(e.target.value)}
+                        placeholder="Ej. 21:30 hs"
+                        className="w-full rounded-xl border border-stone-300 px-3 py-1.5 text-xs outline-none focus:border-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-stone-600">
+                        Link de Google Maps (opcional)
+                      </label>
+                      <input
+                        type="url"
+                        value={loc2MapsUrl}
+                        onChange={(e) => setLoc2MapsUrl(e.target.value)}
+                        placeholder="https://maps.app.goo.gl/..."
+                        className="w-full rounded-xl border border-stone-300 px-3 py-1.5 text-xs outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-stone-700">
@@ -1243,6 +1389,26 @@ export function PersonalizerStudioClient({
                 Encendé o apagá las secciones que quieras mostrar en tu invitación:
               </p>
               {SECTION_LABELS.map((item) => {
+                if (item.key === "trivia" && !isAsistidoPlan) {
+                  return (
+                    <div
+                      key={item.key}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50/60 px-4 py-3 opacity-75"
+                    >
+                      <div>
+                        <span className="block text-sm font-semibold text-stone-700">
+                          {item.label}
+                        </span>
+                        <span className="block text-[11px] text-amber-800">
+                          Exclusivo del Plan Llave en Mano
+                        </span>
+                      </div>
+                      <span className="rounded-full bg-stone-200 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                        Llave en Mano
+                      </span>
+                    </div>
+                  );
+                }
                 const enabled = Boolean(sections[item.key] ?? true);
                 return (
                   <label
@@ -1274,7 +1440,7 @@ export function PersonalizerStudioClient({
                 );
               })}
 
-              {Boolean(sections.trivia) && (
+              {isAsistidoPlan && Boolean(sections.trivia) && (
                 <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -1475,19 +1641,27 @@ export function PersonalizerStudioClient({
                 customFont={fontOverride}
                 customAccent={accentOverride}
                 customAudioUrl={
-                  !isEssentialPlan ? audioOverride || undefined : undefined
+                  audioOverride === "none"
+                    ? "none"
+                    : !isEssentialPlan
+                    ? audioOverride || undefined
+                    : undefined
                 }
                 memoryMode={memoryMode}
                 planId={event.planId}
                 allowDjSongs={!isEssentialPlan}
                 initialDjPlaylist={event.djPlaylist || []}
-                triviaTitle={triviaTitle}
-                triviaQuestions={triviaQuestions}
-                initialTriviaScores={event.triviaScores || []}
+                triviaTitle={isAsistidoPlan ? triviaTitle : undefined}
+                triviaQuestions={isAsistidoPlan ? triviaQuestions : []}
+                initialTriviaScores={isAsistidoPlan ? event.triviaScores || [] : []}
                 albumUrl={albumUrl || undefined}
                 instagramHandle={instagramHandle || undefined}
                 eventHashtag={eventHashtag || undefined}
-                enabledSections={sections}
+                enabledSections={{
+                  ...sections,
+                  trivia: isAsistidoPlan ? Boolean(sections.trivia) : false,
+                  locations: liveLocations,
+                }}
                 skipGate={true}
                 showPreviewChrome={false}
               />

@@ -3,6 +3,7 @@ import { createOrderEvent, getDbMode, listEvents, listRsvpsForSlug } from "@/lib
 import { verifyAdminPass } from "@/lib/adminAuth";
 import { LEGAL_VERSION } from "@/config/legal";
 import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
+import { sanitizeEventLocations } from "@/lib/locationUtils";
 
 export async function GET(req: Request) {
   const pass = req.headers.get("x-admin-pass") || new URL(req.url).searchParams.get("pass");
@@ -114,13 +115,19 @@ export async function POST(req: Request) {
     const validPlan =
       planId === "esencial" || planId === "pro" || planId === "asistido" ? planId : "pro";
     const allowFullCustom = validPlan === "pro" || validPlan === "asistido";
-    const cleanAudio =
-      allowFullCustom && typeof audioOverride === "string" && CURATED_AUDIO_URLS.has(audioOverride)
-        ? audioOverride
-        : undefined;
+    const isAsistido = validPlan === "asistido";
     const cleanSongRequest =
-      validPlan === "asistido" && typeof songRequest === "string" && songRequest.trim()
+      isAsistido && typeof songRequest === "string" && songRequest.trim()
         ? songRequest.trim().slice(0, 220)
+        : undefined;
+    const requestedAudio = typeof audioOverride === "string" ? audioOverride : "";
+    const cleanAudio =
+      requestedAudio === "none"
+        ? "none"
+        : allowFullCustom && CURATED_AUDIO_URLS.has(requestedAudio)
+        ? requestedAudio
+        : isAsistido && cleanSongRequest && !requestedAudio
+        ? "none"
         : undefined;
 
     const cleanParents =
@@ -147,7 +154,7 @@ export async function POST(req: Request) {
         : undefined;
 
     const cleanTrivia =
-      allowFullCustom && Array.isArray(triviaQuestions)
+      isAsistido && Array.isArray(triviaQuestions)
         ? triviaQuestions
             .slice(0, 6)
             .filter(
@@ -186,6 +193,28 @@ export async function POST(req: Request) {
             }))
             .filter((t) => t.label.length > 0 && t.price.length > 0)
         : undefined;
+
+    const maxLocs = allowFullCustom ? 2 : 1;
+    const cleanLocations = sanitizeEventLocations(enabledSections?.locations, maxLocs);
+    const mergedEnabledSections =
+      allowFullCustom || cleanLocations
+        ? {
+            ...(allowFullCustom && enabledSections ? enabledSections : {}),
+            ...(allowFullCustom ? { trivia: isAsistido ? Boolean(enabledSections?.trivia) : false } : {}),
+            ...(cleanLocations ? { locations: cleanLocations } : {}),
+          }
+        : undefined;
+    if (mergedEnabledSections && !allowFullCustom) {
+      // Preserve esencial minimal flags plus 1 location
+      mergedEnabledSections.countdown = true;
+      mergedEnabledSections.story = false;
+      mergedEnabledSections.schedule = false;
+      mergedEnabledSections.gallery = false;
+      mergedEnabledSections.dressCode = true;
+      mergedEnabledSections.gifts = true;
+      mergedEnabledSections.trivia = false;
+      mergedEnabledSections.rsvp = true;
+    }
 
     const created = await createOrderEvent({
       skinId: String(skinId || "boda-sobre-marfil"),
@@ -231,7 +260,7 @@ export async function POST(req: Request) {
         allowFullCustom && instagramHandle ? String(instagramHandle).trim() : undefined,
       eventHashtag: allowFullCustom && eventHashtag ? String(eventHashtag).trim() : undefined,
       triviaQuestions: cleanTrivia,
-      enabledSections: allowFullCustom && enabledSections ? enabledSections : undefined,
+      enabledSections: mergedEnabledSections,
       termsAccepted: true,
       termsVersion: LEGAL_VERSION,
       termsAcceptedAtUtc: new Date().toISOString(),

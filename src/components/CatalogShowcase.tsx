@@ -9,7 +9,8 @@ import {
   LAYOUT_LABELS,
   EventCategory,
 } from "@/templates/catalog";
-import { Eye, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, ArrowRight } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { AnimatedCategoryIcon } from "@/components/AnimatedCategoryIcon";
 import { AnimatedIconBox } from "@/components/AnimatedIconBox";
 
@@ -58,7 +59,7 @@ export function CatalogShowcase() {
             floating={false}
             className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E]"
           >
-            <Sparkles className="h-3 w-3" strokeWidth={1.5} />
+            <EditorialDiamondIcon className="h-3 w-3" />
           </AnimatedIconBox>
           Catálogo Interactivo en Vivo
         </span>
@@ -160,7 +161,7 @@ export function CatalogShowcase() {
                 <div className="absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-2">
                   {skin.featured ? (
                     <span className="inline-flex items-center gap-1 rounded-full border border-[#B78A4E]/50 bg-black/45 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200 backdrop-blur-md">
-                      <Sparkles className="h-2.5 w-2.5" strokeWidth={1.5} />
+                      <EditorialDiamondIcon className="h-2.5 w-2.5" />
                       Destacado
                     </span>
                   ) : (

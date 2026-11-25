@@ -6,6 +6,14 @@ export type OrderStatus = "pendiente" | "en_edicion" | "publicada";
 export type PaymentStatus = "pendiente" | "pagado" | "rechazado";
 export type PaymentMethod = "mercadopago" | "transferencia";
 
+export interface CustomEventLocation {
+  label: string;
+  venue: string;
+  address: string;
+  time: string;
+  mapsUrl?: string;
+}
+
 export interface EnabledSectionsConfig {
   countdown: boolean;
   story: boolean;
@@ -19,6 +27,7 @@ export interface EnabledSectionsConfig {
   trivia?: boolean;
   collaborativeAlbum?: boolean;
   rsvp: boolean;
+  locations?: CustomEventLocation[];
 }
 
 export interface DjSongItem {

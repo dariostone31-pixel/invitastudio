@@ -14,7 +14,6 @@ import {
   MessageCircle,
   ExternalLink,
   Search,
-  Sparkles,
   ArrowLeft,
   Printer,
   ListChecks,
@@ -24,7 +23,9 @@ import {
   ClipboardPaste,
   Lock,
   Send,
+  MapPin,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
 import { getWhatsAppHref } from "@/config/business";
 import { PaymentPendingBanner } from "./PaymentPendingBanner";
@@ -430,7 +431,7 @@ export function OrganizerPanelClient({
               href={`/personalizar/${event.panelToken}`}
               className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+              <EditorialDiamondIcon className="h-3.5 w-3.5 text-amber-600" />
               {isEssentialPlan ? "Editar Datos Básicos" : "Personalizar Diseño y Fotos"}
             </Link>
             <button
@@ -484,12 +485,62 @@ export function OrganizerPanelClient({
           mercadopagoConfigured={mercadopagoConfigured}
         />
 
+        {/* Resumen rápido de Coordenadas del Evento */}
+        {(() => {
+          const panelLocs =
+            event.enabledSections?.locations && event.enabledSections.locations.length > 0
+              ? event.enabledSections.locations.slice(0, isEssentialPlan ? 1 : 2)
+              : [
+                  {
+                    label: "Recepción / Evento",
+                    venue: event.venue,
+                    address: event.address,
+                    time: event.timeDisplay,
+                  },
+                ];
+          return (
+            <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm print:hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-amber-700" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-stone-800">
+                    {isEssentialPlan
+                      ? "Coordenada del Evento (Plan Esencial · 1 ubicación)"
+                      : `Coordenadas del Evento (${panelLocs.length} de 2 ubicaciones)`}
+                  </h2>
+                </div>
+                <Link
+                  href={`/personalizar/${event.panelToken}`}
+                  className="text-xs font-semibold text-[#6B1E30] hover:underline"
+                >
+                  Editar coordenadas →
+                </Link>
+              </div>
+              <div className={`mt-3 grid grid-cols-1 gap-3 ${panelLocs.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                {panelLocs.map((loc, idx) => (
+                  <div
+                    key={`${loc.label}-${idx}`}
+                    className="rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-xs"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                      {loc.label}
+                    </span>
+                    <p className="mt-0.5 font-bold text-stone-900">{loc.venue}</p>
+                    <p className="text-stone-600">{loc.address || "Dirección a confirmar"}</p>
+                    {loc.time && <p className="mt-0.5 text-[11px] text-stone-500">Horario: {loc.time}</p>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
         {event.planId === "asistido" && (
           <section className="rounded-3xl border border-amber-300 bg-gradient-to-r from-amber-50 via-white to-amber-50/40 p-5 shadow-sm print:hidden">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-900 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-50">
-                  <Sparkles className="h-3 w-3" />
+                  <EditorialDiamondIcon className="h-3 w-3" />
                   Plan Llave en Mano · Carga Asistida Activa
                 </span>
                 <h2 className="mt-1.5 font-cormorant text-xl font-bold text-stone-900">
@@ -691,7 +742,7 @@ export function OrganizerPanelClient({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-md">
               <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
-                <Sparkles className="h-3.5 w-3.5" />
+                <EditorialDiamondIcon className="h-3.5 w-3.5" />
                 Opción 1 · Envío individual por WhatsApp
               </span>
               <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">

@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   MessageCircle,
   Upload,
-  Sparkles,
   ExternalLink,
   Copy,
   Check,
@@ -18,7 +17,9 @@ import {
   Trash2,
   AlertCircle,
   Sliders,
+  MapPin,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } from "@/templates/catalog";
 import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
 import {
@@ -135,6 +136,13 @@ function EncargarForm() {
   const [eventTimeEnd, setEventTimeEnd] = useState("05:00");
   const [venue, setVenue] = useState("");
   const [address, setAddress] = useState("");
+  const [loc1Label, setLoc1Label] = useState("Ceremonia / Civil");
+  const [loc1MapsUrl, setLoc1MapsUrl] = useState("");
+  const [loc2Label, setLoc2Label] = useState("Fiesta / Recepción");
+  const [loc2Venue, setLoc2Venue] = useState("");
+  const [loc2Address, setLoc2Address] = useState("");
+  const [loc2Time, setLoc2Time] = useState("");
+  const [loc2MapsUrl, setLoc2MapsUrl] = useState("");
   const [alias, setAlias] = useState("");
   const [giftBank, setGiftBank] = useState("Mercado Pago");
   const [customBankMode, setCustomBankMode] = useState(false);
@@ -169,10 +177,12 @@ function EncargarForm() {
   const querySkinParam = searchParams.get("modelo");
   const queryPlanParam = searchParams.get("plan");
 
-  // Restaurar borrador guardado en sessionStorage al montar (evita perder datos al abrir legales o recargar)
+  // Restaurar borrador guardado en localStorage al montar (persiste ante recargas y navegación)
   useEffect(() => {
     try {
-      const raw = window.sessionStorage.getItem(ENCARGAR_DRAFT_KEY);
+      const raw =
+        window.localStorage.getItem(ENCARGAR_DRAFT_KEY) ||
+        window.sessionStorage.getItem(ENCARGAR_DRAFT_KEY);
       if (raw) {
         const d = JSON.parse(raw) as Record<string, unknown>;
         if (
@@ -215,6 +225,13 @@ function EncargarForm() {
         if (typeof d.eventTimeEnd === "string") setEventTimeEnd(d.eventTimeEnd);
         if (typeof d.venue === "string") setVenue(d.venue);
         if (typeof d.address === "string") setAddress(d.address);
+        if (typeof d.loc1Label === "string") setLoc1Label(d.loc1Label);
+        if (typeof d.loc1MapsUrl === "string") setLoc1MapsUrl(d.loc1MapsUrl);
+        if (typeof d.loc2Label === "string") setLoc2Label(d.loc2Label);
+        if (typeof d.loc2Venue === "string") setLoc2Venue(d.loc2Venue);
+        if (typeof d.loc2Address === "string") setLoc2Address(d.loc2Address);
+        if (typeof d.loc2Time === "string") setLoc2Time(d.loc2Time);
+        if (typeof d.loc2MapsUrl === "string") setLoc2MapsUrl(d.loc2MapsUrl);
         if (typeof d.alias === "string") setAlias(d.alias);
         if (typeof d.giftBank === "string") {
           setGiftBank(d.giftBank);
@@ -263,11 +280,11 @@ function EncargarForm() {
     );
   }, [selectedSkin]);
 
-  // Persistir borrador automáticamente en sessionStorage
+  // Persistir borrador automáticamente en localStorage en cada cambio
   useEffect(() => {
     if (!hydratedRef.current) return;
     try {
-      window.sessionStorage.setItem(
+      window.localStorage.setItem(
         ENCARGAR_DRAFT_KEY,
         JSON.stringify({
           selectedPlan,
@@ -293,6 +310,13 @@ function EncargarForm() {
           eventTimeEnd,
           venue,
           address,
+          loc1Label,
+          loc1MapsUrl,
+          loc2Label,
+          loc2Venue,
+          loc2Address,
+          loc2Time,
+          loc2MapsUrl,
           alias,
           giftBank,
           giftHolder,
@@ -338,6 +362,13 @@ function EncargarForm() {
     eventTimeEnd,
     venue,
     address,
+    loc1Label,
+    loc1MapsUrl,
+    loc2Label,
+    loc2Venue,
+    loc2Address,
+    loc2Time,
+    loc2MapsUrl,
     alias,
     giftBank,
     giftHolder,
@@ -516,16 +547,39 @@ function EncargarForm() {
                 storyTitle,
                 storyText,
                 schedule,
-                triviaQuestions: includeTrivia ? triviaQuestions : undefined,
+                triviaQuestions:
+                  selectedPlan === "asistido" && includeTrivia ? triviaQuestions : undefined,
                 enabledSections: {
-                  trivia: includeTrivia,
+                  trivia: selectedPlan === "asistido" ? includeTrivia : false,
+                  locations: [
+                    {
+                      label: loc1Label.trim() || "Ceremonia / Civil",
+                      venue: venue.trim(),
+                      address: address.trim(),
+                      time: eventTimeStart ? `${eventTimeStart} hs` : "",
+                      ...(loc1MapsUrl.trim() ? { mapsUrl: loc1MapsUrl.trim() } : {}),
+                    },
+                    ...(loc2Venue.trim()
+                      ? [
+                          {
+                            label: loc2Label.trim() || "Fiesta / Recepción",
+                            venue: loc2Venue.trim(),
+                            address: loc2Address.trim(),
+                            time: loc2Time.trim() || (eventTimeStart ? `${eventTimeStart} hs` : ""),
+                            ...(loc2MapsUrl.trim() ? { mapsUrl: loc2MapsUrl.trim() } : {}),
+                          },
+                        ]
+                      : []),
+                  ],
                 },
                 heroImageUrl: heroUploadedUrl || undefined,
                 heroOverlayOverride,
                 galleryImages: uploadedUrls,
                 fontOverride,
                 accentOverride,
-                audioOverride,
+                audioOverride:
+                  audioOverride ||
+                  (selectedPlan === "asistido" && songRequest.trim() ? "none" : ""),
                 ...(albumUrl.trim() ? { albumUrl: albumUrl.trim() } : {}),
                 ...(instagramHandle.trim() ? { instagramHandle: instagramHandle.trim() } : {}),
                 ...(eventHashtag.trim() ? { eventHashtag: eventHashtag.trim() } : {}),
@@ -533,7 +587,27 @@ function EncargarForm() {
                   ? { songRequest: songRequest.trim() }
                   : {}),
               }
-            : {}),
+            : {
+                enabledSections: {
+                  countdown: true,
+                  story: false,
+                  schedule: false,
+                  gallery: false,
+                  dressCode: true,
+                  gifts: true,
+                  trivia: false,
+                  rsvp: true,
+                  locations: [
+                    {
+                      label: "Recepción / Evento",
+                      venue: venue.trim(),
+                      address: address.trim(),
+                      time: eventTimeStart ? `${eventTimeStart} hs` : "",
+                      ...(loc1MapsUrl.trim() ? { mapsUrl: loc1MapsUrl.trim() } : {}),
+                    },
+                  ],
+                },
+              }),
           termsAccepted: true,
           contactName: contactName.trim(),
           whatsapp: whatsapp.trim(),
@@ -546,6 +620,7 @@ function EncargarForm() {
         throw new Error(data.error || "No se pudo registrar tu pedido.");
       }
       try {
+        window.localStorage.removeItem(ENCARGAR_DRAFT_KEY);
         window.sessionStorage.removeItem(ENCARGAR_DRAFT_KEY);
       } catch {
         // ignore
@@ -651,7 +726,7 @@ function EncargarForm() {
                 href={`/personalizar/${mpPanel}`}
                 className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-3 text-xs font-semibold text-amber-900"
               >
-                <Sparkles className="h-4 w-4 text-amber-600" />
+                <EditorialDiamondIcon className="h-4 w-4 text-amber-600" />
                 Personalizar
               </Link>
               <Link
@@ -720,7 +795,7 @@ function EncargarForm() {
             href={`/personalizar/${createdOrder.panelToken}`}
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-3 text-xs font-semibold text-amber-900 hover:bg-amber-100"
           >
-            <Sparkles className="h-4 w-4 text-amber-600" />
+            <EditorialDiamondIcon className="h-4 w-4 text-amber-600" />
             {createdOrder.planId === "esencial" ? "Editar Datos Básicos" : "Ajustar Diseño (Opcional)"}
           </Link>
         </div>
@@ -930,7 +1005,7 @@ function EncargarForm() {
               target="_blank"
               className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:underline"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <EditorialDiamondIcon className="h-3.5 w-3.5" />
               Ver demo en vivo de este diseño
             </Link>
           </div>
@@ -1361,125 +1436,132 @@ function EncargarForm() {
                   ))}
                 </div>
 
-                {/* Preguntas del Juego / Trivia Interactiva */}
-                <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={includeTrivia}
-                        onChange={(e) => setIncludeTrivia(e.target.checked)}
-                        className="h-4 w-4 accent-stone-900"
-                      />
-                      <div>
-                        <span className="block text-xs font-bold text-stone-800">
-                          Incluir Juego / Trivia Interactiva ({triviaQuestions.length} preguntas)
-                        </span>
-                        <span className="block text-[11px] text-stone-500">
-                          Editá las preguntas y marcá cuál opción es la correcta. Tus invitados compiten en un ranking Top 5.
-                        </span>
-                      </div>
-                    </label>
-                    {includeTrivia && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const fresh = getTriviaPresetForCategory(
-                            skinObj.category,
-                            dressCode.trim() || skinObj.sample.dressCode.label,
-                            skinObj.id
-                          ).map((q, idx) => ({
-                            ...q,
-                            id: `${q.id}-${Date.now()}-${idx}`,
-                            options: [...q.options],
-                          }));
-                          setTriviaQuestions(fresh);
-                          setTriviaRestoredMsg(true);
-                          setTimeout(() => setTriviaRestoredMsg(false), 2500);
-                        }}
-                        className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
-                      >
-                        {triviaRestoredMsg ? "✓ Sugeridas restauradas" : "Restaurar sugeridas"}
-                      </button>
-                    )}
-                  </div>
-
-                  {includeTrivia && triviaQuestions.map((tq, qIdx) => (
-                    <div
-                      key={tq.id || qIdx}
-                      className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
-                          Pregunta {qIdx + 1}
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        value={tq.question}
-                        onChange={(e) =>
-                          setTriviaQuestions((prev) =>
-                            prev.map((item, i) =>
-                              i === qIdx ? { ...item, question: e.target.value } : item
-                            )
-                          )
-                        }
-                        placeholder="Escribí la pregunta para tus invitados..."
-                        className="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
-                      />
-                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
-                        {tq.options.map((opt, oIdx) => {
-                          const isCorrect = tq.correctIndex === oIdx;
-                          return (
-                            <div
-                              key={oIdx}
-                              className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${
-                                isCorrect
-                                  ? "border-emerald-500 bg-emerald-50/70"
-                                  : "border-stone-200 bg-stone-50"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={`encargar-trivia-correct-${qIdx}`}
-                                checked={isCorrect}
-                                title="Marcar como respuesta correcta"
-                                onChange={() =>
-                                  setTriviaQuestions((prev) =>
-                                    prev.map((item, i) =>
-                                      i === qIdx ? { ...item, correctIndex: oIdx } : item
-                                    )
-                                  )
-                                }
-                                className="h-3.5 w-3.5 accent-emerald-600"
-                              />
-                              <input
-                                type="text"
-                                value={opt}
-                                onChange={(e) =>
-                                  setTriviaQuestions((prev) =>
-                                    prev.map((item, i) =>
-                                      i === qIdx
-                                        ? {
-                                            ...item,
-                                            options: item.options.map((o, j) =>
-                                              j === oIdx ? e.target.value : o
-                                            ),
-                                          }
-                                        : item
-                                    )
-                                  )
-                                }
-                                placeholder={`Opción ${oIdx + 1}`}
-                                className="w-full bg-transparent text-[11px] outline-none"
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
+                {/* Preguntas del Juego / Trivia Interactiva (exclusivo Plan Llave en Mano) */}
+                {selectedPlan === "asistido" ? (
+                  <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="flex cursor-pointer items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={includeTrivia}
+                          onChange={(e) => setIncludeTrivia(e.target.checked)}
+                          className="h-4 w-4 accent-stone-900"
+                        />
+                        <div>
+                          <span className="block text-xs font-bold text-stone-800">
+                            Incluir Juego / Trivia Interactiva ({triviaQuestions.length} preguntas)
+                          </span>
+                          <span className="block text-[11px] text-stone-500">
+                            Exclusivo Llave en Mano: editá las preguntas y marcá cuál opción es la correcta. Tus invitados compiten en un ranking Top 5.
+                          </span>
+                        </div>
+                      </label>
+                      {includeTrivia && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const fresh = getTriviaPresetForCategory(
+                              skinObj.category,
+                              dressCode.trim() || skinObj.sample.dressCode.label,
+                              skinObj.id
+                            ).map((q, idx) => ({
+                              ...q,
+                              id: `${q.id}-${Date.now()}-${idx}`,
+                              options: [...q.options],
+                            }));
+                            setTriviaQuestions(fresh);
+                            setTriviaRestoredMsg(true);
+                            setTimeout(() => setTriviaRestoredMsg(false), 2500);
+                          }}
+                          className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                        >
+                          {triviaRestoredMsg ? "✓ Sugeridas restauradas" : "Restaurar sugeridas"}
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
+
+                    {includeTrivia && triviaQuestions.map((tq, qIdx) => (
+                      <div
+                        key={tq.id || qIdx}
+                        className="space-y-2 rounded-2xl border border-stone-200 bg-white p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                            Pregunta {qIdx + 1}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={tq.question}
+                          onChange={(e) =>
+                            setTriviaQuestions((prev) =>
+                              prev.map((item, i) =>
+                                i === qIdx ? { ...item, question: e.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Escribí la pregunta para tus invitados..."
+                          className="w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-stone-900"
+                        />
+                        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                          {tq.options.map((opt, oIdx) => {
+                            const isCorrect = tq.correctIndex === oIdx;
+                            return (
+                              <div
+                                key={oIdx}
+                                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${
+                                  isCorrect
+                                    ? "border-emerald-500 bg-emerald-50/70"
+                                    : "border-stone-200 bg-stone-50"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`encargar-trivia-correct-${qIdx}`}
+                                  checked={isCorrect}
+                                  title="Marcar como respuesta correcta"
+                                  onChange={() =>
+                                    setTriviaQuestions((prev) =>
+                                      prev.map((item, i) =>
+                                        i === qIdx ? { ...item, correctIndex: oIdx } : item
+                                      )
+                                    )
+                                  }
+                                  className="h-3.5 w-3.5 accent-emerald-600"
+                                />
+                                <input
+                                  type="text"
+                                  value={opt}
+                                  onChange={(e) =>
+                                    setTriviaQuestions((prev) =>
+                                      prev.map((item, i) =>
+                                        i === qIdx
+                                          ? {
+                                              ...item,
+                                              options: item.options.map((o, j) =>
+                                                j === oIdx ? e.target.value : o
+                                              ),
+                                            }
+                                          : item
+                                      )
+                                    )
+                                  }
+                                  placeholder={`Opción ${oIdx + 1}`}
+                                  className="w-full bg-transparent text-[11px] outline-none"
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-[11px] text-stone-600">
+                    <strong>Juego Interactivo / Trivia personalizada:</strong> disponible exclusivamente en el plan{" "}
+                    <strong>Llave en Mano</strong>.
+                  </div>
+                )}
 
                 {/* Fotos separadas: 1) Portada (1 sola) + 2) Galería */}
                 <div className="space-y-4">
@@ -1689,31 +1771,146 @@ function EncargarForm() {
               </div>
             </div>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-stone-700">
-              Nombre del Salón / Quinta / Iglesia *
-            </label>
-            <input
-              type="text"
-              required
-              value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              placeholder="Ej. Finca Los Olivares"
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-stone-700">
-              Dirección y Localidad *
-            </label>
-            <input
-              type="text"
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Ej. Av. Belgrano 1240, Jujuy"
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
+          {/* Coordenadas del Evento (1 para Esencial, hasta 2 independientes para PRO y Llave en Mano) */}
+          <div className="sm:col-span-2 rounded-2xl border border-stone-200 bg-stone-50/80 p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-800">
+                <MapPin className="h-3.5 w-3.5 text-amber-700" />
+                {isAdvancedPlan
+                  ? "Coordenadas del Evento (hasta 2 lugares)"
+                  : "Coordenada del Evento (1 ubicación)"}
+              </span>
+              {!isAdvancedPlan && (
+                <span className="text-[11px] text-stone-500">
+                  Plan Esencial incluye 1 ubicación
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 rounded-xl border border-stone-200 bg-white p-3.5 sm:grid-cols-2">
+              {isAdvancedPlan && (
+                <div className="sm:col-span-2 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                    Coordenada 1 · Lugar Principal
+                  </span>
+                  <input
+                    type="text"
+                    value={loc1Label}
+                    onChange={(e) => setLoc1Label(e.target.value)}
+                    placeholder="Ej. Ceremonia / Civil"
+                    className="w-44 rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold outline-none focus:border-stone-900"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Nombre del Salón / Quinta / Iglesia *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={venue}
+                  onChange={(e) => setVenue(e.target.value)}
+                  placeholder="Ej. Finca Los Olivares"
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Dirección y Localidad *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Ej. Av. Belgrano 1240, Jujuy"
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-semibold text-stone-700">
+                  Link de Google Maps (opcional — si lo dejás vacío se genera automático)
+                </label>
+                <input
+                  type="url"
+                  value={loc1MapsUrl}
+                  onChange={(e) => setLoc1MapsUrl(e.target.value)}
+                  placeholder="https://maps.app.goo.gl/..."
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-xs outline-none focus:border-stone-900"
+                />
+              </div>
+            </div>
+
+            {isAdvancedPlan && (
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-stone-200 bg-white p-3.5 sm:grid-cols-2">
+                <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                      Coordenada 2 · Segundo Lugar (opcional)
+                    </span>
+                    <p className="text-[11px] text-stone-500">
+                      Ideal si hacés Ceremonia/Civil y Fiesta en distintos lugares. Si lo dejás vacío, se oculta.
+                    </p>
+                  </div>
+                  <input
+                    type="text"
+                    value={loc2Label}
+                    onChange={(e) => setLoc2Label(e.target.value)}
+                    placeholder="Ej. Fiesta / Salón"
+                    className="w-44 rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold outline-none focus:border-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-stone-700">
+                    Nombre del Salón / Quinta
+                  </label>
+                  <input
+                    type="text"
+                    value={loc2Venue}
+                    onChange={(e) => setLoc2Venue(e.target.value)}
+                    placeholder="Ej. Salón Las Magnolias"
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-stone-700">
+                    Dirección y Localidad
+                  </label>
+                  <input
+                    type="text"
+                    value={loc2Address}
+                    onChange={(e) => setLoc2Address(e.target.value)}
+                    placeholder="Ej. Ruta 9 Km 4, San Salvador de Jujuy"
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-stone-700">
+                    Horario del 2do lugar
+                  </label>
+                  <input
+                    type="text"
+                    value={loc2Time}
+                    onChange={(e) => setLoc2Time(e.target.value)}
+                    placeholder="Ej. 21:30 hs"
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-stone-700">
+                    Link de Google Maps (opcional)
+                  </label>
+                  <input
+                    type="url"
+                    value={loc2MapsUrl}
+                    onChange={(e) => setLoc2MapsUrl(e.target.value)}
+                    placeholder="https://maps.app.goo.gl/..."
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-xs outline-none focus:border-stone-900"
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">

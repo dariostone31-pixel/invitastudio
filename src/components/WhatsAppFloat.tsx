@@ -1,5 +1,5 @@
 import React from "react";
-import { MessageCircle } from "lucide-react";
+import { WhatsAppLogoIcon } from "@/components/BrandOrnaments";
 import { BUSINESS_CONFIG, getWhatsAppHref } from "@/config/business";
 
 export function WhatsAppFloat() {
@@ -16,10 +16,10 @@ export function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Consultar por WhatsApp"
-      className="animate-wa-pulse fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-xs font-bold text-white shadow-xl transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95"
+      className="animate-wa-pulse fixed bottom-4 right-4 z-40 flex items-center gap-2.5 rounded-full border border-emerald-500/40 bg-[#0F5132] py-2 pl-2 pr-4 text-xs font-bold text-white shadow-[0_14px_34px_-8px_rgba(16,185,129,0.55)] transition-transform hover:scale-105 hover:bg-[#0D442A] active:scale-95 sm:bottom-5 sm:right-5 sm:gap-3 sm:py-2.5 sm:pl-2.5 sm:pr-5 sm:text-sm"
     >
-      <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-      <span className="hidden sm:inline">¿Dudas? WhatsApp</span>
+      <WhatsAppLogoIcon className="h-8 w-8 flex-shrink-0 drop-shadow-sm sm:h-9 sm:w-9" />
+      <span className="tracking-tight whitespace-nowrap">¿Dudas? WhatsApp</span>
     </a>
   );
 }

@@ -12,10 +12,10 @@ import {
   MessageCircle,
   Save,
   ArrowLeft,
-  Sparkles,
   Music,
   Upload,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import type { EventRecord, OrderStatus, PaymentStatus } from "@/lib/db";
 import { INVITATION_SKINS } from "@/templates/catalog";
 
@@ -268,7 +268,7 @@ export default function AdminPage() {
               Inicio
             </Link>
             <h1 className="mt-1 flex items-center gap-2 font-cormorant text-3xl font-bold">
-              <Sparkles className="h-5 w-5 text-amber-700" />
+              <EditorialDiamondIcon className="h-5 w-5 text-amber-700" />
               Admin Invita con el Alma · Entregas &lt;24 hs
             </h1>
           </div>
@@ -588,7 +588,7 @@ export default function AdminPage() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, audioOverride: e.target.value })
                       }
-                      placeholder="URL del audio (/audio/romantic-piano.wav o URL subida)"
+                      placeholder="URL del audio (/audio/boda-perfect.mp3, none o URL subida)"
                       className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 font-mono text-[11px]"
                     />
                     {audioUploadMsg && (

@@ -77,7 +77,7 @@ export default async function DemoPage({ params, searchParams }: DemoPageProps) 
       table={sp.mesa || "7"}
       customTitle={sp.evento || undefined}
       customDateDisplay={sp.fecha || undefined}
-      planId="pro"
+      planId="asistido"
       wishesList={wishes}
       allowDjSongs={true}
       initialDjPlaylist={demoSongs}

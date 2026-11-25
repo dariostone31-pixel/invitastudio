@@ -14,13 +14,13 @@ import {
   ChevronDown,
   Camera,
   MapPin,
-  Sparkles,
   LayoutGrid,
   PenLine,
   Eye,
   Share2,
   ShieldCheck,
 } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { BrandLogo } from "@/components/BrandLogo";
 import { InteractiveHeroSection } from "@/components/InteractiveHeroSection";
 import { MotionHeroBlock, MotionSection } from "@/components/MotionReveal";
@@ -277,7 +277,7 @@ export default function HomePage() {
             <MotionHeroBlock delay={0}>
               <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#C89B54]/45 bg-[#FFFDF9]/95 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B1E30] shadow-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
                 <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FAF7F2] text-[#C89B54]">
-                  <Sparkles className="h-3 w-3" strokeWidth={1.5} />
+                  <EditorialDiamondIcon className="h-3 w-3" />
                 </span>
                 Invitaciones Digitales de Studio · Argentina
               </span>
@@ -369,7 +369,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <MotionSection className="text-center">
             <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#B78A4E]">
-              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
+              <EditorialDiamondIcon className="h-3.5 w-3.5" />
               Enamora a tus invitados · Te ordena tu fiesta
             </span>
             <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
@@ -495,7 +495,7 @@ export default function HomePage() {
       <section id="precios" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <MotionSection className="text-center">
           <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/40 bg-[#FFFBFA] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6B1E30] shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-[#B78A4E]" strokeWidth={1.5} />
+            <EditorialDiamondIcon className="h-3.5 w-3.5 text-[#B78A4E]" />
             Precios Transparentes en Pesos Argentinos
           </span>
           <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B] sm:text-5xl">

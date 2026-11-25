@@ -135,15 +135,21 @@ export default async function PublicInvitationPage({
       customGallery={event.galleryImages || undefined}
       customFont={event.fontOverride || undefined}
       customAccent={event.accentOverride || undefined}
-      customAudioUrl={allowDjSongs ? event.audioOverride || undefined : undefined}
+      customAudioUrl={
+        event.audioOverride === "none"
+          ? "none"
+          : allowDjSongs
+          ? event.audioOverride || undefined
+          : undefined
+      }
       memoryMode={Boolean(event.memoryMode)}
       planId={event.planId}
       wishesList={wishes}
       allowDjSongs={allowDjSongs}
       initialDjPlaylist={allowDjSongs ? combinedDjPlaylist : []}
-      triviaTitle={event.triviaTitle}
-      triviaQuestions={allowDjSongs ? event.triviaQuestions || [] : []}
-      initialTriviaScores={allowDjSongs ? event.triviaScores || [] : []}
+      triviaTitle={event.planId === "asistido" ? event.triviaTitle : undefined}
+      triviaQuestions={event.planId === "asistido" ? event.triviaQuestions || [] : []}
+      initialTriviaScores={event.planId === "asistido" ? event.triviaScores || [] : []}
       albumUrl={allowDjSongs ? event.albumUrl : undefined}
       instagramHandle={allowDjSongs ? event.instagramHandle : undefined}
       eventHashtag={allowDjSongs ? event.eventHashtag : undefined}

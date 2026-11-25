@@ -13,6 +13,7 @@ interface AudioPlayerFloatProps {
   textColor: string;
   borderColor: string;
   hasTopChrome?: boolean;
+  hasDraftBanner?: boolean;
   compactBottomLeft?: boolean;
 }
 
@@ -26,6 +27,7 @@ export function AudioPlayerFloat({
   textColor,
   borderColor,
   hasTopChrome = false,
+  hasDraftBanner = false,
   compactBottomLeft = false,
 }: AudioPlayerFloatProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -86,7 +88,11 @@ export function AudioPlayerFloat({
           compactBottomLeft
             ? "fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_12px_28px_-8px_rgba(45,30,20,0.28)] backdrop-blur-md transition-transform active:scale-95"
             : `fixed right-3 sm:right-4 z-40 flex min-h-[40px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-transform active:scale-95 ${
-                hasTopChrome ? "top-14 sm:top-14" : "top-4"
+                hasDraftBanner
+                  ? "top-[5.25rem] sm:top-14"
+                  : hasTopChrome
+                  ? "top-14"
+                  : "top-4"
               }`
         }
         style={{

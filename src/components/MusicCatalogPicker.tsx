@@ -103,7 +103,7 @@ export function MusicCatalogPicker({
             ))}
           </optgroup>
         ))}
-        <option value="none">Sin música de fondo</option>
+        <option value="none">Sin audio / Audio externo</option>
         {customUploadedOption && !isKnownOption && (
           <option value={customUploadedOption.value}>
             {customUploadedOption.label}
@@ -128,7 +128,7 @@ export function MusicCatalogPicker({
                   : "bg-white text-stone-600 border border-stone-200 hover:border-stone-400"
               }`}
             >
-              Todas (14)
+              Todas ({ALL_MUSIC_TRACKS.length})
             </button>
             {MUSIC_CATEGORIES.map((group) => (
               <button
@@ -200,7 +200,7 @@ export function MusicCatalogPicker({
               }`}
             >
               <VolumeX className="h-3 w-3" />
-              Sin música
+              Sin audio
             </button>
           </div>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getEventByPanelToken, updateEventByPanelToken } from "@/lib/db";
 import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
+import { sanitizeEventLocations } from "@/lib/locationUtils";
 
 export async function GET(
   _req: Request,
@@ -38,6 +39,37 @@ export async function PATCH(
         ? requestedAudio
         : existing.audioOverride;
 
+    const maxLocs = isEssential ? 1 : 2;
+    const rawLocations = body.enabledSections?.locations;
+    const cleanLocations =
+      rawLocations !== undefined ? sanitizeEventLocations(rawLocations, maxLocs) : undefined;
+
+    const sanitizedEnabledSections =
+      body.enabledSections && typeof body.enabledSections === "object"
+        ? {
+            ...body.enabledSections,
+            trivia: isAsistido ? Boolean(body.enabledSections.trivia) : false,
+            ...(rawLocations !== undefined ? { locations: cleanLocations } : {}),
+          }
+        : undefined;
+
+    const essentialSectionsPatch =
+      rawLocations !== undefined
+        ? {
+            ...(existing.enabledSections || {
+              countdown: true,
+              story: false,
+              schedule: false,
+              gallery: false,
+              dressCode: true,
+              gifts: true,
+              rsvp: true,
+            }),
+            trivia: false,
+            locations: cleanLocations,
+          }
+        : undefined;
+
     const patch = isEssential
       ? {
           eventTitle: body.eventTitle,
@@ -50,6 +82,7 @@ export async function PATCH(
           giftHolder: typeof body.giftHolder === "string" ? body.giftHolder.trim().slice(0, 120) : undefined,
           dressCode: body.dressCode,
           quote: typeof body.quote === "string" ? body.quote.trim() : undefined,
+          ...(essentialSectionsPatch ? { enabledSections: essentialSectionsPatch } : {}),
         }
       : {
           skinId: body.skinId,
@@ -95,10 +128,14 @@ export async function PATCH(
           ...(isAsistido && typeof body.songRequest === "string"
             ? { songRequest: body.songRequest.trim().slice(0, 220) }
             : {}),
-          triviaTitle: typeof body.triviaTitle === "string" ? body.triviaTitle : undefined,
-          triviaQuestions: Array.isArray(body.triviaQuestions)
-            ? body.triviaQuestions
-            : undefined,
+          ...(isAsistido
+            ? {
+                triviaTitle: typeof body.triviaTitle === "string" ? body.triviaTitle : undefined,
+                triviaQuestions: Array.isArray(body.triviaQuestions)
+                  ? body.triviaQuestions
+                  : undefined,
+              }
+            : {}),
           albumUrl: typeof body.albumUrl === "string" ? body.albumUrl.trim() : undefined,
           instagramHandle:
             typeof body.instagramHandle === "string" ? body.instagramHandle.trim() : undefined,
@@ -140,7 +177,7 @@ export async function PATCH(
                 .filter((g: { name: string }) => g.name.length > 0)
             : undefined,
           memoryMode: body.memoryMode,
-          enabledSections: body.enabledSections,
+          enabledSections: sanitizedEnabledSections,
         };
 
     const updated = await updateEventByPanelToken(token, patch);

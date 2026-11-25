@@ -20,9 +20,9 @@ export async function POST(req: Request) {
     if (!event) {
       return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
     }
-    if (event.planId === "esencial") {
+    if (event.planId !== "asistido") {
       return NextResponse.json(
-        { error: "La Mini-Trivia está disponible en Plan PRO y Llave en Mano." },
+        { error: "La Mini-Trivia está disponible exclusivamente en Plan Llave en Mano." },
         { status: 403 }
       );
     }

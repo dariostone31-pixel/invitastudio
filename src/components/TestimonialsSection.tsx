@@ -1,5 +1,6 @@
 import React from "react";
-import { CheckCircle2, MessageCircle, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { CheckCircle2, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { getAuthorizedTestimonials } from "@/config/testimonials";
 import { BUSINESS_CONFIG, getWhatsAppHref } from "@/config/business";
 import { MotionSection } from "@/components/MotionReveal";
@@ -152,7 +153,7 @@ export function TestimonialsSection() {
                       index={idx}
                       className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#B78A4E]/35 bg-[#FBF1EE] text-[#6B1E30] shadow-sm transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white"
                     >
-                      <Sparkles className="h-4 w-4" strokeWidth={1.5} />
+                      <EditorialDiamondIcon className="h-4 w-4" />
                     </AnimatedIconBox>
                     <h3 className="text-sm font-bold text-[#2A121B]">{g.title}</h3>
                     <p className="mt-1.5 text-xs leading-relaxed text-[#574046]">{g.detail}</p>

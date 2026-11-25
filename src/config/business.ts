@@ -91,7 +91,7 @@ export const PRICING_PLANS: PlanPricing[] = [
       "1 link web único para compartir por WhatsApp",
       "Diseño y música genérica predeterminada del modelo elegido",
       "Datos básicos del evento (título, fecha, lugar, dress code)",
-      "Cuenta regresiva + Mapa Google Maps + Calendario",
+      "Cuenta regresiva + 1 Ubicación Google Maps + Calendario",
       "Botón para copiar Alias / CBU en 1 toque",
       "Confirmación de asistencia (RSVP) en el panel",
       "Borrador inmediato + activación < 24 hs hábiles",
@@ -106,7 +106,7 @@ export const PRICING_PLANS: PlanPricing[] = [
     listPrice: "$39.999",
     transferPrice: "$29.999",
     shortDesc:
-      "Personalización visual desde el inicio, catálogo de música, solapa Playlist DJ, links por familia y Excel.",
+      "Personalización visual desde el inicio, hasta 2 ubicaciones, catálogo de música, Playlist DJ, links por familia y Excel.",
     includesPersonalizer: true,
     includesFamilyLinks: true,
     includesAssistedLoad: false,
@@ -114,6 +114,7 @@ export const PRICING_PLANS: PlanPricing[] = [
     features: [
       "Todo lo del Plan Esencial incluido",
       "Personalización visual completa desde el inicio + Estudio en vivo",
+      "Hasta 2 ubicaciones independientes (Ceremonia y Fiesta / Salón)",
       "Fotos propias, acabados translúcidos, letras, colores e itinerario",
       "Selección de pista musical del catálogo curado",
       "Solapa Playlist para que tus invitados sugieran canciones al DJ",
@@ -124,18 +125,19 @@ export const PRICING_PLANS: PlanPricing[] = [
   {
     id: "asistido",
     name: "Llave en Mano",
-    badge: "Música a elección + Carga asistida",
+    badge: "Música a elección + Trivia + Asistido",
     listPriceNum: 46665,
     transferPriceNum: 34999,
     listPrice: "$46.665",
     transferPrice: "$34.999",
     shortDesc:
-      "Todo PRO + canción de fondo a tu elección preparada por nuestro equipo, carga completa de fotos/textos y recordatorio WhatsApp.",
+      "Todo PRO + Juego Interactivo (Trivia), canción de fondo a tu elección preparada por nuestro equipo y carga completa.",
     includesPersonalizer: true,
     includesFamilyLinks: true,
     includesAssistedLoad: true,
     features: [
-      "Todo lo del Plan PRO incluido (solapa Playlist DJ + Estudio)",
+      "Todo lo del Plan PRO incluido (2 ubicaciones + Playlist DJ + Estudio)",
+      "Juego Interactivo (Trivia personalizada con podio Top 5)",
       "Canción de fondo a tu elección preparada y activada por el equipo",
       "Carga asistida de tus fotos, textos, padres e itinerario",
       "Armado de pases personalizados por familia/invitado",
