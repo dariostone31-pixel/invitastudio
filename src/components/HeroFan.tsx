@@ -39,7 +39,7 @@ export function HeroFan() {
         className="mb-8 text-center"
       >
         <span className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.34em] text-[#6B1E30]">
-          Curaduría de Autor
+          Curaduría de Studio
         </span>
         <h2 className="font-display-cormorant mt-2 text-3xl font-semibold text-[#2A121B] sm:text-4xl">
           Explorá estilos con <span className="italic text-[#6B1E30]">alma propia</span>

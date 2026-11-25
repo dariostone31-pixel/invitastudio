@@ -88,19 +88,19 @@ export const metadata: Metadata = {
         ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
         : "https://invitastudio-vert.vercel.app")
   ),
-  title: "Invita con Alma — Invitaciones Digitales Interactivas",
+  title: "Invita con el Alma — Invitaciones Digitales de Studio",
   description:
-    "Invitaciones web interactivas con sobre animado, música integrada, mapas y confirmación de asistencia en tiempo real para Bodas, XV Años, Hombres, Niños y Niñas.",
+    "Invitaciones digitales de studio con sobre animado, música integrada, mapas y confirmación de asistencia en tiempo real para Bodas, XV Años, Hombres, Niños y Niñas.",
   openGraph: {
-    title: "Invita con Alma — Invitaciones Digitales de Autor",
+    title: "Invita con el Alma — Invitaciones Digitales de Studio",
     description:
-      "42 diseños interactivos con sobre animado, música, mapa en 1 toque y panel RSVP para WhatsApp en menos de 24 hs.",
+      "41 diseños interactivos con sobre animado, música, mapa en 1 toque y panel RSVP para WhatsApp en menos de 24 hs.",
     url: "/",
-    siteName: "Invita con Alma",
+    siteName: "Invita con el Alma",
     images: [
       {
         url: "/images/templates/boda-jardin-botanico.webp",
-        alt: "Invita con Alma — Invitaciones Digitales Interactivas",
+        alt: "Invita con el Alma — Invitaciones Digitales de Studio",
       },
     ],
     locale: "es_AR",
@@ -108,7 +108,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Invita con Alma — Invitaciones Digitales de Autor",
+    title: "Invita con el Alma — Invitaciones Digitales de Studio",
     description:
       "Invitaciones interactivas con sobre animado, música y RSVP inteligente en menos de 24 hs.",
     images: ["/images/templates/boda-jardin-botanico.webp"],

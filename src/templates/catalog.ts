@@ -1543,27 +1543,6 @@ export const INVITATION_SKINS: InvitationSkin[] = [
       badgeText: "COMUNIÓN",
     },
   },
-  {
-    id: "bebe-edicion-nacimiento",
-    name: "Edición Dulce Llegada",
-    subtitle: "Estilo periódico familiar para anunciar el bautismo o año",
-    category: "bautismo",
-    layoutId: "diario-editorial",
-    heroImage: "/images/templates/bebe-edicion-nacimiento.webp",
-    fontDisplay: "playfair",
-    palette: {
-      bg: "#F7F3EC",
-      surface: "#FFFDF9",
-      surfaceAlt: "#EDE5D8",
-      text: "#2D2722",
-      textMuted: "#6E6358",
-      accent: "#A48458",
-      accentText: "#FFFFFF",
-      border: "#DDD2C0",
-      isDark: false,
-    },
-    sample: BAUTISMO_SAMPLE,
-  },
 ];
 
 export function getSkinById(id: string): InvitationSkin {

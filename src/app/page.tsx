@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { InteractiveHeroSection } from "@/components/InteractiveHeroSection";
 import { MotionHeroBlock, MotionSection } from "@/components/MotionReveal";
 import { AnimatedIconBox } from "@/components/AnimatedIconBox";
 import { MotionTap } from "@/components/MotionTapButton";
@@ -77,7 +78,7 @@ const HOW_IT_WORKS = [
     step: "01",
     icon: LayoutGrid,
     title: "Elegís plan y diseño",
-    desc: "Explorá 42 modelos en vivo y elegí entre Esencial, PRO o Llave en Mano según cuánto quieras personalizar.",
+    desc: "Explorá 41 modelos en vivo y elegí entre Esencial, PRO o Llave en Mano según cuánto quieras personalizar.",
   },
   {
     step: "02",
@@ -169,9 +170,9 @@ export default function HomePage() {
       />
 
       {/* ================= HEADER BLUR EDITORIAL ================= */}
-      <header className="sticky top-0 z-40 border-b border-[#2A121B]/10 bg-[#FFFBFA]/88 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-[#C89B54]/20 bg-[#FAF7F2]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:gap-8 lg:px-8">
-          <Link href="/" aria-label="Invita con Alma - Inicio" className="shrink-0">
+          <Link href="/" aria-label="Invita con el Alma - Inicio" className="shrink-0">
             <BrandLogo />
           </Link>
 
@@ -183,7 +184,7 @@ export default function HomePage() {
               href="#modelos"
               className="whitespace-nowrap py-1.5 transition-colors hover:text-[#6B1E30]"
             >
-              Modelos (42)
+              Modelos (41)
             </a>
             <a
               href="#como-funciona"
@@ -228,13 +229,13 @@ export default function HomePage() {
         {/* Mobile & Tablet quick-anchor strip */}
         <nav
           aria-label="Navegación rápida móvil"
-          className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-[#2A121B]/8 bg-[#FBF1EE]/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B1E30] lg:hidden"
+          className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-[#C89B54]/18 bg-[#FAF7F2]/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B1E30] lg:hidden"
         >
           <a
             href="#modelos"
             className="whitespace-nowrap rounded-full border border-[#2A121B]/10 bg-white/95 px-3 py-1 shadow-sm"
           >
-            Modelos (42)
+            Modelos (41)
           </a>
           <Link
             href="/mi-panel"
@@ -269,25 +270,16 @@ export default function HomePage() {
         </nav>
       </header>
 
-      {/* ================= HERO EDITORIAL ================= */}
-      <section className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-12 pt-9 sm:px-6 lg:pb-16 lg:pt-14">
-        <div
-          aria-hidden="true"
-          className="animate-drift-1 pointer-events-none absolute -left-24 -top-10 h-80 w-80 rounded-full bg-[#E7AFC0]/35 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="animate-drift-2 pointer-events-none absolute -right-24 top-16 h-96 w-96 rounded-full bg-[#B78A4E]/20 blur-3xl"
-        />
-
-        <div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
+      {/* ================= HERO EDITORIAL MARFIL LUMINOSO ================= */}
+      <InteractiveHeroSection>
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-7">
             <MotionHeroBlock delay={0}>
-              <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#B78A4E]/45 bg-[#FFFBFA]/95 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B1E30] shadow-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E]">
+              <span className="font-ui-jost inline-flex items-center gap-2 rounded-full border border-[#C89B54]/45 bg-[#FFFDF9]/95 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B1E30] shadow-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FAF7F2] text-[#C89B54]">
                   <Sparkles className="h-3 w-3" strokeWidth={1.5} />
                 </span>
-                Invitaciones Digitales de Autor · Argentina
+                Invitaciones Digitales de Studio · Argentina
               </span>
             </MotionHeroBlock>
 
@@ -300,7 +292,7 @@ export default function HomePage() {
 
             <MotionHeroBlock delay={0.16}>
               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#6E4F57] sm:text-lg">
-                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de autor con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
+                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de studio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
               </p>
             </MotionHeroBlock>
 
@@ -311,16 +303,16 @@ export default function HomePage() {
                     href="#modelos"
                     className="btn-gold-shimmer inline-flex min-h-[48px] items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_-8px_rgba(74,20,32,0.55)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_18px_36px_-10px_rgba(107,30,48,0.68)]"
                   >
-                    Explorar 42 Modelos en Vivo
+                    Explorar 41 Modelos en Vivo
                     <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 </MotionTap>
                 <MotionTap>
                   <a
                     href="#como-funciona"
-                    className="btn-shimmer-hover group inline-flex min-h-[48px] items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFBFA] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
+                    className="btn-shimmer-hover group inline-flex min-h-[48px] items-center gap-2 rounded-full border border-[#6B1E30]/35 bg-[#FFFDF9] px-5 py-3.5 text-sm font-semibold text-[#6B1E30] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#6B1E30] hover:bg-white hover:shadow-sm"
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FBF1EE] text-[#B78A4E] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FAF7F2] text-[#C89B54] transition-colors duration-300 group-hover:bg-[#6B1E30] group-hover:text-white">
                       <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} />
                     </span>
                     Ver cómo funciona
@@ -328,13 +320,13 @@ export default function HomePage() {
                 </MotionTap>
               </div>
               <p className="mt-3.5 flex items-center gap-1.5 text-xs font-medium text-[#7A5A62]">
-                <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-[#B78A4E]" strokeWidth={1.6} />
+                <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-[#C89B54]" strokeWidth={1.6} />
                 <span>Pago único por evento · Borrador inmediato · Editable desde tu celular</span>
               </p>
             </MotionHeroBlock>
 
             <MotionHeroBlock delay={0.32}>
-              <div className="mt-8 grid grid-cols-3 divide-x divide-[#2A121B]/12 rounded-2xl border border-[#2A121B]/10 bg-[#FFFBFA]/75 px-1.5 py-4 shadow-sm backdrop-blur-sm sm:px-4">
+              <div className="mt-8 grid grid-cols-3 divide-x divide-[#C89B54]/20 rounded-2xl border border-[#C89B54]/30 bg-[#FFFDF9]/85 px-1.5 py-4 shadow-sm backdrop-blur-sm sm:px-4">
                 <div className="px-2 sm:px-4">
                   <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">&lt; 24 hs</p>
                   <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
@@ -348,7 +340,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="px-2 sm:px-4">
-                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">42 Diseños</p>
+                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">41 Diseños</p>
                   <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
                     Sin apps
                   </p>
@@ -361,7 +353,7 @@ export default function HomePage() {
             <HeroMockup />
           </MotionHeroBlock>
         </div>
-      </section>
+      </InteractiveHeroSection>
 
       {/* ================= MINI PROBADOR ================= */}
       <MiniTester />
@@ -642,7 +634,7 @@ export default function HomePage() {
                 ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
               </h3>
               <p className="relative z-10 mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
-                Elegí uno de nuestros 42 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
+                Elegí uno de nuestros 41 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
               </p>
               <div className="relative z-10 mt-6 flex flex-wrap justify-center gap-3">
                 <MotionTap>

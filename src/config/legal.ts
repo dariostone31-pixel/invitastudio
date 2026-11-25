@@ -41,7 +41,7 @@ export const ACTIVE_PROVIDERS: ProviderDocItem[] = [
   {
     name: "Mercado Pago (cuando el comprador elige pagar online con Checkout Pro)",
     role: "Procesamiento de pagos con tarjeta, débito o saldo en cuenta.",
-    dataShared: "Importe del plan, código de pedido, nombre y correo electrónico del comprador. Invita con Alma no recibe ni almacena números de tarjeta.",
+    dataShared: "Importe del plan, código de pedido, nombre y correo electrónico del comprador. Invita con el Alma no recibe ni almacena números de tarjeta.",
     policyUrl: "https://www.mercadopago.com.ar/privacidad",
     transferNote: "Sujeto a las condiciones y tratamiento propio de MercadoLibre S.R.L. / Mercado Pago Argentina.",
   },

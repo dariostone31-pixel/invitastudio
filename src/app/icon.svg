@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="icaGold" x1="8" y1="12" x2="56" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E7C67E"/>
+      <stop offset="50%" stop-color="#C89B54"/>
+      <stop offset="100%" stop-color="#A67832"/>
+    </linearGradient>
+    <linearGradient id="icaPaper" x1="12" y1="16" x2="52" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFDF9"/>
+      <stop offset="100%" stop-color="#FAF7F2"/>
+    </linearGradient>
+  </defs>
+  <!-- Luminous Ivory Squircle Backdrop -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#icaPaper)" stroke="#C89B54" stroke-opacity="0.45" stroke-width="1.5"/>
+  <!-- Fine Golden Envelope -->
+  <rect x="11" y="18" width="42" height="29" rx="6" fill="#FFFDF9" stroke="url(#icaGold)" stroke-width="2.6"/>
+  <!-- Envelope Flap -->
+  <path d="M13.5 21.5L32 35.5L50.5 21.5" stroke="url(#icaGold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Lower Fold Accent -->
+  <path d="M14 43.5L24.5 34.5M50 43.5L39.5 34.5" stroke="#C89B54" stroke-opacity="0.45" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Burgundy Wax Seal with Luminous Gold Rim -->
+  <circle cx="32" cy="34.5" r="7.2" fill="#6B1E30" stroke="#E7C67E" stroke-width="1.6"/>
+  <!-- Delicate Heart inside Seal -->
+  <path d="M32 37.9C32 37.9 28.4 35.5 28.4 33.1C28.4 31.9 29.3 31 30.4 31C31.1 31 31.7 31.4 32 32C32.3 31.4 32.9 31 33.6 31C34.7 31 35.6 31.9 35.6 33.1C35.6 35.5 32 37.9 32 37.9Z" fill="#FAF7F2"/>
+  <!-- Gold Sparkle -->
+  <path d="M51 11L52.1 13.9L55 15L52.1 16.1L51 19L49.9 16.1L47 15L49.9 13.9L51 11Z" fill="#C89B54"/>
+</svg>

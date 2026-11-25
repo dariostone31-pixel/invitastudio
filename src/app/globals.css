@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  --paper: #FBF1EE;
+  --paper: #FAF7F2;
   --card: #FFFBFA;
   --ink: #2A121B;
   --ink-soft: #7A5A62;
@@ -67,10 +67,10 @@ body {
 
 /* Editorial luxury accents for Landing */
 .bg-paper-spotlight {
-  background-color: #FBF1EE;
+  background-color: #FAF7F2;
   background-image:
-    radial-gradient(circle at 18% 8%, rgba(231, 175, 192, 0.34), transparent 44%),
-    radial-gradient(circle at 84% 16%, rgba(183, 138, 78, 0.16), transparent 40%);
+    radial-gradient(circle at 18% 8%, rgba(232, 206, 154, 0.22), transparent 44%),
+    radial-gradient(circle at 84% 16%, rgba(200, 155, 84, 0.14), transparent 40%);
 }
 
 .shadow-bordo-lg {

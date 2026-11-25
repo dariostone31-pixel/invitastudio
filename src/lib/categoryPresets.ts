@@ -115,24 +115,47 @@ export function getTriviaPresetForCategory(
     ];
   }
 
-  if (category === "nino" || category === "nina") {
+  if (category === "nino") {
     return [
       {
-        id: "tq-kid-1",
-        question: "¿Cuál es su sabor de torta favorito?",
+        id: "tq-nino-1",
+        question: "¿Cuál es su sabor de torta favorito para el cumple?",
         options: ["Chocolate y dulce de leche", "Brócoli", "Limón amargo", "Café"],
         correctIndex: 0,
       },
       {
-        id: "tq-kid-2",
-        question: "¿Qué es lo que más le gusta hacer en su cumple?",
-        options: ["Jugar y soplar las velitas con amigos", "Hacer la tarea", "Limpiar el cuarto", "Ir al dentista"],
+        id: "tq-nino-2",
+        question: "¿Qué es lo que más le gusta hacer en su fiesta?",
+        options: ["Jugar, correr y soplar las velitas con amigos", "Hacer la tarea", "Ordenar el placard", "Ir al dentista"],
         correctIndex: 0,
       },
       {
-        id: "tq-kid-3",
-        question: "¿Qué estilo de ropa conviene llevar para festejar?",
+        id: "tq-nino-3",
+        question: "¿Cómo conviene venir vestido para disfrutar a full?",
         options: ["Traje de astronauta", dressCodeLabel, "Saco y corbata rígida", "Botas de esquí"],
+        correctIndex: 1,
+      },
+    ];
+  }
+
+  if (category === "nina") {
+    return [
+      {
+        id: "tq-nina-1",
+        question: "¿Qué mesa dulce o torta le encanta elegir para festejar?",
+        options: ["Frutillas, chocolate y cupcakes", "Sopa de zapallo", "Aceitunas", "Café amargo"],
+        correctIndex: 0,
+      },
+      {
+        id: "tq-nina-2",
+        question: "¿Cuál es su momento favorito de su cumple?",
+        options: ["Bailar, jugar y pedir los deseos con sus amigas", "Hacer cuentas de matemática", "Limpiar el cuarto", "Dormir la siesta"],
+        correctIndex: 0,
+      },
+      {
+        id: "tq-nina-3",
+        question: "¿Cuál es el look sugerido para acompañarla hoy?",
+        options: ["Pijama de invierno", dressCodeLabel, "Traje de buzo", "Equipo de fútbol"],
         correctIndex: 1,
       },
     ];

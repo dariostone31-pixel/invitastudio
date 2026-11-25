@@ -17,19 +17,19 @@ const rawBankAlias =
     : DEFAULT_BANK_ALIAS;
 
 export const BUSINESS_CONFIG = {
-  brandName: "Invita con Alma",
+  brandName: "Invita con el Alma",
   brandShortFirst: "Invita",
-  brandShortSecond: "con Alma",
-  tagline: "Invitaciones digitales interactivas con alma",
+  brandShortSecond: "con el Alma",
+  tagline: "Invitaciones digitales de studio con alma",
   whatsappNumber: rawWhatsapp,
   whatsappConfigured: Boolean(rawWhatsapp),
   supportEmail: rawSupportEmail,
-  legalHolderName: rawLegalHolder || "Invita con Alma",
+  legalHolderName: rawLegalHolder || "Invita con el Alma",
   taxId: rawTaxId,
   supportHours: rawSupportHours,
   bankAlias: rawBankAlias,
   bankAliasConfigured: Boolean(rawBankAlias),
-  bankHolder: rawLegalHolder || "Invita con Alma",
+  bankHolder: rawLegalHolder || "Invita con el Alma",
   bankName: "Mercado Pago / Transferencia Bancaria",
   hasVerifiedProviderData: Boolean(rawWhatsapp && rawBankAlias),
 };

@@ -7,7 +7,7 @@ import { PersonalizerStudioClient } from "@/components/PersonalizerStudioClient"
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Estudio de Personalización — Invita con Alma",
+  title: "Estudio de Personalización — Invita con el Alma",
   robots: { index: false, follow: false },
 };
 

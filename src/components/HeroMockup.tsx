@@ -61,7 +61,7 @@ export function HeroMockup() {
       <div className="relative flex items-center justify-center">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(231,175,192,0.42)_0%,rgba(183,138,78,0.16)_48%,transparent_72%)] blur-xl"
+          className="pointer-events-none absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(232,206,154,0.45)_0%,rgba(200,155,84,0.18)_48%,transparent_72%)] blur-xl"
         />
         <div
           aria-hidden="true"

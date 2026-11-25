@@ -25,7 +25,7 @@ export async function generateMetadata({
   const sp = await searchParams;
   const event = await getEventBySlug(slug);
   if (!event) {
-    return { title: "Invitación Digital — Invita con Alma", robots: { index: false, follow: false } };
+    return { title: "Invitación Digital — Invita con el Alma", robots: { index: false, follow: false } };
   }
 
   const skin = getSkinById(event.skinId);

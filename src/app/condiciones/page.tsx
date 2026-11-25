@@ -8,7 +8,7 @@ import { LEGAL_STATUS, LEGAL_UPDATED_AT, LEGAL_VERSION } from "@/config/legal";
 export const metadata: Metadata = {
   title: `Condiciones del Servicio — ${BUSINESS_CONFIG.brandName}`,
   description:
-    "Condiciones comerciales, alcance de planes, plazos de entrega, pagos y soporte de Invita con Alma.",
+    "Condiciones comerciales, alcance de planes, plazos de entrega, pagos y soporte de Invita con el Alma.",
 };
 
 export default function CondicionesPage() {

@@ -190,7 +190,7 @@ function downloadIcsFile(
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Invita con Alma//ES",
+    "PRODID:-//Invita con el Alma//ES",
     "BEGIN:VEVENT",
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${range.startStr}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${range.endStr}`,
@@ -2389,7 +2389,7 @@ export function InvitationRenderer({
           </section>
         )}
 
-        <div className={`px-5 ${isXvStar ? "pb-24" : "pb-14"}`}>
+        <div className="px-5 pb-24">
           {/* ================= CUENTA REGRESIVA / MODO RECUERDO ================= */}
           {memoryMode ? (
             <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
@@ -2961,7 +2961,7 @@ export function InvitationRenderer({
           {sections.schedule && scheduleList.length > 0 && (
             <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
-              <section>
+              <section id="sec-itinerario">
                 <div className="mb-5 text-center">
                   <p
                     className="type-section-eyebrow text-[11px] font-semibold uppercase tracking-[0.22em]"
@@ -3202,7 +3202,7 @@ export function InvitationRenderer({
           {sections.gallery && galleryList.length > 0 && (
             <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
-              <section>
+              <section id="sec-galeria">
                 <div className="mb-5 text-center">
                   <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
                     <CelebrationCameraIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
@@ -3884,6 +3884,7 @@ export function InvitationRenderer({
           <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
+              id="sec-regalos"
               className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${isBotanica ? "backdrop-blur-[8px]" : isNocheGala ? "backdrop-blur-md" : ""} ${cardShadow}`}
               style={{
                 backgroundColor: isBotanica ? "rgba(255, 255, 255, 0.72)" : isBohoPampas ? "#FFFDF9" : isBoardingPass ? "#FFFFFF" : isNocheGala ? "rgba(18, 21, 30, 0.75)" : palette.surface,
@@ -4416,38 +4417,121 @@ export function InvitationRenderer({
             >
               <Sparkles className="h-3.5 w-3.5" style={{ color: textAccentOnSurface }} />
               <span>
-                Creado con <strong style={{ color: textAccentOnSurface }}>Invita con Alma</strong> · Creá la tuya
+                Creado con <strong style={{ color: textAccentOnSurface }}>Invita con el Alma</strong> · Creá la tuya
               </span>
             </Link>
           </footer>
         </div>
       </main>
 
-      {/* Dock de Mini Navegación Flotante Translúcido (XV Años Star Design) */}
-      {isXvStar && gateOpened && (
+      {/* Barra de Iconos Flotante en el Pie de cada Invitación */}
+      {gateOpened && (
         <nav
-          aria-label="Navegación rápida de la invitación"
-          className="fixed bottom-4 left-[72px] right-3 z-40 flex items-center justify-between gap-0.5 rounded-full border px-2 py-1.5 shadow-[0_14px_34px_-8px_rgba(45,30,15,0.28)] backdrop-blur-md sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:gap-1 sm:px-2.5"
+          data-revealed="true"
+          aria-label="Accesos rápidos de la invitación"
+          className={`fixed bottom-3.5 z-40 flex items-center justify-around gap-0.5 rounded-full border px-2 py-1.5 shadow-[0_14px_34px_-8px_rgba(24,18,12,0.28)] backdrop-blur-md sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:gap-1.5 sm:px-3 ${
+            isXvStar ? "left-[68px] right-3" : "left-3 right-3"
+          }`}
           style={{
-            backgroundColor: "rgba(250, 246, 240, 0.9)",
-            borderColor: "rgba(183, 138, 78, 0.44)",
+            backgroundColor: isXvStar
+              ? "rgba(250, 246, 240, 0.94)"
+              : palette.isDark
+              ? `${palette.surface}EB`
+              : `${palette.surface}F2`,
+            borderColor: isXvStar ? "rgba(183, 138, 78, 0.48)" : palette.border,
+            color: isXvStar ? "#4A3B2C" : palette.text,
           }}
         >
           {[
-            { href: "#xv-hero", label: "Inicio" },
-            { href: "#xv-countdown", label: "Fecha" },
-            { href: "#xv-coords", label: "Lugar" },
-            { href: "#xv-dress", label: "Dress" },
-            { href: "#xv-rsvp", label: "RSVP" },
-          ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="whitespace-nowrap rounded-full px-2 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-[#4A3B2C] transition-colors hover:bg-[#B78A4E] hover:text-white sm:px-2.5 sm:text-[10px] sm:tracking-[0.12em]"
-            >
-              {item.label}
-            </a>
-          ))}
+            {
+              show: true,
+              href: "#xv-coords",
+              label: "Ubicación",
+              shortLabel: "Lugar",
+              icon: <CelebrationPinIcon className="h-[18px] w-[18px]" />,
+            },
+            {
+              show: Boolean(sections.schedule && scheduleList.length > 0),
+              href: "#sec-itinerario",
+              label: "Itinerario",
+              shortLabel: "Agenda",
+              icon: <Clock className="h-[17px] w-[17px]" strokeWidth={1.75} />,
+            },
+            {
+              show: Boolean(sections.gallery && galleryList.length > 0),
+              href: "#sec-galeria",
+              label: "Galería",
+              shortLabel: "Fotos",
+              icon: (
+                <CelebrationCameraIcon
+                  category={skin.category}
+                  skinId={skin.id}
+                  className="h-[18px] w-[18px]"
+                />
+              ),
+            },
+            {
+              show: Boolean(sections.dressCode),
+              href: "#xv-dress",
+              label: "Dress Code",
+              shortLabel: "Dress",
+              icon: (
+                <CelebrationAttireIcon
+                  category={skin.category}
+                  skinId={skin.id}
+                  className="h-[18px] w-[18px]"
+                />
+              ),
+            },
+            {
+              show: Boolean(sections.gifts),
+              href: "#sec-regalos",
+              label: "Regalos",
+              shortLabel: "Regalo",
+              icon: (
+                <CelebrationGiftIcon
+                  category={skin.category}
+                  skinId={skin.id}
+                  className="h-[18px] w-[18px]"
+                />
+              ),
+            },
+            {
+              show: Boolean(sections.rsvp && !memoryMode),
+              href: "#xv-rsvp",
+              label: "Confirmar",
+              shortLabel: "RSVP",
+              icon: (
+                <CelebrationCheckIcon
+                  category={skin.category}
+                  skinId={skin.id}
+                  className="h-[18px] w-[18px]"
+                />
+              ),
+            },
+          ]
+            .filter((item) => item.show)
+            .map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                aria-label={item.label}
+                title={item.label}
+                className="group flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-0.5 py-1 transition-all duration-200 hover:scale-105 active:scale-95 sm:flex-none sm:px-2.5"
+              >
+                <span
+                  className="flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+                  style={{
+                    color: isXvStar ? "#9B7137" : textAccentOnSurface,
+                  }}
+                >
+                  {item.icon}
+                </span>
+                <span className="whitespace-nowrap text-[7.5px] font-bold uppercase tracking-[0.02em] opacity-85 sm:text-[9px] sm:tracking-[0.08em]">
+                  {item.shortLabel}
+                </span>
+              </a>
+            ))}
         </nav>
       )}
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Administración — Invita con Alma",
+  title: "Administración — Invita con el Alma",
   robots: { index: false, follow: false },
 };
 

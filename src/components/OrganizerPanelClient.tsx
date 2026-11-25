@@ -45,6 +45,11 @@ export function OrganizerPanelClient({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPanelLink, setCopiedPanelLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
+  const isPaid =
+    event.paymentStatus === "pagado" ||
+    (event.status === "publicada" &&
+      event.paymentStatus !== "pendiente" &&
+      event.paymentStatus !== "rechazado");
 
   useEffect(() => {
     try {
@@ -184,6 +189,7 @@ export function OrganizerPanelClient({
   const fullPersonalizedUrl = `${origin}${personalizedPath}`;
 
   const handleCopyInvite = async () => {
+    if (!isPaid) return;
     try {
       await navigator.clipboard.writeText(fullPersonalizedUrl);
       setCopiedLink(true);
@@ -219,7 +225,7 @@ export function OrganizerPanelClient({
               className="inline-flex items-center gap-1 text-xs font-semibold text-stone-500 hover:text-stone-900"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Volver a Invita con Alma
+              Volver a Invita con el Alma
             </Link>
             <div className="mt-1 flex items-center gap-2.5">
               <h1 className="font-cormorant text-3xl font-bold text-stone-900">
@@ -262,7 +268,7 @@ export function OrganizerPanelClient({
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Ver Invitación en Vivo
+              {isPaid ? "Ver Invitación en Vivo" : "Ver Vista Previa (Borrador)"}
             </Link>
             {!isEssentialPlan && (
               <>
@@ -450,28 +456,48 @@ export function OrganizerPanelClient({
               Compartí este link general por WhatsApp con todos tus invitados. Los pases individuales por familia y la descarga en Excel corresponden a Plan PRO y Llave en Mano.
             </p>
             <div className="mt-4 flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:flex-row sm:items-center">
-              <code className="truncate text-xs text-stone-700">{`/i/${event.slug}`}</code>
+              <div className="min-w-0">
+                <code className="block truncate text-xs text-stone-700">{`/i/${event.slug}`}</code>
+                {!isPaid && (
+                  <p className="mt-1 text-[11px] font-medium text-amber-800">
+                    El botón para copiar y compartir el link con tus invitados se habilitará automáticamente al acreditarse el pago.
+                  </p>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
-                <Link
-                  href={`/i/${event.slug}`}
-                  target="_blank"
-                  className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Abrir
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard?.writeText(`${origin}/i/${event.slug}`).catch(() => {});
-                    setCopiedLink(true);
-                    setTimeout(() => setCopiedLink(false), 2000);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
-                >
-                  {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copiedLink ? "¡Copiado!" : "Copiar Link"}
-                </button>
+                {!isPaid ? (
+                  <Link
+                    href={`/i/${event.slug}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Ver Vista Previa (Borrador)
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href={`/i/${event.slug}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Abrir
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(`${origin}/i/${event.slug}`).catch(() => {});
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2000);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                    >
+                      {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copiedLink ? "¡Copiado!" : "Copiar Link para Invitados"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </section>
@@ -549,54 +575,88 @@ export function OrganizerPanelClient({
           </div>
 
           <div className="mt-4 flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3 sm:flex-row sm:items-center">
-            <code className="truncate text-xs text-stone-600">{personalizedPath}</code>
+            <div className="min-w-0">
+              <code className="block truncate text-xs text-stone-600">{personalizedPath}</code>
+              {!isPaid && (
+                <p className="mt-1 text-[11px] font-medium text-amber-800">
+                  El botón para copiar y compartir el link con tus invitados se habilitará automáticamente al acreditarse el pago.
+                </p>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
-              <Link
-                href={personalizedPath}
-                target="_blank"
-                className="inline-flex items-center gap-1 rounded-full border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Probar
-              </Link>
-              <button
-                type="button"
-                onClick={handleCopyInvite}
-                className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
-              >
-                {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                {copiedLink ? "¡Copiado!" : "Copiar Link"}
-              </button>
-              <a
-                href={`https://wa.me/?text=${whatsappInviteText}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                Enviar por WhatsApp
-              </a>
-              <a
-                href={`https://wa.me/?text=${whatsappReminderText}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                Recordatorio manual
-              </a>
-              <button
-                type="button"
-                onClick={() => {
-                  setGuestName("");
-                  setGuestPasses("2");
-                  setGuestTable("");
-                  setGuestPase("todo");
-                }}
-                className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100"
-              >
-                Limpiar / Siguiente
-              </button>
+              {!isPaid ? (
+                <>
+                  <Link
+                    href={personalizedPath}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-stone-50 px-4 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Ver Vista Previa (Borrador)
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuestName("");
+                      setGuestPasses("2");
+                      setGuestTable("");
+                      setGuestPase("todo");
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100"
+                  >
+                    Limpiar / Siguiente
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={personalizedPath}
+                    target="_blank"
+                    className="inline-flex items-center gap-1 rounded-full border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Probar
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleCopyInvite}
+                    className="inline-flex items-center gap-1 rounded-full bg-stone-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                  >
+                    {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedLink ? "¡Copiado!" : "Copiar Link para Invitados"}
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${whatsappInviteText}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Enviar por WhatsApp
+                  </a>
+                  <a
+                    href={`https://wa.me/?text=${whatsappReminderText}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Recordatorio manual
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuestName("");
+                      setGuestPasses("2");
+                      setGuestTable("");
+                      setGuestPase("todo");
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100"
+                  >
+                    Limpiar / Siguiente
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -817,7 +877,7 @@ export function OrganizerPanelClient({
       <div className="hidden print:block p-8 text-stone-900">
         <div className="border-b border-stone-300 pb-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
-            Invita con Alma · Reporte del Organizador ({event.orderCode})
+            Invita con el Alma · Reporte del Organizador ({event.orderCode})
           </p>
           <h1 className="mt-1 font-cormorant text-3xl font-bold">{event.eventTitle}</h1>
           <p className="text-xs text-stone-600">

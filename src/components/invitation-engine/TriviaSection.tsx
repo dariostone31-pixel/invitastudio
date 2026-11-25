@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { HelpCircle, Trophy, RotateCcw } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { HelpCircle, Trophy, RotateCcw, Check, X } from "lucide-react";
 import type { TriviaQuestion, TriviaScore } from "@/lib/db";
 import type { SkinPalette } from "@/templates/catalog";
 import { getAccessibleButtonBg } from "@/lib/contrast";
@@ -40,11 +40,21 @@ export function TriviaSection({
   const [phase, setPhase] = useState<"intro" | "playing" | "result">("intro");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [scores, setScores] = useState<TriviaScore[]>(initialScores);
   const [guestName, setGuestName] = useState(initialGuestName);
   const [saving, setSaving] = useState(false);
   const [savedScore, setSavedScore] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current) {
+        clearTimeout(advanceTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!questions || questions.length === 0) return null;
 
@@ -52,22 +62,36 @@ export function TriviaSection({
   const currentQ = questions[currentIndex];
 
   const startTrivia = () => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
     setCurrentIndex(0);
     setScore(0);
+    setSelectedOption(null);
     setSavedScore(false);
     setFeedbackMsg(null);
     setPhase("playing");
   };
 
   const pickOption = (optIdx: number) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(optIdx);
     const isCorrect = optIdx === currentQ.correctIndex;
     const nextScore = isCorrect ? score + 1 : score;
-    setScore(nextScore);
-    if (currentIndex + 1 < questions.length) {
-      setCurrentIndex((i) => i + 1);
-    } else {
-      setPhase("result");
+    if (isCorrect) {
+      setScore(nextScore);
     }
+
+    advanceTimerRef.current = setTimeout(() => {
+      setSelectedOption(null);
+      if (currentIndex + 1 < questions.length) {
+        setCurrentIndex((i) => i + 1);
+      } else {
+        setPhase("result");
+      }
+      advanceTimerRef.current = null;
+    }, 1200);
   };
 
   const handleSaveScore = async (e: React.FormEvent) => {
@@ -228,30 +252,95 @@ export function TriviaSection({
             {currentQ.question}
           </p>
           <div className="space-y-2 pt-1">
-            {currentQ.options.map((opt, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => pickOption(idx)}
-                className={`flex min-h-[44px] w-full items-center gap-3 ${innerRadius} border px-4 py-2.5 text-left text-sm font-medium transition-transform active:scale-[0.99]`}
-                style={{
-                  backgroundColor: palette.bg,
-                  borderColor: palette.border,
-                  color: palette.text,
-                }}
-              >
-                <span
-                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+            {currentQ.options.map((opt, idx) => {
+              const hasPicked = selectedOption !== null;
+              const isCorrectOption = idx === currentQ.correctIndex;
+              const isPickedWrong = hasPicked && selectedOption === idx && !isCorrectOption;
+              const isHighlightedCorrect = hasPicked && isCorrectOption;
+
+              const btnBg = isHighlightedCorrect
+                ? palette.isDark
+                  ? "rgba(16, 185, 129, 0.22)"
+                  : "#ECFDF5"
+                : isPickedWrong
+                ? palette.isDark
+                  ? "rgba(239, 68, 68, 0.22)"
+                  : "#FEF2F2"
+                : palette.bg;
+
+              const btnBorder = isHighlightedCorrect
+                ? "#16A34A"
+                : isPickedWrong
+                ? "#DC2626"
+                : palette.border;
+
+              const btnColor = isHighlightedCorrect
+                ? palette.isDark
+                  ? "#A7F3D0"
+                  : "#14532D"
+                : isPickedWrong
+                ? palette.isDark
+                  ? "#FECACA"
+                  : "#7F1D1D"
+                : palette.text;
+
+              const badgeBg = isHighlightedCorrect
+                ? "#16A34A"
+                : isPickedWrong
+                ? "#DC2626"
+                : palette.surfaceAlt;
+
+              const badgeColor =
+                isHighlightedCorrect || isPickedWrong ? "#FFFFFF" : textAccentOnSurface;
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  disabled={hasPicked}
+                  onClick={() => pickOption(idx)}
+                  className={`flex min-h-[44px] w-full items-center justify-between gap-3 ${innerRadius} border px-4 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                    hasPicked && !isHighlightedCorrect && !isPickedWrong
+                      ? "opacity-55"
+                      : "active:scale-[0.99]"
+                  }`}
                   style={{
-                    backgroundColor: palette.surfaceAlt,
-                    color: textAccentOnSurface,
+                    backgroundColor: btnBg,
+                    borderColor: btnBorder,
+                    color: btnColor,
                   }}
                 >
-                  {LETTERS[idx] || idx + 1}
-                </span>
-                <span className="break-words">{opt}</span>
-              </button>
-            ))}
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span
+                      className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition-colors"
+                      style={{
+                        backgroundColor: badgeBg,
+                        color: badgeColor,
+                      }}
+                    >
+                      {isHighlightedCorrect ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : isPickedWrong ? (
+                        <X className="h-3.5 w-3.5" />
+                      ) : (
+                        LETTERS[idx] || idx + 1
+                      )}
+                    </span>
+                    <span className="break-words">{opt}</span>
+                  </span>
+                  {isHighlightedCorrect && (
+                    <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                      Correcta
+                    </span>
+                  )}
+                  {isPickedWrong && (
+                    <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-rose-600">
+                      Incorrecta
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

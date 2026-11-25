@@ -64,7 +64,7 @@ export default function MiPanelPage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Volver a Invita con Alma
+          Volver a Invita con el Alma
         </Link>
 
         <div className="rounded-3xl border border-stone-200 bg-white p-7 shadow-sm">

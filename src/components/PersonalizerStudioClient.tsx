@@ -35,6 +35,11 @@ import {
   InvitationSkin,
 } from "@/templates/catalog";
 import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
+import {
+  ARGENTINA_BANK_ENTITIES,
+  OTHER_BANK_OPTION,
+  isKnownBankEntity,
+} from "@/config/banks";
 import { prepareImageForUpload } from "@/lib/imageUpload";
 import {
   getCompatibleCategories,
@@ -94,19 +99,6 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "rsvp", label: "Botón Confirmar Asistencia" },
 ];
 
-const BANK_OPTIONS = [
-  "Mercado Pago",
-  "Banco Macro",
-  "Banco Galicia",
-  "Banco Nación",
-  "Santander",
-  "BBVA",
-  "Brubank",
-  "Ualá",
-  "Naranja X",
-  "Personal Pay",
-];
-
 export function PersonalizerStudioClient({
   event,
   mercadopagoConfigured = false,
@@ -124,6 +116,10 @@ export function PersonalizerStudioClient({
   const [address, setAddress] = useState(event.address);
   const [alias, setAlias] = useState(event.alias);
   const [giftBank, setGiftBank] = useState(event.giftBank || "");
+  const [customBankMode, setCustomBankMode] = useState<boolean>(() =>
+    Boolean(event.giftBank && !isKnownBankEntity(event.giftBank))
+  );
+  const [triviaRestoredMsg, setTriviaRestoredMsg] = useState(false);
   const [giftHolder, setGiftHolder] = useState(event.giftHolder || "");
   const [dressCode, setDressCode] = useState(event.dressCode);
   const [rsvpDeadline, setRsvpDeadline] = useState(event.rsvpDeadline || "");
@@ -662,35 +658,45 @@ export function PersonalizerStudioClient({
                 <label className="mb-1 block text-xs font-semibold text-stone-700">
                   Entidad / Billetera (Mesa de Regalos)
                 </label>
-                <input
-                  type="text"
-                  list="studio-bank-options"
-                  value={giftBank}
-                  onChange={(e) => setGiftBank(e.target.value)}
-                  placeholder="Ej. Mercado Pago, Banco Macro..."
-                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
-                />
-                <datalist id="studio-bank-options">
-                  {BANK_OPTIONS.map((b) => (
-                    <option key={b} value={b} />
+                <select
+                  value={
+                    customBankMode
+                      ? OTHER_BANK_OPTION
+                      : isKnownBankEntity(giftBank)
+                      ? giftBank
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === OTHER_BANK_OPTION) {
+                      setCustomBankMode(true);
+                      if (isKnownBankEntity(giftBank)) {
+                        setGiftBank("");
+                      }
+                    } else {
+                      setCustomBankMode(false);
+                      setGiftBank(val);
+                    }
+                  }}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                >
+                  <option value="">Seleccionar entidad o billetera...</option>
+                  {ARGENTINA_BANK_ENTITIES.map((entity) => (
+                    <option key={entity} value={entity}>
+                      {entity}
+                    </option>
                   ))}
-                </datalist>
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {["Mercado Pago", "Banco Macro", "Banco Galicia", "Banco Nación", "Brubank"].map((b) => (
-                    <button
-                      key={b}
-                      type="button"
-                      onClick={() => setGiftBank(b)}
-                      className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-                        giftBank === b
-                          ? "border-stone-900 bg-stone-900 text-white"
-                          : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400"
-                      }`}
-                    >
-                      {b}
-                    </button>
-                  ))}
-                </div>
+                  <option value={OTHER_BANK_OPTION}>{OTHER_BANK_OPTION}</option>
+                </select>
+                {customBankMode && (
+                  <input
+                    type="text"
+                    value={giftBank}
+                    onChange={(e) => setGiftBank(e.target.value)}
+                    placeholder="Escribí el nombre de tu banco o billetera..."
+                    className="mt-2 w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                  />
+                )}
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-stone-700">
@@ -1188,6 +1194,17 @@ export function PersonalizerStudioClient({
                     placeholder="https://photos.app.goo.gl/..."
                     className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
                   />
+                  {albumUrl.toLowerCase().includes("google.com") && (
+                    <p
+                      role="alert"
+                      className="mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-medium leading-relaxed text-amber-950"
+                    >
+                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-700" />
+                      <span>
+                        Este es un enlace privado de Google Photos que pide iniciar sesión. Usá el botón Compartir → Crear enlace (photos.app.goo.gl) o subí tus fotos directamente desde tu dispositivo.
+                      </span>
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   <div>
@@ -1268,25 +1285,47 @@ export function PersonalizerStudioClient({
                         Editá tus preguntas o agregá hasta 6. Marcá el círculo de la respuesta correcta.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (triviaQuestions.length < 6) {
-                          setTriviaQuestions((prev) => [
-                            ...prev,
-                            {
-                              id: `q-${Date.now()}`,
-                              question: "Nueva pregunta para los invitados",
-                              options: ["Opción A", "Opción B", "Opción C"],
-                              correctIndex: 0,
-                            },
-                          ]);
-                        }
-                      }}
-                      className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
-                    >
-                      + Agregar pregunta
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const fresh = getTriviaPresetForCategory(
+                            selectedSkin.category,
+                            dressCode.trim() || selectedSkin.sample.dressCode.label,
+                            selectedSkin.id
+                          ).map((q, idx) => ({
+                            ...q,
+                            id: `${q.id}-${Date.now()}-${idx}`,
+                            options: [...q.options],
+                          }));
+                          setTriviaQuestions(fresh);
+                          setTriviaRestoredMsg(true);
+                          setTimeout(() => setTriviaRestoredMsg(false), 2500);
+                        }}
+                        className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        {triviaRestoredMsg ? "✓ Sugeridas restauradas" : "Restaurar sugeridas"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (triviaQuestions.length < 6) {
+                            setTriviaQuestions((prev) => [
+                              ...prev,
+                              {
+                                id: `q-${Date.now()}`,
+                                question: "Nueva pregunta para los invitados",
+                                options: ["Opción A", "Opción B", "Opción C"],
+                                correctIndex: 0,
+                              },
+                            ]);
+                          }
+                        }}
+                        className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
+                      >
+                        + Agregar pregunta
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="mb-1 block text-[11px] font-semibold text-stone-600">

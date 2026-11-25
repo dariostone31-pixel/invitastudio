@@ -21,6 +21,11 @@ import {
 } from "lucide-react";
 import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } from "@/templates/catalog";
 import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
+import {
+  ARGENTINA_BANK_ENTITIES,
+  OTHER_BANK_OPTION,
+  isKnownBankEntity,
+} from "@/config/banks";
 import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/business";
 import { LEGAL_VERSION } from "@/config/legal";
 import { prepareImageForUpload } from "@/lib/imageUpload";
@@ -63,6 +68,8 @@ const HERO_OVERLAY_CHOICES: { id: HeroOverlayStyle; label: string; desc: string 
   { id: "cinematico", label: "Cinemático", desc: "Contraste profundo" },
   { id: "bn-editorial", label: "B&N editorial", desc: "Blanco y negro" },
 ];
+
+const ENCARGAR_DRAFT_KEY = "invita_encargar_draft_v1";
 
 function EncargarForm() {
   const searchParams = useSearchParams();
@@ -112,6 +119,7 @@ function EncargarForm() {
   const [storyText, setStoryText] = useState(skinObj.sample.storyText || "");
   const [schedule, setSchedule] = useState<ScheduleItem[]>(skinObj.sample.schedule || []);
   const [includeTrivia, setIncludeTrivia] = useState(true);
+  const [triviaRestoredMsg, setTriviaRestoredMsg] = useState(false);
   const [triviaQuestions, setTriviaQuestions] = useState<TriviaQuestion[]>(() =>
     getTriviaPresetForCategory(
       skinObj.category,
@@ -120,8 +128,126 @@ function EncargarForm() {
     )
   );
 
-  // Sincronizar sugerencias editables al cambiar modelo si el usuario aún no cargó pedido
+  // Datos básicos del evento
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTimeStart, setEventTimeStart] = useState("21:00");
+  const [eventTimeEnd, setEventTimeEnd] = useState("05:00");
+  const [venue, setVenue] = useState("");
+  const [address, setAddress] = useState("");
+  const [alias, setAlias] = useState("");
+  const [giftBank, setGiftBank] = useState("Mercado Pago");
+  const [customBankMode, setCustomBankMode] = useState(false);
+  const [giftHolder, setGiftHolder] = useState("");
+  const [dressCode, setDressCode] = useState("");
+  const [rsvpDeadline, setRsvpDeadline] = useState("");
+  const [adultsOnly, setAdultsOnly] = useState(false);
+  const [includeTarjeta, setIncludeTarjeta] = useState(false);
+  const [tarjetaTiers, setTarjetaTiers] = useState<Array<{ label: string; price: string }>>([
+    { label: "Mayores", price: "$25.000" },
+    { label: "Menores (hasta 12 años)", price: "$15.000" },
+  ]);
+  const [tarjetaNote, setTarjetaNote] = useState("");
+  const [mercadopagoConfigured, setMercadopagoConfigured] = useState(false);
+
+  // Contacto y aceptación legal
+  const [contactName, setContactName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Fotos (Portada única + Galería separada)
+  const [heroUploadedUrl, setHeroUploadedUrl] = useState<string>("");
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const hydratedRef = useRef(false);
+  const prevSkinRef = useRef(selectedSkin);
+  const querySkinParam = searchParams.get("modelo");
+  const queryPlanParam = searchParams.get("plan");
+
+  // Restaurar borrador guardado en sessionStorage al montar (evita perder datos al abrir legales o recargar)
   useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(ENCARGAR_DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw) as Record<string, unknown>;
+        if (
+          !queryPlanParam &&
+          (d.selectedPlan === "esencial" || d.selectedPlan === "pro" || d.selectedPlan === "asistido")
+        ) {
+          setSelectedPlan(d.selectedPlan);
+        }
+        const restoredSkin =
+          !querySkinParam && typeof d.selectedSkin === "string" && d.selectedSkin
+            ? d.selectedSkin
+            : selectedSkin;
+        if (!querySkinParam && typeof d.selectedSkin === "string" && d.selectedSkin) {
+          setSelectedSkin(d.selectedSkin);
+          prevSkinRef.current = d.selectedSkin;
+        }
+        const sameSkinAsDraft = restoredSkin === d.selectedSkin;
+        if (sameSkinAsDraft) {
+          if (typeof d.fontOverride === "string") setFontOverride(d.fontOverride as InvitationSkin["fontDisplay"]);
+          if (typeof d.accentOverride === "string") setAccentOverride(d.accentOverride);
+          if (typeof d.quote === "string") setQuote(d.quote);
+          if (Array.isArray(d.parentsOrHosts)) setParentsOrHosts(d.parentsOrHosts as ParentsOrHostsGroup[]);
+          if (typeof d.storyTitle === "string") setStoryTitle(d.storyTitle);
+          if (typeof d.storyText === "string") setStoryText(d.storyText);
+          if (Array.isArray(d.schedule)) setSchedule(d.schedule as ScheduleItem[]);
+          if (Array.isArray(d.triviaQuestions) && d.triviaQuestions.length > 0) {
+            setTriviaQuestions(d.triviaQuestions as TriviaQuestion[]);
+          }
+        }
+        if (typeof d.heroOverlayOverride === "string") setHeroOverlayOverride(d.heroOverlayOverride as HeroOverlayStyle);
+        if (typeof d.audioOverride === "string") setAudioOverride(d.audioOverride);
+        if (typeof d.songRequest === "string") setSongRequest(d.songRequest);
+        if (typeof d.albumUrl === "string") setAlbumUrl(d.albumUrl);
+        if (typeof d.instagramHandle === "string") setInstagramHandle(d.instagramHandle);
+        if (typeof d.eventHashtag === "string") setEventHashtag(d.eventHashtag);
+        if (typeof d.includeTrivia === "boolean") setIncludeTrivia(d.includeTrivia);
+        if (typeof d.eventTitle === "string") setEventTitle(d.eventTitle);
+        if (typeof d.eventDate === "string") setEventDate(d.eventDate);
+        if (typeof d.eventTimeStart === "string") setEventTimeStart(d.eventTimeStart);
+        if (typeof d.eventTimeEnd === "string") setEventTimeEnd(d.eventTimeEnd);
+        if (typeof d.venue === "string") setVenue(d.venue);
+        if (typeof d.address === "string") setAddress(d.address);
+        if (typeof d.alias === "string") setAlias(d.alias);
+        if (typeof d.giftBank === "string") {
+          setGiftBank(d.giftBank);
+          setCustomBankMode(Boolean(d.giftBank && !isKnownBankEntity(d.giftBank)));
+        }
+        if (typeof d.giftHolder === "string") setGiftHolder(d.giftHolder);
+        if (typeof d.dressCode === "string") setDressCode(d.dressCode);
+        if (typeof d.rsvpDeadline === "string") setRsvpDeadline(d.rsvpDeadline);
+        if (typeof d.adultsOnly === "boolean") setAdultsOnly(d.adultsOnly);
+        if (typeof d.includeTarjeta === "boolean") setIncludeTarjeta(d.includeTarjeta);
+        if (Array.isArray(d.tarjetaTiers)) setTarjetaTiers(d.tarjetaTiers as Array<{ label: string; price: string }>);
+        if (typeof d.tarjetaNote === "string") setTarjetaNote(d.tarjetaNote);
+        if (typeof d.contactName === "string") setContactName(d.contactName);
+        if (typeof d.whatsapp === "string") setWhatsapp(d.whatsapp);
+        if (typeof d.email === "string") setEmail(d.email);
+        if (typeof d.notes === "string") setNotes(d.notes);
+        if (typeof d.termsAccepted === "boolean") setTermsAccepted(d.termsAccepted);
+        if (typeof d.heroUploadedUrl === "string") setHeroUploadedUrl(d.heroUploadedUrl);
+        if (Array.isArray(d.uploadedUrls)) setUploadedUrls(d.uploadedUrls as string[]);
+      }
+    } catch {
+      // ignore invalid draft
+    } finally {
+      hydratedRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sincronizar sugerencias editables solo cuando el usuario cambia activamente de modelo
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (prevSkinRef.current === selectedSkin) return;
+    prevSkinRef.current = selectedSkin;
     const s = getSkinById(selectedSkin);
     setFontOverride(s.fontDisplay);
     setAccentOverride(s.palette.accent);
@@ -137,26 +263,98 @@ function EncargarForm() {
     );
   }, [selectedSkin]);
 
-  // Datos básicos del evento
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [eventTimeStart, setEventTimeStart] = useState("21:00");
-  const [eventTimeEnd, setEventTimeEnd] = useState("05:00");
-  const [venue, setVenue] = useState("");
-  const [address, setAddress] = useState("");
-  const [alias, setAlias] = useState("");
-  const [giftBank, setGiftBank] = useState("Mercado Pago");
-  const [giftHolder, setGiftHolder] = useState("");
-  const [dressCode, setDressCode] = useState("");
-  const [rsvpDeadline, setRsvpDeadline] = useState("");
-  const [adultsOnly, setAdultsOnly] = useState(false);
-  const [includeTarjeta, setIncludeTarjeta] = useState(false);
-  const [tarjetaTiers, setTarjetaTiers] = useState<Array<{ label: string; price: string }>>([
-    { label: "Mayores", price: "$25.000" },
-    { label: "Menores (hasta 12 años)", price: "$15.000" },
+  // Persistir borrador automáticamente en sessionStorage
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try {
+      window.sessionStorage.setItem(
+        ENCARGAR_DRAFT_KEY,
+        JSON.stringify({
+          selectedPlan,
+          selectedSkin,
+          fontOverride,
+          accentOverride,
+          heroOverlayOverride,
+          audioOverride,
+          songRequest,
+          albumUrl,
+          instagramHandle,
+          eventHashtag,
+          quote,
+          parentsOrHosts,
+          storyTitle,
+          storyText,
+          schedule,
+          includeTrivia,
+          triviaQuestions,
+          eventTitle,
+          eventDate,
+          eventTimeStart,
+          eventTimeEnd,
+          venue,
+          address,
+          alias,
+          giftBank,
+          giftHolder,
+          dressCode,
+          rsvpDeadline,
+          adultsOnly,
+          includeTarjeta,
+          tarjetaTiers,
+          tarjetaNote,
+          contactName,
+          whatsapp,
+          email,
+          notes,
+          termsAccepted,
+          heroUploadedUrl,
+          uploadedUrls,
+        })
+      );
+    } catch {
+      // ignore storage quota errors
+    }
+  }, [
+    selectedPlan,
+    selectedSkin,
+    fontOverride,
+    accentOverride,
+    heroOverlayOverride,
+    audioOverride,
+    songRequest,
+    albumUrl,
+    instagramHandle,
+    eventHashtag,
+    quote,
+    parentsOrHosts,
+    storyTitle,
+    storyText,
+    schedule,
+    includeTrivia,
+    triviaQuestions,
+    eventTitle,
+    eventDate,
+    eventTimeStart,
+    eventTimeEnd,
+    venue,
+    address,
+    alias,
+    giftBank,
+    giftHolder,
+    dressCode,
+    rsvpDeadline,
+    adultsOnly,
+    includeTarjeta,
+    tarjetaTiers,
+    tarjetaNote,
+    contactName,
+    whatsapp,
+    email,
+    notes,
+    termsAccepted,
+    heroUploadedUrl,
+    uploadedUrls,
   ]);
-  const [tarjetaNote, setTarjetaNote] = useState("");
-  const [mercadopagoConfigured, setMercadopagoConfigured] = useState(false);
 
   useEffect(() => {
     fetch("/api/health")
@@ -164,20 +362,6 @@ function EncargarForm() {
       .then((d) => setMercadopagoConfigured(Boolean(d?.mercadopagoConfigured)))
       .catch(() => {});
   }, []);
-
-  // Contacto y aceptación legal
-  const [contactName, setContactName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [email, setEmail] = useState("");
-  const [notes, setNotes] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
-
-  // Fotos (Portada única + Galería separada)
-  const [heroUploadedUrl, setHeroUploadedUrl] = useState<string>("");
-  const [uploadingHero, setUploadingHero] = useState(false);
-  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleHeroFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -361,6 +545,11 @@ function EncargarForm() {
       if (!res.ok) {
         throw new Error(data.error || "No se pudo registrar tu pedido.");
       }
+      try {
+        window.sessionStorage.removeItem(ENCARGAR_DRAFT_KEY);
+      } catch {
+        // ignore
+      }
       setCreatedOrder(data.order);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Error inesperado al registrar el pedido.");
@@ -489,7 +678,7 @@ function EncargarForm() {
         `• Fecha y hora: ${createdOrder.dateDisplay} · ${createdOrder.timeDisplay}\n` +
         `• Lugar: ${createdOrder.venue} (${createdOrder.address})\n` +
         (createdOrder.planId === "asistido" && createdOrder.songRequest
-          ? `• Canción pedida (Llave en Mano): ${createdOrder.songRequest}\n`
+          ? `• Canción pedida (Llave en Mano): ${createdOrder.songRequest} — Nuestro equipo preparará y cargará esta canción en tu invitación definitiva antes de la entrega.\n`
           : "") +
         `• Contacto: ${createdOrder.contactName} | Email: ${createdOrder.email}`
     );
@@ -713,7 +902,7 @@ function EncargarForm() {
       {/* Paso 2: Diseño + Personalización al principio para PRO / Llave en Mano */}
       <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
         <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
-          Paso 2 · Diseño elegido (42 modelos)
+          Paso 2 · Diseño elegido (41 modelos)
         </span>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
           <img
@@ -906,7 +1095,7 @@ function EncargarForm() {
                           className="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
                         />
                         <p className="mt-1 text-[10px] leading-relaxed text-amber-900">
-                          Nuestro equipo la optimiza, valida el audio y la deja sonando en tu invitación antes de entregarla. Además, tus invitados tendrán la solapa <strong>Playlist DJ</strong> para sugerir temas para la fiesta.
+                          Nuestro equipo preparará y cargará esta canción en tu invitación definitiva antes de la entrega. Además, tus invitados tendrán la solapa <strong>Playlist DJ</strong> para sugerir temas para la fiesta.
                         </p>
                       </div>
                     )}
@@ -1194,18 +1383,23 @@ function EncargarForm() {
                     {includeTrivia && (
                       <button
                         type="button"
-                        onClick={() =>
-                          setTriviaQuestions(
-                            getTriviaPresetForCategory(
-                              skinObj.category,
-                              skinObj.sample.dressCode.label,
-                              skinObj.id
-                            )
-                          )
-                        }
+                        onClick={() => {
+                          const fresh = getTriviaPresetForCategory(
+                            skinObj.category,
+                            dressCode.trim() || skinObj.sample.dressCode.label,
+                            skinObj.id
+                          ).map((q, idx) => ({
+                            ...q,
+                            id: `${q.id}-${Date.now()}-${idx}`,
+                            options: [...q.options],
+                          }));
+                          setTriviaQuestions(fresh);
+                          setTriviaRestoredMsg(true);
+                          setTimeout(() => setTriviaRestoredMsg(false), 2500);
+                        }}
                         className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-100"
                       >
-                        Restaurar sugeridas
+                        {triviaRestoredMsg ? "✓ Sugeridas restauradas" : "Restaurar sugeridas"}
                       </button>
                     )}
                   </div>
@@ -1406,6 +1600,17 @@ function EncargarForm() {
                     placeholder="Link del álbum compartido (https://photos.app.goo.gl/...)"
                     className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs outline-none focus:border-stone-900"
                   />
+                  {albumUrl.toLowerCase().includes("google.com") && (
+                    <p
+                      role="alert"
+                      className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-medium leading-relaxed text-amber-950"
+                    >
+                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-700" />
+                      <span>
+                        Este es un enlace privado de Google Photos que pide iniciar sesión. Usá el botón Compartir → Crear enlace (photos.app.goo.gl) o subí tus fotos directamente desde tu dispositivo.
+                      </span>
+                    </p>
+                  )}
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <input
                       type="text"
@@ -1524,33 +1729,47 @@ function EncargarForm() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">
-              Entidad / Billetera de regalos (opcional)
+              Entidad / Billetera (Mesa de Regalos)
             </label>
-            <input
-              type="text"
-              value={giftBank}
-              onChange={(e) => setGiftBank(e.target.value)}
-              placeholder="Ej. Mercado Pago, Banco Macro..."
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {["Mercado Pago", "Banco Macro", "Banco Galicia", "Banco Nación", "Brubank", "Santander"].map(
-                (bank) => (
-                  <button
-                    key={bank}
-                    type="button"
-                    onClick={() => setGiftBank(bank)}
-                    className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                      giftBank === bank
-                        ? "border-stone-900 bg-stone-900 text-white"
-                        : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400"
-                    }`}
-                  >
-                    {bank}
-                  </button>
-                )
-              )}
-            </div>
+            <select
+              value={
+                customBankMode
+                  ? OTHER_BANK_OPTION
+                  : isKnownBankEntity(giftBank)
+                  ? giftBank
+                  : ""
+              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === OTHER_BANK_OPTION) {
+                  setCustomBankMode(true);
+                  if (isKnownBankEntity(giftBank)) {
+                    setGiftBank("");
+                  }
+                } else {
+                  setCustomBankMode(false);
+                  setGiftBank(val);
+                }
+              }}
+              className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            >
+              <option value="">Seleccionar entidad o billetera...</option>
+              {ARGENTINA_BANK_ENTITIES.map((entity) => (
+                <option key={entity} value={entity}>
+                  {entity}
+                </option>
+              ))}
+              <option value={OTHER_BANK_OPTION}>{OTHER_BANK_OPTION}</option>
+            </select>
+            {customBankMode && (
+              <input
+                type="text"
+                value={giftBank}
+                onChange={(e) => setGiftBank(e.target.value)}
+                placeholder="Escribí el nombre de tu banco o billetera..."
+                className="mt-2 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+              />
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">

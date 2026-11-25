@@ -7,7 +7,7 @@ import { OrganizerPanelClient } from "@/components/OrganizerPanelClient";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Panel del Organizador — Invita con Alma",
+  title: "Panel del Organizador — Invita con el Alma",
   robots: { index: false, follow: false },
 };
 

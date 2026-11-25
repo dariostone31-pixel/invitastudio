@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: `Política de Privacidad — ${BUSINESS_CONFIG.brandName}`,
   description:
-    "Información transparente sobre qué datos recoge Invita con Alma, cómo los protege y qué rol cumple cada parte.",
+    "Información transparente sobre qué datos recoge Invita con el Alma, cómo los protege y qué rol cumple cada parte.",
 };
 
 export default function PrivacidadPage() {
