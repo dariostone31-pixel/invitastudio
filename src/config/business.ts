@@ -1,10 +1,25 @@
-const DEFAULT_WHATSAPP = "5493885750235";
+const DEFAULT_WHATSAPP = "5493885212331";
 const DEFAULT_BANK_ALIAS = "kitdigitales1";
 
 const envWhatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
 const isPlaceholderEnvWa =
-  !envWhatsapp || envWhatsapp === "5493884000000" || envWhatsapp === "5491100000000";
+  !envWhatsapp ||
+  envWhatsapp === "5493884000000" ||
+  envWhatsapp === "5491100000000" ||
+  envWhatsapp === "5493885750235";
 const rawWhatsapp = isPlaceholderEnvWa ? DEFAULT_WHATSAPP : envWhatsapp;
+
+export function formatWhatsAppDisplay(digits: string): string {
+  const clean = digits.replace(/\D/g, "");
+  if (clean === "5493885212331") {
+    return "+54 9 388 521-2331";
+  }
+  const arMatch = clean.match(/^549(\d{3})(\d{3})(\d{4})$/);
+  if (arMatch) {
+    return `+54 9 ${arMatch[1]} ${arMatch[2]}-${arMatch[3]}`;
+  }
+  return clean ? `+${clean}` : "";
+}
 
 const rawSupportEmail = (process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "").trim();
 const rawLegalHolder = (process.env.NEXT_PUBLIC_LEGAL_HOLDER || "").trim();
@@ -22,6 +37,7 @@ export const BUSINESS_CONFIG = {
   brandShortSecond: "con el Alma",
   tagline: "Invitaciones digitales de studio con alma",
   whatsappNumber: rawWhatsapp,
+  whatsappDisplay: formatWhatsAppDisplay(rawWhatsapp),
   whatsappConfigured: Boolean(rawWhatsapp),
   supportEmail: rawSupportEmail,
   legalHolderName: rawLegalHolder || "Invita con el Alma",

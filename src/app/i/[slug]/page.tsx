@@ -8,6 +8,7 @@ import { InvitationRenderer } from "@/components/invitation-engine/InvitationRen
 interface PublicInvitationProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{
+    inv?: string;
     nombre?: string;
     pases?: string;
     mesa?: string;
@@ -28,9 +29,13 @@ export async function generateMetadata({
     return { title: "Invitación Digital — Invita con el Alma", robots: { index: false, follow: false } };
   }
 
+  const matchedGuest = sp.inv
+    ? (event.guestList || []).find((g) => g.id === sp.inv)
+    : undefined;
+  const resolvedName = sp.nombre || matchedGuest?.name;
   const skin = getSkinById(event.skinId);
   const coverImage = event.heroImageUrl || skin.heroImage;
-  const guestSuffix = sp.nombre ? ` · Pase especial para ${sp.nombre}` : "";
+  const guestSuffix = resolvedName ? ` · Pase especial para ${resolvedName}` : "";
 
   return {
     title: `${event.eventTitle}${guestSuffix}`,
@@ -64,10 +69,17 @@ export default async function PublicInvitationPage({
     notFound();
   }
 
+  const matchedGuest = sp.inv
+    ? (event.guestList || []).find((g) => g.id === sp.inv)
+    : undefined;
+  const guestName = sp.nombre || matchedGuest?.name || undefined;
+  const table = sp.mesa || matchedGuest?.table || undefined;
   const skin = getSkinById(event.skinId);
-  const passes = sp.pases ? Math.max(1, Math.min(12, Number(sp.pases) || 1)) : undefined;
+  const rawPasses = sp.pases ? Number(sp.pases) : matchedGuest?.maxPasses;
+  const passes = rawPasses ? Math.max(1, Math.min(12, rawPasses || 1)) : undefined;
+  const rawPase = sp.pase || matchedGuest?.pase;
   const paseType: "todo" | "ceremonia" | "fiesta" =
-    sp.pase === "ceremonia" || sp.pase === "fiesta" ? sp.pase : "todo";
+    rawPase === "ceremonia" || rawPase === "fiesta" ? rawPase : "todo";
   const rsvps = await listRsvpsForSlug(event.slug);
   const wishes = rsvps
     .filter((r) => r.message && r.message.trim().length > 0)
@@ -95,9 +107,9 @@ export default async function PublicInvitationPage({
     <InvitationRenderer
       skin={skin}
       eventSlug={event.slug}
-      guestName={sp.nombre || undefined}
+      guestName={guestName}
       passes={passes}
-      table={sp.mesa || undefined}
+      table={table}
       paseType={paseType}
       customTitle={event.eventTitle}
       customDateDisplay={event.dateDisplay}

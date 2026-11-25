@@ -49,6 +49,9 @@ export interface PreloadedGuest {
   name: string;
   maxPasses: number;
   table?: string;
+  pase?: "todo" | "ceremonia" | "fiesta";
+  whatsapp?: string;
+  sent?: boolean;
 }
 
 export interface ParentsOrHostsGroup {

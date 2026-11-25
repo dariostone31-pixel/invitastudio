@@ -104,7 +104,41 @@ export async function PATCH(
             typeof body.instagramHandle === "string" ? body.instagramHandle.trim() : undefined,
           eventHashtag:
             typeof body.eventHashtag === "string" ? body.eventHashtag.trim() : undefined,
-          guestList: Array.isArray(body.guestList) ? body.guestList.slice(0, 500) : undefined,
+          guestList: Array.isArray(body.guestList)
+            ? body.guestList
+                .slice(0, 500)
+                .map((g: Record<string, unknown>, idx: number) => {
+                  const name = String(g?.name || "").trim().slice(0, 120);
+                  const num = Number(g?.maxPasses);
+                  const maxPasses =
+                    Number.isFinite(num) && num >= 1 ? Math.min(20, Math.round(num)) : 2;
+                  const rawPase = String(g?.pase || "todo");
+                  const pase: "todo" | "ceremonia" | "fiesta" =
+                    rawPase === "ceremonia" || rawPase === "fiesta" ? rawPase : "todo";
+                  const table =
+                    typeof g?.table === "string" && g.table.trim()
+                      ? g.table.trim().slice(0, 40)
+                      : undefined;
+                  const whatsapp =
+                    typeof g?.whatsapp === "string" && g.whatsapp.trim()
+                      ? g.whatsapp.trim().slice(0, 30)
+                      : undefined;
+                  const id =
+                    typeof g?.id === "string" && g.id.trim()
+                      ? g.id.trim().slice(0, 40)
+                      : `inv-${idx + 1}`;
+                  return {
+                    id,
+                    name,
+                    maxPasses,
+                    ...(table ? { table } : {}),
+                    pase,
+                    ...(whatsapp ? { whatsapp } : {}),
+                    ...(typeof g?.sent === "boolean" ? { sent: g.sent } : {}),
+                  };
+                })
+                .filter((g: { name: string }) => g.name.length > 0)
+            : undefined,
           memoryMode: body.memoryMode,
           enabledSections: body.enabledSections,
         };

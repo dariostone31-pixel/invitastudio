@@ -103,7 +103,7 @@ export default function PrivacidadPage() {
             <p>
               <strong>WhatsApp de atención:</strong>{" "}
               {BUSINESS_CONFIG.whatsappConfigured
-                ? `+${BUSINESS_CONFIG.whatsappNumber}`
+                ? BUSINESS_CONFIG.whatsappDisplay
                 : "Pendiente de confirmación en configuración"}
             </p>
             <p>

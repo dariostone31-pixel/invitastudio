@@ -686,7 +686,7 @@ export default function HomePage() {
                 Soporte:{" "}
                 {BUSINESS_CONFIG.supportEmail ||
                   (BUSINESS_CONFIG.whatsappConfigured
-                    ? `WhatsApp +${BUSINESS_CONFIG.whatsappNumber}`
+                    ? `WhatsApp ${BUSINESS_CONFIG.whatsappDisplay}`
                     : "Canal de soporte pendiente de configuración")}{" "}
                 · Horario: {BUSINESS_CONFIG.supportHours || "Pendiente de confirmación"}
               </p>

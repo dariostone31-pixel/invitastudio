@@ -18,6 +18,12 @@ import {
   ArrowLeft,
   Printer,
   ListChecks,
+  Plus,
+  Trash2,
+  Upload,
+  ClipboardPaste,
+  Lock,
+  Send,
 } from "lucide-react";
 import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
 import { getWhatsAppHref } from "@/config/business";
@@ -27,6 +33,84 @@ interface OrganizerPanelClientProps {
   event: EventRecord;
   initialRsvps: RsvpRecord[];
   mercadopagoConfigured?: boolean;
+}
+
+interface GuestDraftRow {
+  id: string;
+  name: string;
+  maxPasses: number;
+  table: string;
+  pase: "todo" | "ceremonia" | "fiesta";
+  whatsapp: string;
+}
+
+function makeBlankGuestRow(index: number): GuestDraftRow {
+  return {
+    id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${index}`,
+    name: "",
+    maxPasses: 2,
+    table: "",
+    pase: "todo",
+    whatsapp: "",
+  };
+}
+
+function normalizeGuestWhatsApp(raw?: string): string {
+  if (!raw) return "";
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("549")) return digits;
+  if (digits.startsWith("54")) return digits;
+  if (digits.startsWith("0")) return `549${digits.slice(1)}`;
+  if (digits.length === 10) return `549${digits}`;
+  return digits;
+}
+
+function parsePaseValue(raw?: string): "todo" | "ceremonia" | "fiesta" {
+  const v = (raw || "").trim().toLowerCase();
+  if (v.includes("ceremonia")) return "ceremonia";
+  if (v.includes("fiesta")) return "fiesta";
+  return "todo";
+}
+
+function parseBulkGuestText(text: string): GuestDraftRow[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const rows: GuestDraftRow[] = [];
+  lines.forEach((line, idx) => {
+    const sep = line.includes("\t") ? "\t" : line.includes(";") ? ";" : ",";
+    const parts = line.split(sep).map((p) => p.replace(/^["']|["']$/g, "").trim());
+    const firstLower = (parts[0] || "").toLowerCase();
+    if (
+      idx === 0 &&
+      (firstLower === "nombre" ||
+        firstLower === "nombre / familia" ||
+        firstLower === "familia" ||
+        firstLower === "invitado")
+    ) {
+      return;
+    }
+    const name = (parts[0] || "").slice(0, 120);
+    if (!name) return;
+    const parsedNum = parts[1] ? parseInt(parts[1], 10) : 2;
+    const maxPasses =
+      Number.isFinite(parsedNum) && parsedNum >= 1 ? Math.min(20, parsedNum) : 2;
+    const table = (parts[2] || "").slice(0, 40);
+    const pase = parsePaseValue(parts[3]);
+    const whatsapp = (parts[4] || "").slice(0, 30);
+    rows.push({
+      id: `inv-${Date.now()}-${rows.length + 1}`,
+      name,
+      maxPasses,
+      table,
+      pase,
+      whatsapp,
+    });
+  });
+  return rows;
 }
 
 export function OrganizerPanelClient({
@@ -73,15 +157,50 @@ export function OrganizerPanelClient({
     }
   }, [event.panelToken, event.eventTitle, event.orderCode, event.slug]);
 
-  // Optional preloaded guest list (ultra-simple line editor)
-  const [showGuestListBox, setShowGuestListBox] = useState(false);
-  const [guestListText, setGuestListText] = useState(() =>
-    (event.guestList || [])
-      .map((g) => (g.maxPasses > 1 ? `${g.name}, ${g.maxPasses}` : g.name))
-      .join("\n")
+  // Carga masiva tipo Mini-Excel + Centro de Envío 1-a-1 por WhatsApp
+  const [savedGuests, setSavedGuests] = useState<PreloadedGuest[]>(
+    () => event.guestList || []
   );
+  const [draftRows, setDraftRows] = useState<GuestDraftRow[]>(() => {
+    const existing = event.guestList || [];
+    if (existing.length > 0) {
+      return existing.map((g, idx) => ({
+        id: g.id || `inv-${idx + 1}`,
+        name: g.name,
+        maxPasses: g.maxPasses || 2,
+        table: g.table || "",
+        pase: g.pase || "todo",
+        whatsapp: g.whatsapp || "",
+      }));
+    }
+    return [makeBlankGuestRow(1), makeBlankGuestRow(2), makeBlankGuestRow(3)];
+  });
+  const [showBulkPaste, setShowBulkPaste] = useState(false);
+  const [bulkPasteText, setBulkPasteText] = useState("");
   const [savingGuestList, setSavingGuestList] = useState(false);
   const [guestListSavedMsg, setGuestListSavedMsg] = useState<string | null>(null);
+  const [sentGuestIds, setSentGuestIds] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    (event.guestList || []).forEach((g) => {
+      if (g.sent) map[g.id] = true;
+    });
+    return map;
+  });
+  const [copiedGuestId, setCopiedGuestId] = useState<string | null>(null);
+  const [sendFilter, setSendFilter] = useState<"all" | "pending" | "sent">("all");
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(`invita_sent_${event.panelToken}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, boolean>;
+      if (parsed && typeof parsed === "object") {
+        setSentGuestIds((prev) => ({ ...parsed, ...prev }));
+      }
+    } catch {
+      // ignore
+    }
+  }, [event.panelToken]);
 
   // User-controlled PDF export options
   const [showPdfPanel, setShowPdfPanel] = useState(false);
@@ -93,41 +212,107 @@ export function OrganizerPanelClient({
   const handleSaveGuestList = async () => {
     setSavingGuestList(true);
     setGuestListSavedMsg(null);
-    const parsed: PreloadedGuest[] = guestListText
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .slice(0, 500)
-      .map((line, idx) => {
-        const parts = line.split(/[,\t;]/).map((p) => p.trim());
-        const name = parts[0] || "";
-        const num = parts[1] ? parseInt(parts[1], 10) : 2;
-        const maxPasses = Number.isFinite(num) && num >= 1 ? Math.min(20, num) : 2;
-        return {
-          id: `g-${idx + 1}`,
-          name: name.slice(0, 120),
-          maxPasses,
-        };
-      })
-      .filter((g) => g.name.length > 0);
+    const cleaned: PreloadedGuest[] = draftRows
+      .map((row, idx) => ({
+        id: row.id?.trim() || `inv-${idx + 1}`,
+        name: row.name.trim().slice(0, 120),
+        maxPasses: Number.isFinite(row.maxPasses)
+          ? Math.max(1, Math.min(20, Math.round(row.maxPasses)))
+          : 2,
+        ...(row.table.trim() ? { table: row.table.trim().slice(0, 40) } : {}),
+        pase: row.pase || "todo",
+        ...(row.whatsapp.trim() ? { whatsapp: row.whatsapp.trim().slice(0, 30) } : {}),
+        ...(sentGuestIds[row.id] ? { sent: true } : {}),
+      }))
+      .filter((g) => g.name.length > 0)
+      .slice(0, 500);
 
     try {
       const res = await fetch(`/api/panel/${event.panelToken}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestList: parsed }),
+        body: JSON.stringify({ guestList: cleaned }),
       });
       if (!res.ok) throw new Error("Error");
+      setSavedGuests(cleaned);
+      if (cleaned.length > 0) {
+        setDraftRows(
+          cleaned.map((g) => ({
+            id: g.id,
+            name: g.name,
+            maxPasses: g.maxPasses,
+            table: g.table || "",
+            pase: g.pase || "todo",
+            whatsapp: g.whatsapp || "",
+          }))
+        );
+      }
       setGuestListSavedMsg(
-        parsed.length === 0
+        cleaned.length === 0
           ? "Lista vaciada: los invitados escribirán su nombre libremente."
-          : `¡Guardado! ${parsed.length} invitados cargados en el buscador del RSVP.`
+          : `¡Guardado! ${cleaned.length} pases registrados en la base de datos y listos en el Centro de Envío.`
       );
     } catch {
       setGuestListSavedMsg("No se pudo guardar la lista. Probá nuevamente.");
     } finally {
       setSavingGuestList(false);
     }
+  };
+
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const content = await file.text();
+      const imported = parseBulkGuestText(content);
+      if (imported.length > 0) {
+        setDraftRows((prev) => [
+          ...prev.filter((r) => r.name.trim().length > 0),
+          ...imported,
+        ]);
+        setGuestListSavedMsg(
+          `Se importaron ${imported.length} filas del CSV. Tocá "Guardar toda la lista" para confirmar.`
+        );
+      }
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const handleAppendBulkPaste = () => {
+    const imported = parseBulkGuestText(bulkPasteText);
+    if (imported.length === 0) return;
+    setDraftRows((prev) => [
+      ...prev.filter((r) => r.name.trim().length > 0),
+      ...imported,
+    ]);
+    setBulkPasteText("");
+    setShowBulkPaste(false);
+    setGuestListSavedMsg(
+      `Se sumaron ${imported.length} filas. Tocá "Guardar toda la lista" para guardarlas.`
+    );
+  };
+
+  const markGuestSent = (guestId: string) => {
+    const nextMap = { ...sentGuestIds, [guestId]: true };
+    setSentGuestIds(nextMap);
+    try {
+      window.localStorage.setItem(
+        `invita_sent_${event.panelToken}`,
+        JSON.stringify(nextMap)
+      );
+    } catch {
+      // ignore
+    }
+    const nextSaved = savedGuests.map((g) =>
+      g.id === guestId ? { ...g, sent: true } : g
+    );
+    setSavedGuests(nextSaved);
+    fetch(`/api/panel/${event.panelToken}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ guestList: nextSaved }),
+    }).catch(() => {});
   };
 
   const stats = useMemo(() => {
@@ -662,57 +847,428 @@ export function OrganizerPanelClient({
         </section>
         )}
 
-        {/* Lista rápida opcional para buscador RSVP (PRO / Llave en Mano) */}
+        {/* Opción 2 · Carga Masiva tipo Mini-Excel + Centro de Envío 1-a-1 por WhatsApp (PRO / Llave en Mano) */}
         {!isEssentialPlan && (
-          <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <section className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <ListChecks className="h-4 w-4 text-amber-700" />
                   <h2 className="font-cormorant text-2xl font-semibold text-stone-900">
-                    Opción 2 · Buscador automático si enviás 1 solo link general (Opcional)
+                    Opción 2 · Carga Masiva tipo Mini-Excel y Centro de Envío 1-a-1
                   </h2>
                 </div>
                 <p className="mt-0.5 text-xs text-stone-500">
-                  Si preferís mandar el mismo link a todo el mundo en lugar de ir uno por uno arriba, pegá acá tu lista de invitados: al tocar &ldquo;Confirmar Asistencia&rdquo;, escriben 2 letras de su nombre y se autocompleta su cupo.
+                  Cargá todos tus invitados o familias de una sola vez, guardalos juntos y enviá cada pase personalizado por WhatsApp con control de enviados. También alimenta el buscador automático del RSVP.
                 </p>
               </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBulkPaste((v) => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:border-stone-900"
+                >
+                  <ClipboardPaste className="h-3.5 w-3.5" />
+                  {showBulkPaste ? "Cerrar pegado" : "Pegar varias filas"}
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:border-stone-900">
+                  <Upload className="h-3.5 w-3.5" />
+                  Importar .csv
+                  <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={handleImportCsv}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {showBulkPaste && (
+              <div className="space-y-2.5 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+                <p className="text-xs font-semibold text-stone-800">
+                  Pegá filas desde Excel, Google Sheets o texto (columnas: Nombre, Lugares, Mesa, Acceso, WhatsApp)
+                </p>
+                <textarea
+                  rows={4}
+                  value={bulkPasteText}
+                  onChange={(e) => setBulkPasteText(e.target.value)}
+                  placeholder={"Familia Gómez, 3, 5, Todo el evento, 5493884123456\nLucía Fernández, 2, 8, Solo Fiesta, 3885001122"}
+                  className="w-full rounded-xl border border-stone-300 bg-white p-3 text-xs outline-none focus:border-stone-900"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAppendBulkPaste}
+                    className="rounded-full bg-stone-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+                  >
+                    Sumar filas a la tabla
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tabla Mini-Excel */}
+            <div className="overflow-x-auto rounded-2xl border border-stone-200">
+              <table className="w-full min-w-[680px] border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-stone-200 bg-stone-50 text-[11px] font-bold uppercase tracking-wider text-stone-600">
+                    <th className="min-w-[180px] px-3 py-2.5">Nombre / Familia *</th>
+                    <th className="w-24 px-3 py-2.5">Lugares</th>
+                    <th className="w-24 px-3 py-2.5">Mesa</th>
+                    <th className="w-40 px-3 py-2.5">Acceso</th>
+                    <th className="w-44 px-3 py-2.5">WhatsApp (opc.)</th>
+                    <th className="w-12 px-2 py-2.5 text-center"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {draftRows.map((row, idx) => (
+                    <tr key={row.id} className="hover:bg-stone-50/70">
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={row.name}
+                          onChange={(e) =>
+                            setDraftRows((prev) =>
+                              prev.map((r, i) =>
+                                i === idx ? { ...r, name: e.target.value } : r
+                              )
+                            )
+                          }
+                          placeholder="Ej. Familia Gómez"
+                          className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={row.maxPasses}
+                          onChange={(e) =>
+                            setDraftRows((prev) =>
+                              prev.map((r, i) =>
+                                i === idx
+                                  ? {
+                                      ...r,
+                                      maxPasses: Math.max(
+                                        1,
+                                        Math.min(20, Number(e.target.value) || 1)
+                                      ),
+                                    }
+                                  : r
+                              )
+                            )
+                          }
+                          className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={row.table}
+                          onChange={(e) =>
+                            setDraftRows((prev) =>
+                              prev.map((r, i) =>
+                                i === idx ? { ...r, table: e.target.value } : r
+                              )
+                            )
+                          }
+                          placeholder="Ej. 5"
+                          className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <select
+                          value={row.pase}
+                          onChange={(e) =>
+                            setDraftRows((prev) =>
+                              prev.map((r, i) =>
+                                i === idx
+                                  ? {
+                                      ...r,
+                                      pase: e.target.value as "todo" | "ceremonia" | "fiesta",
+                                    }
+                                  : r
+                              )
+                            )
+                          }
+                          className="w-full rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs outline-none focus:border-stone-900"
+                        >
+                          <option value="todo">Todo el evento</option>
+                          <option value="ceremonia">Solo Ceremonia</option>
+                          <option value="fiesta">Solo Fiesta</option>
+                        </select>
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="tel"
+                          value={row.whatsapp}
+                          onChange={(e) =>
+                            setDraftRows((prev) =>
+                              prev.map((r, i) =>
+                                i === idx ? { ...r, whatsapp: e.target.value } : r
+                              )
+                            )
+                          }
+                          placeholder="Ej. 3884123456"
+                          className="w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-stone-900"
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        <button
+                          type="button"
+                          aria-label="Quitar fila"
+                          onClick={() =>
+                            setDraftRows((prev) =>
+                              prev.length > 1
+                                ? prev.filter((_, i) => i !== idx)
+                                : [makeBlankGuestRow(1)]
+                            )
+                          }
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-rose-50 hover:text-rose-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={() => setShowGuestListBox((v) => !v)}
-                className="rounded-full border border-stone-300 px-4 py-1.5 text-xs font-semibold text-stone-700 hover:border-stone-900"
+                onClick={() =>
+                  setDraftRows((prev) => [...prev, makeBlankGuestRow(prev.length + 1)])
+                }
+                className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
               >
-                {showGuestListBox ? "Ocultar" : "Cargar / Editar lista"}
+                <Plus className="h-3.5 w-3.5" />
+                Agregar fila
+              </button>
+
+              <button
+                type="button"
+                disabled={savingGuestList}
+                onClick={handleSaveGuestList}
+                className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-stone-800 disabled:opacity-60"
+              >
+                <Check className="h-3.5 w-3.5" />
+                {savingGuestList ? "Guardando lista..." : "Guardar toda la lista"}
               </button>
             </div>
 
-            {showGuestListBox && (
-              <div className="mt-4 space-y-3">
-                <textarea
-                  rows={5}
-                  value={guestListText}
-                  onChange={(e) => setGuestListText(e.target.value)}
-                  placeholder={"Un invitado o familia por línea. Podés agregar la cantidad de lugares separada por coma:\nFamilia Gómez, 3\nLucía Fernández, 2\nMarcos Díaz, 1"}
-                  className="w-full rounded-2xl border border-stone-300 bg-stone-50 p-3.5 text-xs outline-none focus:border-stone-900"
-                />
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-[11px] text-stone-500">
-                    Formato simple: <code>Nombre y Apellido, lugares</code> (si no ponés número, asigna 2 lugares).
-                  </p>
-                  <button
-                    type="button"
-                    disabled={savingGuestList}
-                    onClick={handleSaveGuestList}
-                    className="rounded-full bg-stone-900 px-5 py-2 text-xs font-semibold text-white hover:bg-stone-800 disabled:opacity-60"
-                  >
-                    {savingGuestList ? "Guardando..." : "Guardar lista en RSVP"}
-                  </button>
-                </div>
-                {guestListSavedMsg && (
-                  <p className="text-xs font-medium text-emerald-700">{guestListSavedMsg}</p>
-                )}
-              </div>
+            {guestListSavedMsg && (
+              <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-800">
+                {guestListSavedMsg}
+              </p>
             )}
+
+            {/* Centro de Envío 1-a-1 por WhatsApp */}
+            {savedGuests.length > 0 && (() => {
+              const sentCount = savedGuests.filter((g) => Boolean(sentGuestIds[g.id])).length;
+              const progressPct = Math.round((sentCount / savedGuests.length) * 100);
+              const visibleGuests = savedGuests.filter((g) => {
+                const isSent = Boolean(sentGuestIds[g.id]);
+                if (sendFilter === "sent") return isSent;
+                if (sendFilter === "pending") return !isSent;
+                return true;
+              });
+              return (
+                <div className="space-y-4 border-t border-stone-200 pt-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                        <Send className="h-3.5 w-3.5" />
+                        Centro de Envío 1-a-1 por WhatsApp
+                      </span>
+                      <div className="mt-1 flex items-center gap-3">
+                        <p className="text-sm font-bold text-stone-900">
+                          Enviados: {sentCount} de {savedGuests.length}
+                        </p>
+                        <div className="h-2 w-32 overflow-hidden rounded-full bg-stone-200">
+                          <div
+                            className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {(
+                        [
+                          ["all", `Todos (${savedGuests.length})`],
+                          ["pending", `Pendientes (${savedGuests.length - sentCount})`],
+                          ["sent", `Enviados (${sentCount})`],
+                        ] as const
+                      ).map(([k, label]) => (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => setSendFilter(k)}
+                          className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                            sendFilter === k
+                              ? "bg-stone-900 text-white"
+                              : "border border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {!isPaid && (
+                    <div className="flex items-start gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-900">
+                      <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
+                      <span>
+                        Pedido en estado <strong>Borrador (Pendiente de pago)</strong>: los botones{" "}
+                        <strong>Enviar por WhatsApp</strong> y <strong>Copiar link</strong> permanecen bloqueados hasta que se acredite el pago. Mientras tanto podés usar <strong>Ver Vista Previa</strong>.
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2.5">
+                    {visibleGuests.map((g) => {
+                      const isSent = Boolean(sentGuestIds[g.id]);
+                      const guestPath = `/i/${event.slug}?inv=${encodeURIComponent(g.id)}`;
+                      const guestFullUrl = `${origin}${guestPath}`;
+                      const cleanGuestWa = normalizeGuestWhatsApp(g.whatsapp);
+                      const msg = encodeURIComponent(
+                        `¡Hola ${g.name}! Con mucha alegría te enviamos tu invitación personalizada para ${event.eventTitle} (${event.dateDisplay} · ${event.timeDisplay} en ${event.venue}).\nReservamos ${g.maxPasses} ${
+                          g.maxPasses === 1 ? "lugar" : "lugares"
+                        }${g.table ? ` (Mesa ${g.table})` : ""} para vos:\n${guestFullUrl}`
+                      );
+                      const waUrl = cleanGuestWa
+                        ? `https://wa.me/${cleanGuestWa}?text=${msg}`
+                        : `https://wa.me/?text=${msg}`;
+                      const paseLabel =
+                        g.pase === "ceremonia"
+                          ? "Solo Ceremonia"
+                          : g.pase === "fiesta"
+                          ? "Solo Fiesta"
+                          : "Todo el evento";
+
+                      return (
+                        <div
+                          key={g.id}
+                          className={`flex flex-col justify-between gap-3 rounded-2xl border p-3.5 sm:flex-row sm:items-center ${
+                            isSent
+                              ? "border-emerald-200 bg-emerald-50/40"
+                              : "border-stone-200 bg-stone-50/60"
+                          }`}
+                        >
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-bold text-stone-900">
+                                {g.name}
+                              </span>
+                              <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-700 ring-1 ring-stone-200">
+                                {g.maxPasses} {g.maxPasses === 1 ? "lugar" : "lugares"}
+                              </span>
+                              {g.table && (
+                                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-700 ring-1 ring-stone-200">
+                                  Mesa {g.table}
+                                </span>
+                              )}
+                              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-600">
+                                {paseLabel}
+                              </span>
+                              {isSent && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                                  Enviado ✓
+                                </span>
+                              )}
+                            </div>
+                            <p className="truncate font-mono text-[11px] text-stone-500">
+                              {guestPath}
+                              {g.whatsapp ? ` · WA: ${g.whatsapp}` : ""}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {isPaid ? (
+                              <>
+                                <Link
+                                  href={guestPath}
+                                  target="_blank"
+                                  className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-700 hover:bg-stone-50"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Ver
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard
+                                      ?.writeText(guestFullUrl)
+                                      .catch(() => {});
+                                    setCopiedGuestId(g.id);
+                                    setTimeout(() => setCopiedGuestId(null), 1800);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
+                                >
+                                  {copiedGuestId === g.id ? (
+                                    <Check className="h-3 w-3 text-emerald-600" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                  {copiedGuestId === g.id ? "¡Copiado!" : "Copiar link"}
+                                </button>
+                                <a
+                                  href={waUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={() => markGuestSent(g.id)}
+                                  className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-700"
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                  Enviar por WhatsApp
+                                </a>
+                              </>
+                            ) : (
+                              <>
+                                <Link
+                                  href={guestPath}
+                                  target="_blank"
+                                  className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Ver Vista Previa
+                                </Link>
+                                <button
+                                  type="button"
+                                  disabled
+                                  aria-disabled="true"
+                                  title="Disponible al acreditarse el pago"
+                                  className="inline-flex cursor-not-allowed items-center gap-1 rounded-full border border-stone-200 bg-stone-100 px-3 py-1.5 text-[11px] font-semibold text-stone-400"
+                                >
+                                  <Lock className="h-3 w-3" />
+                                  Copiar link
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled
+                                  aria-disabled="true"
+                                  title="Disponible al acreditarse el pago"
+                                  className="inline-flex cursor-not-allowed items-center gap-1 rounded-full bg-stone-200 px-3 py-1.5 text-[11px] font-semibold text-stone-500"
+                                >
+                                  <Lock className="h-3 w-3" />
+                                  Enviar por WhatsApp
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </section>
         )}
 
