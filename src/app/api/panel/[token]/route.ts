@@ -30,7 +30,12 @@ export async function PATCH(
     const isEssential = existing.planId === "esencial";
     const isAsistido = existing.planId === "asistido";
     const CURATED_AUDIO = new Set(["", ...CURATED_AUDIO_URLS]);
-    const requestedAudio = typeof body.audioOverride === "string" ? body.audioOverride : undefined;
+    const requestedAudio =
+      body.audioOverride === null || body.audioOverride === "null"
+        ? "none"
+        : typeof body.audioOverride === "string"
+        ? body.audioOverride
+        : undefined;
     // PRO solo puede elegir del catálogo curado o mantener el actual; Llave en Mano mantiene el audio personalizado subido por admin si elige conservarlo
     const safeAudio =
       requestedAudio === undefined
@@ -38,6 +43,13 @@ export async function PATCH(
         : CURATED_AUDIO.has(requestedAudio) || (isAsistido && requestedAudio === existing.audioOverride)
         ? requestedAudio
         : existing.audioOverride;
+
+    const cleanSubtitle =
+      typeof body.subtitleOverride === "string"
+        ? body.subtitleOverride.trim().slice(0, 70)
+        : typeof body.enabledSections?.subtitle === "string"
+        ? String(body.enabledSections.subtitle).trim().slice(0, 70)
+        : undefined;
 
     const maxLocs = isEssential ? 1 : 2;
     const rawLocations = body.enabledSections?.locations;
@@ -50,11 +62,25 @@ export async function PATCH(
             ...body.enabledSections,
             trivia: isAsistido ? Boolean(body.enabledSections.trivia) : false,
             ...(rawLocations !== undefined ? { locations: cleanLocations } : {}),
+            ...(cleanSubtitle !== undefined ? { subtitle: cleanSubtitle || undefined } : {}),
+          }
+        : cleanSubtitle !== undefined
+        ? {
+            ...(existing.enabledSections || {
+              countdown: true,
+              story: true,
+              schedule: true,
+              gallery: true,
+              dressCode: true,
+              gifts: true,
+              rsvp: true,
+            }),
+            subtitle: cleanSubtitle || undefined,
           }
         : undefined;
 
     const essentialSectionsPatch =
-      rawLocations !== undefined
+      rawLocations !== undefined || cleanSubtitle !== undefined
         ? {
             ...(existing.enabledSections || {
               countdown: true,
@@ -66,7 +92,8 @@ export async function PATCH(
               rsvp: true,
             }),
             trivia: false,
-            locations: cleanLocations,
+            ...(rawLocations !== undefined ? { locations: cleanLocations } : {}),
+            ...(cleanSubtitle !== undefined ? { subtitle: cleanSubtitle || undefined } : {}),
           }
         : undefined;
 

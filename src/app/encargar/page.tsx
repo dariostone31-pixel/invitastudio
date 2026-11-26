@@ -22,6 +22,8 @@ import {
 import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { INVITATION_SKINS, CATEGORY_LABELS, getSkinById, type InvitationSkin } from "@/templates/catalog";
 import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
+import { SubtitleSelectField } from "@/components/SubtitleSelectField";
+import { resolveEventSubtitle } from "@/config/subtitlePresets";
 import {
   ARGENTINA_BANK_ENTITIES,
   OTHER_BANK_OPTION,
@@ -102,9 +104,10 @@ function EncargarForm() {
   );
   const [accentOverride, setAccentOverride] = useState<string>(skinObj.palette.accent);
   const [heroOverlayOverride, setHeroOverlayOverride] = useState<HeroOverlayStyle>(
-    "translucido-suave"
+    "natural"
   );
   const [audioOverride, setAudioOverride] = useState<string>("");
+  const [subtitleOverride, setSubtitleOverride] = useState<string>("");
   const [songRequest, setSongRequest] = useState<string>("");
   const [albumUrl, setAlbumUrl] = useState<string>("");
   const [instagramHandle, setInstagramHandle] = useState<string>("");
@@ -214,6 +217,7 @@ function EncargarForm() {
         }
         if (typeof d.heroOverlayOverride === "string") setHeroOverlayOverride(d.heroOverlayOverride as HeroOverlayStyle);
         if (typeof d.audioOverride === "string") setAudioOverride(d.audioOverride);
+        if (typeof d.subtitleOverride === "string") setSubtitleOverride(d.subtitleOverride);
         if (typeof d.songRequest === "string") setSongRequest(d.songRequest);
         if (typeof d.albumUrl === "string") setAlbumUrl(d.albumUrl);
         if (typeof d.instagramHandle === "string") setInstagramHandle(d.instagramHandle);
@@ -293,6 +297,7 @@ function EncargarForm() {
           accentOverride,
           heroOverlayOverride,
           audioOverride,
+          subtitleOverride,
           songRequest,
           albumUrl,
           instagramHandle,
@@ -345,6 +350,7 @@ function EncargarForm() {
     accentOverride,
     heroOverlayOverride,
     audioOverride,
+    subtitleOverride,
     songRequest,
     albumUrl,
     instagramHandle,
@@ -515,6 +521,7 @@ function EncargarForm() {
           skinId: selectedSkin,
           planId: selectedPlan,
           eventTitle: eventTitle.trim(),
+          subtitleOverride: subtitleOverride.trim() || undefined,
           eventDate: eventDate.trim(),
           eventTime: formattedEventTime,
           venue: venue.trim(),
@@ -588,6 +595,7 @@ function EncargarForm() {
                   : {}),
               }
             : {
+                ...(audioOverride === "none" ? { audioOverride: "none" } : {}),
                 enabledSections: {
                   countdown: true,
                   story: false,
@@ -1185,16 +1193,26 @@ function EncargarForm() {
 
                   {/* Mini preview visual instantáneo de portada */}
                   <div className="flex flex-col justify-center sm:col-span-5">
-                    <div className="mb-2.5">
-                      <label className="mb-1 block text-[11px] font-semibold text-stone-700">
-                        Nombre en la portada (vista en vivo) *
-                      </label>
-                      <input
-                        type="text"
-                        value={eventTitle}
-                        onChange={(e) => setEventTitle(e.target.value)}
-                        placeholder={`Ej. ${skinObj.sample.title}`}
-                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                    <div className="mb-2.5 space-y-2">
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-stone-700">
+                          Nombre en la portada (vista en vivo) *
+                        </label>
+                        <input
+                          type="text"
+                          value={eventTitle}
+                          onChange={(e) => setEventTitle(e.target.value)}
+                          placeholder={`Ej. ${skinObj.sample.title}`}
+                          className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-900"
+                        />
+                      </div>
+                      <SubtitleSelectField
+                        category={skinObj.category}
+                        defaultEyebrow={skinObj.sample.eyebrow}
+                        eventTitle={eventTitle || skinObj.sample.title}
+                        value={subtitleOverride}
+                        onChange={setSubtitleOverride}
+                        compact
                       />
                     </div>
                     <span className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
@@ -1223,11 +1241,10 @@ function EncargarForm() {
                       {heroOverlayOverride === "cinematico" && (
                         <div className="absolute inset-0 bg-black/35" />
                       )}
-                      <div className="absolute inset-0 flex items-center justify-center p-4">
+                      <div className="absolute inset-0 flex items-end justify-center p-3">
                         <div
-                          className="w-full rounded-2xl border px-3 py-4 text-center shadow-sm backdrop-blur-[2px]"
+                          className="w-full rounded-2xl border bg-white/80 px-3 py-3 text-center shadow-sm backdrop-blur-md"
                           style={{
-                            backgroundColor: `${skinObj.palette.surface}EB`,
                             borderColor: accentOverride,
                             color: skinObj.palette.text,
                           }}
@@ -1236,15 +1253,20 @@ function EncargarForm() {
                             className="text-[9px] font-semibold uppercase tracking-[0.2em]"
                             style={{ color: accentOverride }}
                           >
-                            {skinObj.sample.eyebrow}
+                            {resolveEventSubtitle({
+                              category: skinObj.category,
+                              eventTitle: eventTitle.trim() || skinObj.sample.title,
+                              customSubtitle: subtitleOverride,
+                              defaultEyebrow: skinObj.sample.eyebrow,
+                            })}
                           </p>
                           <p
-                            className={`font-display-${fontOverride} mt-1.5 break-words text-2xl font-semibold leading-tight`}
+                            className={`font-display-${fontOverride} mt-1 break-words text-xl font-semibold leading-tight`}
                           >
                             {eventTitle.trim() || skinObj.sample.title}
                           </p>
                           <span
-                            className="mt-2.5 inline-block rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-white"
+                            className="mt-2 inline-block rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-white"
                             style={{ backgroundColor: accentOverride }}
                           >
                             Confirmar
@@ -1733,6 +1755,15 @@ function EncargarForm() {
               onChange={(e) => setEventTitle(e.target.value)}
               placeholder="Ej. Sofía & Lucas / Mis XV Valentina / Cumple 40 de Martín"
               className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <SubtitleSelectField
+              category={skinObj.category}
+              defaultEyebrow={skinObj.sample.eyebrow}
+              eventTitle={eventTitle || skinObj.sample.title}
+              value={subtitleOverride}
+              onChange={setSubtitleOverride}
             />
           </div>
           <div>

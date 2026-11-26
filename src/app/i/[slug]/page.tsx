@@ -112,6 +112,7 @@ export default async function PublicInvitationPage({
       table={table}
       paseType={paseType}
       customTitle={event.eventTitle}
+      customSubtitle={event.enabledSections?.subtitle || undefined}
       customDateDisplay={event.dateDisplay}
       customTimeDisplay={event.timeDisplay}
       customDateISO={event.dateISO}
@@ -136,7 +137,7 @@ export default async function PublicInvitationPage({
       customFont={event.fontOverride || undefined}
       customAccent={event.accentOverride || undefined}
       customAudioUrl={
-        event.audioOverride === "none"
+        event.audioOverride === "none" || event.audioOverride === null
           ? "none"
           : allowDjSongs
           ? event.audioOverride || undefined

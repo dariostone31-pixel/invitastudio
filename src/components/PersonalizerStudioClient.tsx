@@ -36,6 +36,7 @@ import {
   InvitationSkin,
 } from "@/templates/catalog";
 import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
+import { SubtitleSelectField } from "@/components/SubtitleSelectField";
 import {
   ARGENTINA_BANK_ENTITIES,
   OTHER_BANK_OPTION,
@@ -112,6 +113,9 @@ export function PersonalizerStudioClient({
 
   const [skinId, setSkinId] = useState(event.skinId);
   const [eventTitle, setEventTitle] = useState(event.eventTitle);
+  const [subtitleOverride, setSubtitleOverride] = useState(
+    event.enabledSections?.subtitle || ""
+  );
   const [dateDisplay, setDateDisplay] = useState(event.dateDisplay);
   const [timeDisplay, setTimeDisplay] = useState(event.timeDisplay);
   const initialLocs = event.enabledSections?.locations || [];
@@ -317,6 +321,7 @@ export function PersonalizerStudioClient({
         body: JSON.stringify({
           skinId,
           eventTitle,
+          subtitleOverride,
           dateDisplay,
           timeDisplay,
           venue,
@@ -351,6 +356,7 @@ export function PersonalizerStudioClient({
             ...sections,
             trivia: isAsistidoPlan ? Boolean(sections.trivia) : false,
             locations: liveLocations,
+            subtitle: subtitleOverride.trim() || undefined,
           },
         }),
       });
@@ -623,6 +629,15 @@ export function PersonalizerStudioClient({
                   value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
                   className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm outline-none focus:border-stone-900"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <SubtitleSelectField
+                  category={selectedSkin.category}
+                  defaultEyebrow={selectedSkin.sample.eyebrow}
+                  eventTitle={eventTitle || selectedSkin.sample.title}
+                  value={subtitleOverride}
+                  onChange={setSubtitleOverride}
                 />
               </div>
               <div>
@@ -1617,6 +1632,7 @@ export function PersonalizerStudioClient({
                 skin={selectedSkin}
                 eventSlug={event.slug}
                 customTitle={eventTitle}
+                customSubtitle={subtitleOverride || undefined}
                 customDateDisplay={dateDisplay}
                 customTimeDisplay={timeDisplay}
                 customDateISO={event.dateISO}

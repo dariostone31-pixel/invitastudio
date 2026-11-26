@@ -66,6 +66,7 @@ import {
 } from "./CelebrationIcons";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
 import { getDefaultStoryTitleForCategory } from "@/lib/categoryPresets";
+import { resolveEventSubtitle } from "@/config/subtitlePresets";
 
 export interface PublicWish {
   id: string;
@@ -81,6 +82,7 @@ interface InvitationRendererProps {
   table?: string;
   paseType?: "todo" | "ceremonia" | "fiesta";
   customTitle?: string;
+  customSubtitle?: string;
   customDateDisplay?: string;
   customTimeDisplay?: string;
   customDateISO?: string;
@@ -104,7 +106,7 @@ interface InvitationRendererProps {
   customGallery?: string[];
   customFont?: InvitationSkin["fontDisplay"];
   customAccent?: string;
-  customAudioUrl?: string;
+  customAudioUrl?: string | null;
   memoryMode?: boolean;
   planId?: "esencial" | "pro" | "asistido";
   wishesList?: PublicWish[];
@@ -407,6 +409,7 @@ export function InvitationRenderer({
   table,
   paseType = "todo",
   customTitle,
+  customSubtitle,
   customDateDisplay,
   customTimeDisplay,
   customDateISO,
@@ -640,7 +643,10 @@ export function InvitationRenderer({
       ? "Pase válido para Fiesta y Brindis"
       : "";
   const audioSrc =
-    customAudioUrl === "none" || customAudioUrl === "null"
+    customAudioUrl === null ||
+    customAudioUrl === "none" ||
+    customAudioUrl === "null" ||
+    (typeof customAudioUrl === "string" && customAudioUrl.trim() === "")
       ? ""
       : customAudioUrl || sample.audioUrl;
   const audioLabel = getMusicTrackByUrl(audioSrc)?.label || sample.audioTitle;
@@ -799,6 +805,12 @@ export function InvitationRenderer({
   const giftHolderText = customGiftHolder?.trim() || sample.gifts.holder;
 
   const dynamicMonogram = deriveInitialsMonogram(customTitle, sample.monogram);
+  const resolvedSubtitle = resolveEventSubtitle({
+    category: skin.category,
+    eventTitle: customTitle || sample.title,
+    customSubtitle,
+    defaultEyebrow: sample.eyebrow,
+  });
 
   const customLocsRaw = Array.isArray(enabledSections?.locations)
     ? enabledSections.locations.filter((l) => l && l.venue && l.venue.trim().length > 0)
@@ -859,6 +871,7 @@ export function InvitationRenderer({
           table={table}
           paseType={paseType}
           customTitle={customTitle}
+          customSubtitle={customSubtitle}
           customHeroImage={heroImage}
           customDateDisplay={dateDisplay}
           customTimeDisplay={timeDisplay}
@@ -1216,7 +1229,7 @@ export function InvitationRenderer({
                     <circle cx="40" cy="8" r="1.5" fill="currentColor" />
                   </svg>
                   <p className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.34em] text-[#F5DFB0]">
-                    {skin.category === "xv" ? "MIS XV AÑOS" : sample.eyebrow}
+                    {customSubtitle?.trim() || (skin.category === "xv" ? "MIS XV AÑOS" : resolvedSubtitle)}
                   </p>
                 </motion.div>
 
@@ -1314,7 +1327,7 @@ export function InvitationRenderer({
                       gateOpened ? "type-eyebrow-reveal" : ""
                     }`}
                   >
-                    {sample.eyebrow}
+                    {resolvedSubtitle}
                   </p>
                   <h1
                     key={gateOpened ? "h1-open" : "h1-closed"}
@@ -1333,8 +1346,10 @@ export function InvitationRenderer({
               </div>
             </motion.div>
 
-            <div className="px-4 pb-2 pt-5 text-center">
-              <CircularSaveSeal monogram={dynamicMonogram} color="#9C5538" />
+            <div className="px-4 pb-6 pt-5 text-center">
+              <div className="mb-12 flex justify-center">
+                <CircularSaveSeal monogram={dynamicMonogram} color="#9C5538" />
+              </div>
               {guestName && (
                 <div
                   className="mt-5 rounded-[22px] border px-5 py-4"
@@ -1371,7 +1386,7 @@ export function InvitationRenderer({
           </section>
         ) : isFullscreen || isEditorialPaper ? (
           <section className="relative overflow-hidden">
-            <div className={`relative w-full overflow-hidden ${motionProfile === "cinematic" ? "h-[500px] sm:h-[540px]" : isFullscreen ? "h-[460px] sm:h-[520px]" : "h-[420px] sm:h-[460px]"}`}>
+            <div className={`relative w-full overflow-hidden ${motionProfile === "cinematic" ? "h-[540px] sm:h-[580px]" : isFullscreen ? "h-[460px] sm:h-[520px]" : "h-[440px] sm:h-[480px]"}`}>
               <SoulKenBurns
                 src={heroImage}
                 alt={eventTitle}
@@ -1386,12 +1401,12 @@ export function InvitationRenderer({
                 />
               )}
               {!isEditorialPaper && (
-                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/20 to-black/78" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" />
               )}
               {isEditorialPaper && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
                   style={{
                     background: `linear-gradient(to bottom, transparent, ${isMarfil ? "#FAF7F2" : palette.bg})`,
                   }}
@@ -1415,15 +1430,15 @@ export function InvitationRenderer({
               )}
 
               {/* Tarjeta hero en tercio inferior con cristal esmerilado y coreografía de seda */}
-              <div className={`absolute inset-0 flex flex-col justify-end px-4 sm:px-6 ${motionProfile === "cinematic" ? "pb-10 sm:pb-14" : "pb-8 sm:pb-10"}`}>
+              <div className="absolute inset-0 flex flex-col justify-end px-4 pb-8 sm:px-6 sm:pb-8">
                 <div className="mt-auto flex justify-center">
                 {isMarfil ? (
                   <SoulGlassCard
                     immediate
                     motionProfile={motionProfile}
-                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
+                    className="relative w-full max-w-[324px] rounded-[20px] bg-white/80 px-5 py-4 text-center backdrop-blur-md sm:px-6 sm:py-5"
                     style={{
-                      backgroundColor: "rgba(255, 253, 250, 0.88)",
+                      backgroundColor: "rgba(255, 255, 255, 0.80)",
                       borderColor: "rgba(183, 138, 78, 0.48)",
                       color: palette.text,
                     }}
@@ -1439,7 +1454,7 @@ export function InvitationRenderer({
                         className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
                         style={{ color: textAccentOnSurface }}
                       >
-                        {sample.eyebrow}
+                        {resolvedSubtitle}
                       </p>
                     </SoulGlassItem>
                     <SoulGlassItem>
@@ -1447,7 +1462,7 @@ export function InvitationRenderer({
                         as="h1"
                         immediate
                         delay={0.12}
-                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        className={`relative mt-2 break-words py-0.5 text-4xl sm:text-5xl font-semibold leading-[1.18] ${displayFont}`}
                         style={{ color: palette.text }}
                       >
                         {eventTitle}
@@ -1460,13 +1475,13 @@ export function InvitationRenderer({
                         initial={gateOpened ? { scaleX: 0 } : { scaleX: 1 }}
                         animate={{ scaleX: 1 }}
                         transition={{ duration: 0.95, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                        className="relative mx-auto mt-2.5 block h-[1px] w-24 origin-center"
+                        className="relative mx-auto mt-2 block h-[1px] w-24 origin-center"
                         style={{ backgroundColor: "rgba(183, 138, 78, 0.78)" }}
                       />
                     </SoulGlassItem>
                     <SoulGlassItem>
                       <div
-                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        className="relative mt-3 grid grid-cols-3 items-center border-y py-2 text-center"
                         style={{ borderColor: "rgba(183, 138, 78, 0.35)" }}
                       >
                         <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
@@ -1485,9 +1500,9 @@ export function InvitationRenderer({
                   <SoulGlassCard
                     immediate
                     motionProfile={motionProfile}
-                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
+                    className="relative w-full max-w-[324px] rounded-[20px] bg-white/80 px-5 py-4 text-center backdrop-blur-md sm:px-6 sm:py-5"
                     style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.78)",
+                      backgroundColor: "rgba(255, 255, 255, 0.80)",
                       borderColor: "rgba(95, 125, 91, 0.48)",
                       color: palette.text,
                     }}
@@ -1502,7 +1517,7 @@ export function InvitationRenderer({
                         className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
                         style={{ color: textAccentOnSurface }}
                       >
-                        {sample.eyebrow}
+                        {resolvedSubtitle}
                       </p>
                     </SoulGlassItem>
                     <SoulGlassItem>
@@ -1510,7 +1525,7 @@ export function InvitationRenderer({
                         as="h1"
                         immediate
                         delay={0.12}
-                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        className={`relative mt-2 break-words py-0.5 text-4xl sm:text-5xl font-semibold leading-[1.18] ${displayFont}`}
                         style={{ color: palette.text }}
                       >
                         {eventTitle}
@@ -1525,7 +1540,7 @@ export function InvitationRenderer({
                     </SoulGlassItem>
                     <SoulGlassItem>
                       <div
-                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        className="relative mt-3 grid grid-cols-3 items-center border-y py-2 text-center"
                         style={{ borderColor: "rgba(95, 125, 91, 0.35)" }}
                       >
                         <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
@@ -1544,9 +1559,9 @@ export function InvitationRenderer({
                   <SoulGlassCard
                     immediate
                     motionProfile={motionProfile}
-                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
+                    className="relative w-full max-w-[324px] rounded-[20px] bg-white/80 px-5 py-4 text-center backdrop-blur-md sm:px-6 sm:py-5"
                     style={{
-                      backgroundColor: `${palette.surface}D8`,
+                      backgroundColor: "rgba(255, 255, 255, 0.80)",
                       borderColor: palette.border,
                       color: palette.text,
                     }}
@@ -1561,7 +1576,7 @@ export function InvitationRenderer({
                         className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
                         style={{ color: textAccentOnSurface }}
                       >
-                        {sample.eyebrow}
+                        {resolvedSubtitle}
                       </p>
                     </SoulGlassItem>
                     <SoulGlassItem>
@@ -1569,7 +1584,7 @@ export function InvitationRenderer({
                         as="h1"
                         immediate
                         delay={0.12}
-                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        className={`relative mt-2 break-words py-0.5 text-4xl sm:text-5xl font-semibold leading-[1.18] ${displayFont}`}
                         style={{ color: palette.text }}
                       >
                         {eventTitle}
@@ -1584,7 +1599,7 @@ export function InvitationRenderer({
                     </SoulGlassItem>
                     <SoulGlassItem>
                       <div
-                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        className="relative mt-3 grid grid-cols-3 items-center border-y py-2 text-center"
                         style={{ borderColor: palette.border }}
                       >
                         <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
@@ -1609,7 +1624,7 @@ export function InvitationRenderer({
                     <div className="rounded-xl border border-white/25 px-5 py-6">
                       <SoulGlassItem>
                         <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
-                          {sample.eyebrow}
+                          {resolvedSubtitle}
                         </p>
                       </SoulGlassItem>
                       <SoulGlassItem>
@@ -1648,8 +1663,10 @@ export function InvitationRenderer({
               </div>
             </div>
 
-            <div className="px-6 pb-4 pt-5 text-center">
-              <CircularSaveSeal monogram={dynamicMonogram} color={textAccentOnBg} />
+            <div className="px-6 pb-8 pt-5 text-center">
+              <div className="mb-12 flex justify-center">
+                <CircularSaveSeal monogram={dynamicMonogram} color={textAccentOnBg} />
+              </div>
 
               {guestName && (
                 <div
@@ -1711,7 +1728,7 @@ export function InvitationRenderer({
                   }`}
                   style={{ color: textAccentOnSurface }}
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <p
                   className={`mt-1 text-5xl font-bold uppercase tracking-[0.14em] leading-none text-[#181818] ${displayFont}`}
@@ -1797,7 +1814,7 @@ export function InvitationRenderer({
               }`}
               style={{ color: textAccentOnBg }}
             >
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
             <h1
               key={gateOpened ? "h1-open" : "h1-closed"}
@@ -1892,7 +1909,7 @@ export function InvitationRenderer({
                   }`}
                   style={{ color: "#8C6D3F" }}
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <h1
                   key={gateOpened ? "h1-open" : "h1-closed"}
@@ -2004,7 +2021,7 @@ export function InvitationRenderer({
                   }`}
                   style={{ color: textAccentOnSurface }}
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <h1
                   key={gateOpened ? "h1-open" : "h1-closed"}
@@ -2113,7 +2130,7 @@ export function InvitationRenderer({
                 <div
                   className="inline-block border border-[#D4AF37]/60 bg-[#0B0D12]/85 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#D4AF37] backdrop-blur-sm"
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </div>
                 <motion.h1
                   key={gateOpened ? "gala-h1-open" : "gala-h1-closed"}
@@ -2132,8 +2149,10 @@ export function InvitationRenderer({
               </div>
             </div>
 
-            <div className="px-4 pt-5">
-              <CircularSaveSeal monogram={dynamicMonogram} color="#D4AF37" />
+            <div className="px-4 pb-6 pt-5">
+              <div className="mb-12 flex justify-center">
+                <CircularSaveSeal monogram={dynamicMonogram} color="#D4AF37" />
+              </div>
               {guestName && (
                 <div
                   className="mt-5 border bg-[#12151E]/75 px-5 py-4 backdrop-blur-md"
@@ -2195,7 +2214,7 @@ export function InvitationRenderer({
               </div>
               <div className="relative -mt-14 px-5 pb-6">
                 <p className="font-ui-jost text-[11px] font-bold uppercase tracking-[0.26em] text-[#22D3EE]">
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <h1
                   className={`mt-2 break-words text-4xl sm:text-5xl font-bold uppercase leading-[1.14] tracking-wider text-white ${displayFont} ${heroTitleAnimClass}`}
@@ -2256,7 +2275,7 @@ export function InvitationRenderer({
               </div>
               <div className="relative -mt-14 px-4 pb-6">
                 <span className="inline-block border border-[#C88A4B]/65 bg-[#110E0C]/85 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.26em] text-[#C88A4B]">
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </span>
                 <motion.h1
                   key={gateOpened ? "club-h1-open" : "club-h1-closed"}
@@ -2342,7 +2361,7 @@ export function InvitationRenderer({
                   className="font-ui-jost text-[11px] font-bold uppercase tracking-[0.22em]"
                   style={{ color: ensureContrast(palette.accent, "#FFFDF9", 4.6) }}
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <h1
                   className={`mt-1.5 break-words py-1 text-4xl sm:text-5xl font-bold leading-[1.16] ${displayFont}`}
@@ -2430,7 +2449,7 @@ export function InvitationRenderer({
                   color: textAccentOnSurface,
                 }}
               >
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </div>
 
               <h1
@@ -2454,10 +2473,12 @@ export function InvitationRenderer({
               </p>
 
               {!isInfantil && (
-                <CircularSaveSeal
-                  monogram={dynamicMonogram}
-                  color={textAccentOnBg}
-                />
+                <div className="mb-12 flex justify-center">
+                  <CircularSaveSeal
+                    monogram={dynamicMonogram}
+                    color={textAccentOnBg}
+                  />
+                </div>
               )}
 
               {guestName && (
@@ -2499,7 +2520,7 @@ export function InvitationRenderer({
           </section>
         )}
 
-        <div className="px-5 pb-24">
+        <div className="px-5 pb-32">
           {/* ================= CUENTA REGRESIVA / MODO RECUERDO ================= */}
           {memoryMode ? (
             <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>

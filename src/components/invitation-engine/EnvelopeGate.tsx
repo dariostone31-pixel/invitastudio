@@ -6,6 +6,8 @@ import { InvitationSkin } from "@/templates/catalog";
 import { Ticket, Newspaper, LockOpen, Star } from "lucide-react";
 import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { ensureContrast, getAccessibleButtonBg } from "@/lib/contrast";
+import { deriveInitialsMonogram } from "@/lib/locationUtils";
+import { resolveEventSubtitle } from "@/config/subtitlePresets";
 
 interface EnvelopeGateProps {
   skin: InvitationSkin;
@@ -14,6 +16,7 @@ interface EnvelopeGateProps {
   table?: string;
   paseType?: "todo" | "ceremonia" | "fiesta";
   customTitle?: string;
+  customSubtitle?: string;
   customHeroImage?: string;
   customDateDisplay?: string;
   customTimeDisplay?: string;
@@ -30,6 +33,7 @@ export function EnvelopeGate({
   table,
   paseType = "todo",
   customTitle,
+  customSubtitle,
   customHeroImage,
   customDateDisplay,
   customTimeDisplay,
@@ -44,6 +48,13 @@ export function EnvelopeGate({
   const dateDisplay = customDateDisplay || sample.dateDisplay;
   const timeDisplay = customTimeDisplay || sample.timeDisplay;
   const title = customTitle || sample.title;
+  const dynamicMonogram = deriveInitialsMonogram(title, sample.monogram);
+  const resolvedSubtitle = resolveEventSubtitle({
+    category: skin.category,
+    eventTitle: title,
+    customSubtitle,
+    defaultEyebrow: sample.eyebrow,
+  });
   const buttonBg = getAccessibleButtonBg(palette.accent, palette.accentText);
   const textAccentOnSurface = ensureContrast(palette.accent, palette.surface, 4.6);
 
@@ -92,7 +103,6 @@ export function EnvelopeGate({
     !isModernKids &&
     !isHombreClub;
   const isThreeStepLuxury = isXvStar || isEditorialPhoto;
-  const initialLetter = (title.trim().match(/[A-Za-zÁÉÍÓÚÑáéíóúñ]/)?.[0] || "V").toUpperCase();
 
   useEffect(() => {
     if (!gone) {
@@ -318,7 +328,7 @@ export function EnvelopeGate({
                   transition={{ duration: 0.65, delay: opening ? 0.52 : 0 }}
                   className="font-ui-jost relative mt-2 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#7A6247]"
                 >
-                  {sample.eyebrow} · {title}
+                  {resolvedSubtitle} · {title}
                 </motion.p>
               </motion.div>
 
@@ -472,8 +482,12 @@ export function EnvelopeGate({
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-1.5 rounded-full border border-[#FFF9ED]/65"
                   />
-                  <span className={`text-3xl font-semibold leading-none ${fontDisplayClass}`}>
-                    {initialLetter}
+                  <span
+                    className={`${
+                      dynamicMonogram.length > 2 ? "text-xl" : "text-3xl"
+                    } font-semibold leading-none ${fontDisplayClass}`}
+                  >
+                    {dynamicMonogram}
                   </span>
                   <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.22em]">
                     Abrir
@@ -484,7 +498,7 @@ export function EnvelopeGate({
 
             <div className="relative z-30 px-6 pb-8 pt-3 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#8C6D46]">
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </p>
               <h1 className={`mt-2 py-1 text-5xl font-semibold leading-[1.18] text-[#35261B] ${fontDisplayClass}`}>
                 {title}
@@ -800,8 +814,12 @@ export function EnvelopeGate({
                       borderColor: isMarfil ? "rgba(212, 175, 106, 0.72)" : "rgba(255,255,255,0.35)",
                     }}
                   />
-                  <span className={`text-xl font-semibold leading-none ${fontDisplayClass}`}>
-                    {sample.monogram}
+                  <span
+                    className={`${
+                      dynamicMonogram.length > 2 ? "text-xl" : "text-2xl"
+                    } font-semibold leading-none ${fontDisplayClass}`}
+                  >
+                    {dynamicMonogram}
                   </span>
                   <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] opacity-95">
                     Abrir
@@ -815,7 +833,7 @@ export function EnvelopeGate({
                 className="text-[11px] font-semibold uppercase tracking-[0.22em]"
                 style={{ color: palette.textMuted }}
               >
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </p>
               <h1
                 className={`mt-2 py-1 text-5xl font-semibold leading-[1.2] ${fontDisplayClass}`}
@@ -876,7 +894,7 @@ export function EnvelopeGate({
               className="text-[10px] font-semibold uppercase tracking-[0.28em]"
               style={{ color: "#9C5538" }}
             >
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
 
             {/* Ventana en Arco Orgánico doble terracota */}
@@ -955,7 +973,7 @@ export function EnvelopeGate({
             <div className="flex h-full w-full flex-col items-center justify-between rounded-[16px] border border-white/25 p-5">
               <div className="pt-1">
                 <span className="inline-block rounded-full border border-white/35 bg-black/25 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.26em] backdrop-blur-md">
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </span>
               </div>
 
@@ -1070,7 +1088,7 @@ export function EnvelopeGate({
             </div>
 
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
@@ -1143,7 +1161,7 @@ export function EnvelopeGate({
             </div>
 
             <p className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#22D3EE]">
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
             <h1
               className={`mt-2 py-1 text-4xl font-bold uppercase leading-[1.15] tracking-wider text-white ${fontDisplayClass}`}
@@ -1205,7 +1223,7 @@ export function EnvelopeGate({
             </div>
 
             <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#C88A4B]">
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
             <h1
               className={`mt-2 py-1 text-4xl font-semibold uppercase leading-[1.16] tracking-[0.12em] text-[#F4ECE1] ${fontDisplayClass}`}
@@ -1278,7 +1296,7 @@ export function EnvelopeGate({
             className="text-[11px] font-semibold uppercase tracking-[0.22em]"
             style={{ color: textAccentOnSurface }}
           >
-            {sample.eyebrow}
+            {resolvedSubtitle}
           </p>
           <h1
             className={`mt-2 py-1 text-4xl font-bold uppercase leading-[1.2] tracking-wide ${fontDisplayClass}`}
@@ -1355,7 +1373,7 @@ export function EnvelopeGate({
 
             <div className="relative z-10 px-6 pb-4 pt-4 text-center">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em]" style={{ color: "#8C6D3F" }}>
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </p>
               <h1 className={`mt-1.5 py-0.5 text-4xl font-bold leading-[1.15] text-[#0F2537] ${fontDisplayClass}`}>
                 {title}
@@ -1486,7 +1504,7 @@ export function EnvelopeGate({
                 className="text-[11px] font-bold uppercase tracking-[0.2em]"
                 style={{ color: textAccentOnSurface }}
               >
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </p>
               <h1
                 className={`mt-1.5 py-1 text-4xl font-bold uppercase leading-[1.2] ${fontDisplayClass}`}
@@ -1585,7 +1603,7 @@ export function EnvelopeGate({
 
             <div className="py-2.5 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-[0.34em]" style={{ color: palette.accent }}>
-                {sample.eyebrow}
+                {resolvedSubtitle}
               </p>
               <h2 className={`mt-1 text-5xl font-bold uppercase tracking-[0.14em] leading-none ${fontDisplayClass}`}>
                 VOGUE
@@ -1687,7 +1705,7 @@ export function EnvelopeGate({
                   className="text-[10px] font-bold uppercase tracking-[0.22em]"
                   style={{ color: "#4A463F" }}
                 >
-                  {sample.eyebrow}
+                  {resolvedSubtitle}
                 </p>
                 <h1 className={`mt-1.5 py-0.5 text-4xl font-bold leading-[1.16] text-[#1C1B19] ${fontDisplayClass}`}>
                   {title}
@@ -1930,7 +1948,7 @@ export function EnvelopeGate({
                     : "#9E7B42",
               }}
             >
-              {sample.eyebrow}
+              {resolvedSubtitle}
             </p>
             <h1
               className={`mt-1.5 py-1 text-4xl font-bold leading-[1.18] ${fontDisplayClass}`}

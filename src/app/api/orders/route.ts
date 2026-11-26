@@ -71,6 +71,7 @@ export async function POST(req: Request) {
       fontOverride,
       accentOverride,
       audioOverride,
+      subtitleOverride,
       songRequest,
       albumUrl,
       instagramHandle,
@@ -120,7 +121,12 @@ export async function POST(req: Request) {
       isAsistido && typeof songRequest === "string" && songRequest.trim()
         ? songRequest.trim().slice(0, 220)
         : undefined;
-    const requestedAudio = typeof audioOverride === "string" ? audioOverride : "";
+    const requestedAudio =
+      audioOverride === null || audioOverride === "null"
+        ? "none"
+        : typeof audioOverride === "string"
+        ? audioOverride
+        : "";
     const cleanAudio =
       requestedAudio === "none"
         ? "none"
@@ -128,6 +134,12 @@ export async function POST(req: Request) {
         ? requestedAudio
         : isAsistido && cleanSongRequest && !requestedAudio
         ? "none"
+        : undefined;
+    const cleanSubtitle =
+      typeof subtitleOverride === "string" && subtitleOverride.trim()
+        ? subtitleOverride.trim().slice(0, 70)
+        : typeof enabledSections?.subtitle === "string" && enabledSections.subtitle.trim()
+        ? String(enabledSections.subtitle).trim().slice(0, 70)
         : undefined;
 
     const cleanParents =
@@ -197,11 +209,12 @@ export async function POST(req: Request) {
     const maxLocs = allowFullCustom ? 2 : 1;
     const cleanLocations = sanitizeEventLocations(enabledSections?.locations, maxLocs);
     const mergedEnabledSections =
-      allowFullCustom || cleanLocations
+      allowFullCustom || cleanLocations || cleanSubtitle
         ? {
             ...(allowFullCustom && enabledSections ? enabledSections : {}),
             ...(allowFullCustom ? { trivia: isAsistido ? Boolean(enabledSections?.trivia) : false } : {}),
             ...(cleanLocations ? { locations: cleanLocations } : {}),
+            ...(cleanSubtitle ? { subtitle: cleanSubtitle } : {}),
           }
         : undefined;
     if (mergedEnabledSections && !allowFullCustom) {

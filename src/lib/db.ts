@@ -28,6 +28,7 @@ export interface EnabledSectionsConfig {
   collaborativeAlbum?: boolean;
   rsvp: boolean;
   locations?: CustomEventLocation[];
+  subtitle?: string;
 }
 
 export interface DjSongItem {
