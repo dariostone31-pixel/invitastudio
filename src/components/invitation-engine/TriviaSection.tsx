@@ -225,9 +225,17 @@ export function TriviaSection({
                       borderColor: palette.border,
                     }}
                   >
-                    <span className="font-semibold">
-                      {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}{" "}
-                      {s.guestName}
+                    <span className="flex items-center gap-2 font-semibold">
+                      <span
+                        className="inline-flex h-5 w-5 items-center justify-center rounded-full border font-mono text-[10px] font-bold"
+                        style={{
+                          borderColor: idx === 0 ? textAccentOnSurface : palette.border,
+                          color: idx === 0 ? textAccentOnSurface : palette.textMuted,
+                        }}
+                      >
+                        0{idx + 1}
+                      </span>
+                      <span>{s.guestName}</span>
                     </span>
                     <span className="font-mono font-bold" style={{ color: textAccentOnSurface }}>
                       {s.score}/{s.total}
@@ -400,9 +408,17 @@ export function TriviaSection({
                     borderColor: palette.border,
                   }}
                 >
-                  <span className="font-semibold">
-                    {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}{" "}
-                    {s.guestName}
+                  <span className="flex items-center gap-2 font-semibold">
+                    <span
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full border font-mono text-[10px] font-bold"
+                      style={{
+                        borderColor: idx === 0 ? textAccentOnSurface : palette.border,
+                        color: idx === 0 ? textAccentOnSurface : palette.textMuted,
+                      }}
+                    >
+                      0{idx + 1}
+                    </span>
+                    <span>{s.guestName}</span>
                   </span>
                   <span className="font-mono font-bold" style={{ color: textAccentOnSurface }}>
                     {s.score}/{s.total}

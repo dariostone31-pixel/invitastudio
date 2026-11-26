@@ -178,9 +178,9 @@ export function AudioPlayerFloat({
 
             {actuallyPlaying ? (
               <span className="flex items-end gap-[2px] h-3.5 pr-1">
-                <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: accentColor }} />
-                <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: accentColor }} />
-                <span className="w-[2.5px] rounded-full eq-bar-3" style={{ backgroundColor: accentColor }} />
+                <span className="w-[2.5px] rounded-full eq-bar-1" style={{ backgroundColor: textColor }} />
+                <span className="w-[2.5px] rounded-full eq-bar-2" style={{ backgroundColor: textColor }} />
+                <span className="w-[2.5px] rounded-full eq-bar-3" style={{ backgroundColor: textColor }} />
               </span>
             ) : (
               <span className="flex items-center gap-1 pr-1 opacity-80">

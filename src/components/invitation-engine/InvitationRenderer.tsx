@@ -4442,7 +4442,7 @@ export function InvitationRenderer({
                     style={{ color: palette.textMuted }}
                   >
                     {sections.djVoting
-                      ? `Las más pedidas 🔥 (${sortedDjSongs.length})`
+                      ? `Las más pedidas (${sortedDjSongs.length})`
                       : `Últimas sugerencias (${sortedDjSongs.length})`}
                   </p>
                   <div className="max-h-52 space-y-1.5 overflow-y-auto pr-1">
@@ -4458,10 +4458,14 @@ export function InvitationRenderer({
                           }}
                         >
                           <div className="min-w-0">
-                            <span className="block break-words font-medium" style={{ color: palette.text }}>
-                              🎵 {item.song}
+                            <span
+                              className="flex items-center gap-1.5 break-words font-medium"
+                              style={{ color: palette.text }}
+                            >
+                              <Music className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={1.75} />
+                              <span>{item.song}</span>
                             </span>
-                            <span className="text-[11px]" style={{ color: palette.textMuted }}>
+                            <span className="mt-0.5 block text-[11px]" style={{ color: palette.textMuted }}>
                               {item.guestName}
                             </span>
                           </div>
@@ -4471,14 +4475,19 @@ export function InvitationRenderer({
                               onClick={() => handleVoteDjSong(item)}
                               disabled={alreadyVoted}
                               aria-label={`Votar canción ${item.song}`}
-                              className="inline-flex flex-shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold transition-transform active:scale-95"
+                              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition-transform active:scale-95"
                               style={{
                                 backgroundColor: alreadyVoted ? buttonBg : palette.surface,
                                 borderColor: alreadyVoted ? buttonBg : palette.border,
                                 color: alreadyVoted ? palette.accentText : palette.text,
                               }}
                             >
-                              🔥 {item.votes ?? 1}
+                              <Heart
+                                className="h-3 w-3"
+                                strokeWidth={2}
+                                fill={alreadyVoted ? "currentColor" : "none"}
+                              />
+                              <span>{item.votes ?? 1}</span>
                             </button>
                           )}
                         </div>

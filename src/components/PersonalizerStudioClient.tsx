@@ -95,7 +95,7 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "gifts", label: "Regalos / Copiar Alias" },
   { key: "wishes", label: "Muro de Buenos Deseos / Firmas" },
   { key: "djSongs", label: "Playlist de la Fiesta (Invitados sugieren canción)" },
-  { key: "djVoting", label: "Votación 🔥 en Playlist (Las más pedidas)" },
+  { key: "djVoting", label: "Votación en Playlist (Las más pedidas)" },
   { key: "trivia", label: "Mini-Trivia con Podio (Juego interactivo)" },
   { key: "collaborativeAlbum", label: "Álbum Colaborativo QR & Hashtag" },
   { key: "rsvp", label: "Botón Confirmar Asistencia" },

@@ -1468,7 +1468,7 @@ export function OrganizerPanelClient({
                           </p>
                         </div>
                         <span className="flex-shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900">
-                          🔥 {s.votes}
+                          {s.votes} {s.votes === 1 ? "voto" : "votos"}
                         </span>
                       </div>
                     ))
