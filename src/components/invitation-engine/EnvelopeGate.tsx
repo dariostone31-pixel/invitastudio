@@ -109,12 +109,21 @@ export function EnvelopeGate({
     if (opening) return;
     setOpening(true);
     onOpen();
+    const fadeStartMs = isThreeStepLuxury
+      ? 1100
+      : isMarfil
+      ? 1000
+      : isBotanica
+      ? 900
+      : isNocheGala || isNewsprint || isModernKids
+      ? 720
+      : 600;
     setTimeout(() => {
       setFadingOut(true);
-    }, isThreeStepLuxury ? 1500 : isMarfil ? 1400 : isBotanica ? 1150 : isNocheGala ? 950 : isXvNocturno || isHombreClub ? 850 : isModernKids ? 880 : isBohoPampas ? 820 : isBoardingPass ? 760 : isNewsprint ? 900 : isMagazine ? 780 : 620);
+    }, fadeStartMs);
     setTimeout(() => {
       setGone(true);
-    }, isThreeStepLuxury ? 1950 : isMarfil ? 1850 : isBotanica ? 1580 : isNocheGala ? 1380 : isXvNocturno || isHombreClub ? 1260 : isModernKids ? 1290 : isBohoPampas ? 1220 : isBoardingPass ? 1160 : isNewsprint ? 1320 : isMagazine ? 1180 : 1020);
+    }, fadeStartMs + 1120);
   };
 
   if (gone) return null;
@@ -192,9 +201,12 @@ export function EnvelopeGate({
   ) : null;
 
   return (
-    <div
-      className={`envelope-gate fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center p-4 transition-all duration-500 ${
-        fadingOut ? "pointer-events-none scale-105 opacity-0" : "opacity-100"
+    <motion.div
+      initial={{ opacity: 1, scale: 1 }}
+      animate={fadingOut ? { opacity: 0, scale: 1.04 } : { opacity: 1, scale: 1 }}
+      transition={{ duration: 1.1, ease: GATE_EASE }}
+      className={`envelope-gate fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center p-4 ${
+        fadingOut ? "pointer-events-none" : ""
       }`}
       style={{ backgroundColor: palette.bg, touchAction: "manipulation" }}
     >
@@ -435,12 +447,20 @@ export function EnvelopeGate({
                 <motion.button
                   type="button"
                   onClick={handleTap}
+                  animate={
+                    opening
+                      ? { scale: 1.24, rotate: 10, opacity: 0 }
+                      : { scale: [1, 1.035, 1] }
+                  }
+                  transition={
+                    opening
+                      ? { duration: 0.65, ease: GATE_EASE }
+                      : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+                  }
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
                   aria-label={`Abrir invitación${guestName ? ` para ${guestName}` : ""}`}
-                  className={`envelope-seal relative flex h-24 w-24 flex-col items-center justify-center rounded-full border-[3px] shadow-[0_16px_32px_-6px_rgba(92,64,26,0.48),inset_0_3px_8px_rgba(255,255,255,0.45)] transition-all duration-500 ${
-                    opening ? "scale-125 rotate-12 opacity-0" : "animate-seal-pulse"
-                  }`}
+                  className="envelope-seal relative flex h-24 w-24 flex-col items-center justify-center rounded-full border-[3px] shadow-[0_16px_32px_-6px_rgba(92,64,26,0.48),inset_0_3px_8px_rgba(255,255,255,0.45)]"
                   style={{
                     background:
                       "radial-gradient(circle at 30% 25%, #F2D799 0%, #C69B57 52%, #8C652D 100%)",
@@ -747,14 +767,24 @@ export function EnvelopeGate({
                 <motion.button
                   type="button"
                   onClick={handleTap}
+                  animate={
+                    opening
+                      ? { scale: 1.24, rotate: 10, opacity: 0 }
+                      : { scale: [1, 1.035, 1] }
+                  }
+                  transition={
+                    opening
+                      ? { duration: 0.65, ease: GATE_EASE }
+                      : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+                  }
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
                   aria-label={`Abrir invitación${guestName ? ` para ${guestName}` : ""}`}
-                  className={`envelope-seal relative flex h-24 w-24 flex-col items-center justify-center rounded-full transition-all duration-500 ${
+                  className={`envelope-seal relative flex h-24 w-24 flex-col items-center justify-center rounded-full ${
                     isMarfil
                       ? "border-[3px] shadow-[0_16px_32px_-6px_rgba(74,20,32,0.55),inset_0_3px_8px_rgba(255,255,255,0.28)]"
                       : "border-4 shadow-[0_14px_28px_-6px_rgba(42,36,32,0.45),inset_0_2px_6px_rgba(255,255,255,0.45)]"
-                  } ${opening ? "scale-125 rotate-12 opacity-0" : "animate-seal-pulse"}`}
+                  }`}
                   style={{
                     background: isMarfil
                       ? "radial-gradient(circle at 30% 25%, #9B354B 0%, #6B1E30 58%, #4A1420 100%)"
@@ -880,6 +910,8 @@ export function EnvelopeGate({
 
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.97 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-5 min-h-[44px] w-full rounded-full px-5 py-3.5 text-[13px] font-semibold uppercase tracking-[0.16em] text-white shadow-md transition-all hover:opacity-95"
@@ -973,6 +1005,8 @@ export function EnvelopeGate({
 
               <motion.button
                 type="button"
+                animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+                transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleTap}
                 className="btn-shimmer-hover flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] text-stone-900 shadow-xl transition-transform hover:scale-[1.02]"
@@ -1054,6 +1088,8 @@ export function EnvelopeGate({
             {guestPill}
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.97 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 border border-[#D4AF37] bg-[#D4AF37] px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0B0D12] shadow-[0_12px_30px_-8px_rgba(212,175,55,0.45)] transition-transform hover:scale-[1.01]"
@@ -1118,6 +1154,8 @@ export function EnvelopeGate({
             {guestPill}
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.96 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border border-[#22D3EE]/60 px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_0_28px_-6px_rgba(34,211,238,0.65)] transition-transform hover:scale-[1.02]"
@@ -1187,6 +1225,8 @@ export function EnvelopeGate({
             {guestPill}
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.98 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 border border-[#C88A4B] bg-[#C88A4B] px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.2em] text-[#110E0C] shadow-lg transition-opacity hover:opacity-95"
@@ -1252,6 +1292,8 @@ export function EnvelopeGate({
           {guestPill}
           <motion.button
             type="button"
+            animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+            transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
             whileTap={{ scale: 0.97 }}
             onClick={handleTap}
             className="btn-shimmer-hover mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-lg transition-transform hover:scale-[1.02]"
@@ -1389,6 +1431,8 @@ export function EnvelopeGate({
 
               <motion.button
                 type="button"
+                animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+                transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleTap}
                 className="btn-shimmer-hover min-h-[44px] w-full rounded-xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-lg"
@@ -1494,6 +1538,8 @@ export function EnvelopeGate({
               </div>
               <motion.button
                 type="button"
+                animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+                transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleTap}
                 className="btn-shimmer-hover min-h-[44px] w-full rounded-xl px-5 py-3.5 text-[13px] font-bold uppercase tracking-[0.14em] shadow-lg"
@@ -1577,6 +1623,8 @@ export function EnvelopeGate({
 
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.97 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-4 min-h-[44px] w-full border border-[#181818] bg-[#181818] py-3.5 text-[12px] font-semibold uppercase tracking-[0.22em] text-white transition-colors hover:bg-stone-800"
@@ -1660,6 +1708,8 @@ export function EnvelopeGate({
             {/* Titular / Sello de apertura */}
             <motion.button
               type="button"
+              animate={!opening ? { scale: [1, 1.035, 1] } : { scale: 0.98, opacity: 0.6 }}
+              transition={{ duration: 3.2, repeat: opening ? 0 : Infinity, ease: "easeInOut" }}
               whileTap={{ scale: 0.97 }}
               onClick={handleTap}
               className="btn-shimmer-hover mt-4 min-h-[44px] w-full border-2 border-[#1C1B19] bg-[#1C1B19] py-3.5 text-[12px] font-bold uppercase tracking-[0.18em] text-[#F3EFE6] transition-opacity hover:opacity-92"
@@ -1810,6 +1860,16 @@ export function EnvelopeGate({
               <motion.button
                 type="button"
                 onClick={handleTap}
+                animate={
+                  opening
+                    ? { scale: 1.24, opacity: 0 }
+                    : { scale: [1, 1.035, 1] }
+                }
+                transition={
+                  opening
+                    ? { duration: 0.65, ease: GATE_EASE }
+                    : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+                }
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.92 }}
                 aria-label={`Abrir invitación${guestName ? ` para ${guestName}` : ""}`}
@@ -1909,6 +1969,6 @@ export function EnvelopeGate({
           </div>
         </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

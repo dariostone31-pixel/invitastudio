@@ -14,6 +14,8 @@ export type LayoutId =
   | "diario-editorial"
   | "infantil-animado";
 
+export type MotionProfile = "cinematic" | "editorial" | "festive";
+
 export interface SkinPalette {
   bg: string;
   surface: string;
@@ -82,6 +84,7 @@ export interface InvitationSkin {
   subtitle: string;
   category: EventCategory;
   layoutId: LayoutId;
+  motionProfile: MotionProfile;
   featured?: boolean;
   heroImage: string;
   imageFilter?: string;
@@ -510,6 +513,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Clásico editorial con sello de lacre y papel algodón",
     category: "boda",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     featured: true,
     heroImage: "/images/templates/boda-sobre-marfil.webp",
     fontDisplay: "script",
@@ -532,6 +536,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estilo periódico vintage con foto editorial",
     category: "boda",
     layoutId: "diario-editorial",
+    motionProfile: "editorial",
     heroImage: "/images/templates/boda-gran-noticia.webp",
     fontDisplay: "playfair",
     palette: {
@@ -559,6 +564,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada cinematográfica cálida de campo",
     category: "boda",
     layoutId: "fullscreen-hero",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/boda-boho-pampas.webp",
     fontDisplay: "cormorant",
     palette: {
@@ -584,6 +590,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Elegancia nocturna en negro carbón y dorado",
     category: "boda",
     layoutId: "neon-dark",
+    motionProfile: "editorial",
     heroImage: "/images/templates/boda-noche-gala.webp",
     fontDisplay: "cinzel",
     palette: {
@@ -605,6 +612,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Acuarela orgánica con hojas de eucalipto y rosas blancas",
     category: "boda",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/boda-jardin-botanico.webp",
     fontDisplay: "pinyon",
     palette: {
@@ -630,6 +638,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Azul francés y papel texturado ideal ceremonias de día",
     category: "boda",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/boda-acuarela-azul.webp",
     fontDisplay: "pinyon",
     palette: {
@@ -655,6 +664,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Minimalismo costero cálido para bodas al aire libre",
     category: "boda",
     layoutId: "fullscreen-hero",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/boda-playa-brisa.webp",
     fontDisplay: "cormorant",
     palette: {
@@ -680,6 +690,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estilo pase de abordar para casamientos en quinta o viaje",
     category: "boda",
     layoutId: "ticket-vip",
+    motionProfile: "editorial",
     heroImage: "/images/templates/boda-boarding-pass.webp",
     fontDisplay: "playfair",
     palette: {
@@ -707,6 +718,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada de revista con luces doradas y vestido",
     category: "xv",
     layoutId: "fullscreen-hero",
+    motionProfile: "cinematic",
     featured: true,
     heroImage: "/images/templates/xv-gala-rosa.webp",
     fontDisplay: "script",
@@ -729,6 +741,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Oscuro vibrante con destellos magenta y violeta",
     category: "xv",
     layoutId: "neon-dark",
+    motionProfile: "festive",
     heroImage: "/images/templates/xv-neon-boliche.webp",
     fontDisplay: "oswald",
     palette: {
@@ -754,6 +767,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ticket perforado estilo recital o Lollapalooza",
     category: "xv",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/xv-festival-pass.webp",
     fontDisplay: "oswald",
     palette: {
@@ -781,6 +795,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre clásico con sello de lacre y mariposa dorada",
     category: "xv",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/xv-mariposa-sobre.webp",
     fontDisplay: "script",
     palette: {
@@ -806,6 +821,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Cielo nocturno violeta con mariposas luminosas",
     category: "xv",
     layoutId: "neon-dark",
+    motionProfile: "festive",
     heroImage: "/images/templates/xv-mariposa-neon.webp",
     fontDisplay: "script",
     palette: {
@@ -831,6 +847,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Verde esmeralda intenso con acentos oro para gala nocturna",
     category: "xv",
     layoutId: "fullscreen-hero",
+    motionProfile: "festive",
     heroImage: "/images/templates/xv-esmeralda-real.webp",
     fontDisplay: "cinzel",
     palette: {
@@ -856,6 +873,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada monocromática con tipografía de alta costura",
     category: "xv",
     layoutId: "diario-editorial",
+    motionProfile: "editorial",
     heroImage: "/images/templates/xv-editorial-vogue.webp",
     fontDisplay: "playfair",
     palette: {
@@ -881,6 +899,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Acuarela etérea en tonos celeste, lavanda y marfil",
     category: "xv",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/xv-cielo-acuarela.webp",
     fontDisplay: "script",
     palette: {
@@ -904,6 +923,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Especial 18 años varón con skyline nocturno y luces ámbar",
     category: "hombre",
     layoutId: "fullscreen-hero",
+    motionProfile: "festive",
     featured: true,
     heroImage: "/images/templates/hombre-18-rooftop.webp",
     fontDisplay: "cinzel",
@@ -926,6 +946,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ticket perforado arquitectónico en negro, plata y grafito",
     category: "hombre",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/hombre-18-street.webp",
     fontDisplay: "oswald",
     palette: {
@@ -960,6 +981,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Edición nocturna de lujo para 30, 40, 50 y 60 años",
     category: "hombre",
     layoutId: "neon-dark",
+    motionProfile: "editorial",
     heroImage: "/images/templates/hombre-whisky-gold.webp",
     fontDisplay: "cinzel",
     palette: {
@@ -985,6 +1007,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ticket VIP de partido con dorsal y fecha destacada",
     category: "hombre",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/hombre-futbol-clasico.webp",
     fontDisplay: "oswald",
     palette: {
@@ -1012,6 +1035,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre masculino cálido en madera ahumada y cobre",
     category: "hombre",
     layoutId: "editorial-sobre",
+    motionProfile: "festive",
     heroImage: "/images/templates/hombre-asado-lounge.webp",
     fontDisplay: "cinzel",
     palette: {
@@ -1038,6 +1062,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tapa estilo revista clásica para 50, 60 años o recibidas",
     category: "hombre",
     layoutId: "diario-editorial",
+    motionProfile: "editorial",
     heroImage: "/images/templates/hombre-caballero-diario.webp",
     fontDisplay: "playfair",
     palette: {
@@ -1066,6 +1091,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Oscuro eléctrico con luces cian para 18, 25 o 30 años",
     category: "hombre",
     layoutId: "neon-dark",
+    motionProfile: "festive",
     heroImage: "/images/templates/hombre-gaming-cyber.webp",
     fontDisplay: "oswald",
     palette: {
@@ -1094,6 +1120,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Editorial en hormigón, sombra y tipografía sobria",
     category: "hombre",
     layoutId: "fullscreen-hero",
+    motionProfile: "editorial",
     heroImage: "/images/templates/hombre-editorial-mono.webp",
     fontDisplay: "cinzel",
     palette: {
@@ -1124,6 +1151,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Diseño escandinavo 2026 en papel algodón, salvia y trazo fino",
     category: "nino",
     layoutId: "infantil-animado",
+    motionProfile: "festive",
     featured: true,
     heroImage: "/images/templates/nino-dino-aventura.webp",
     fontDisplay: "fredoka",
@@ -1146,6 +1174,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ilustración contemporánea en azul petróleo y líneas doradas",
     category: "nino",
     layoutId: "infantil-animado",
+    motionProfile: "festive",
     heroImage: "/images/templates/nino-espacio-cohete.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1172,6 +1201,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Entrada de estadio celeste y blanca con edad del cumpleañero",
     category: "nino",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/nino-campeones-ticket.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1198,6 +1228,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Estética 2026 grafito y neón sutil para pre-adolescentes (8–14 años)",
     category: "nino",
     layoutId: "neon-dark",
+    motionProfile: "festive",
     heroImage: "/images/templates/nino-gamer-street.webp",
     fontDisplay: "oswald",
     palette: {
@@ -1224,6 +1255,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre minimalista en lino crema y verde salvia",
     category: "nino",
     layoutId: "editorial-sobre",
+    motionProfile: "festive",
     heroImage: "/images/templates/nino-safari-sobre.webp",
     fontDisplay: "cormorant",
     palette: {
@@ -1249,6 +1281,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tarjeta urbana moderna para chicos de 7 a 12 años",
     category: "nino",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/nino-super-comic.webp",
     fontDisplay: "oswald",
     palette: {
@@ -1277,6 +1310,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Castillo encantado en acuarela rosa, lila y dorado",
     category: "nina",
     layoutId: "infantil-animado",
+    motionProfile: "festive",
     featured: true,
     heroImage: "/images/templates/nina-reino-pastel.webp",
     fontDisplay: "fredoka",
@@ -1299,6 +1333,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Acuarela marina en turquesa, coral pastel y perlas",
     category: "nina",
     layoutId: "infantil-animado",
+    motionProfile: "festive",
     heroImage: "/images/templates/nina-sirena-coral.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1324,6 +1359,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Onda concierto/disco para nenas de 8 a 12 años",
     category: "nina",
     layoutId: "neon-dark",
+    motionProfile: "festive",
     heroImage: "/images/templates/nina-pop-star.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1350,6 +1386,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Pase VIP rosado con detalles de fiesta entre amigas",
     category: "nina",
     layoutId: "ticket-vip",
+    motionProfile: "festive",
     heroImage: "/images/templates/nina-pijama-ticket.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1376,6 +1413,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Sobre romántico pastel con sello dorado",
     category: "nina",
     layoutId: "editorial-sobre",
+    motionProfile: "festive",
     heroImage: "/images/templates/nina-hadas-sobre.webp",
     fontDisplay: "cormorant",
     palette: {
@@ -1397,6 +1435,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Tonos durazno, rosa viejo y lavanda súper delicados",
     category: "nina",
     layoutId: "editorial-sobre",
+    motionProfile: "festive",
     heroImage: "/images/templates/nina-arcoiris-boho.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1424,6 +1463,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Acuarela cálida en lino, olivo y estrellitas doradas",
     category: "bautismo",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     featured: true,
     heroImage: "/images/templates/bebe-lino-natural.webp",
     fontDisplay: "pinyon",
@@ -1446,6 +1486,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Ilustración dulce de osito en tonos arena y crema",
     category: "bautismo",
     layoutId: "infantil-animado",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/bebe-ositos-nubes.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1472,6 +1513,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Apertura ilustrada súper dulce para Baby Shower o Bautismo",
     category: "bautismo",
     layoutId: "infantil-animado",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/bebe-nubes-celeste.webp",
     fontDisplay: "fredoka",
     palette: {
@@ -1498,6 +1540,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Rosa talco y papel algodón para bautismo o 1er año de nena",
     category: "bautismo",
     layoutId: "editorial-sobre",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/bebe-florcitas-rosa.webp",
     fontDisplay: "cormorant",
     palette: {
@@ -1523,6 +1566,7 @@ export const INVITATION_SKINS: InvitationSkin[] = [
     subtitle: "Portada luminosa para Primera Comunión o Confirmación",
     category: "bautismo",
     layoutId: "fullscreen-hero",
+    motionProfile: "cinematic",
     heroImage: "/images/templates/comunion-oliva-hero.webp",
     fontDisplay: "cormorant",
     palette: {

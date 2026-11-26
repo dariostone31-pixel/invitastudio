@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
+import type { MotionProfile } from "@/templates/catalog";
+import { SILK_EASE } from "@/components/motion/SoulChoreography";
 
 interface RevealSectionProps {
   children: React.ReactNode;
   className?: string;
   delayMs?: number;
+  motionProfile?: MotionProfile;
   luxurySpring?: boolean;
   editorialSlide?: boolean;
   organicFluid?: boolean;
@@ -18,65 +21,25 @@ export function RevealSection({
   children,
   className = "",
   delayMs = 0,
+  motionProfile,
   luxurySpring = false,
   editorialSlide = false,
   organicFluid = false,
   botanicalStagger = false,
   elasticSpring = false,
 }: RevealSectionProps) {
-  const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    if (luxurySpring || editorialSlide || organicFluid || botanicalStagger || elasticSpring) return;
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -30px 0px" }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [luxurySpring, editorialSlide, organicFluid, botanicalStagger, elasticSpring]);
-
-  if (elasticSpring) {
+  if (motionProfile === "editorial" || editorialSlide) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 26, scale: 0.96 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.18 }}
-        transition={{
-          type: "spring",
-          stiffness: 110,
-          damping: 14,
-          delay: delayMs / 1000,
-        }}
-        onViewportEnter={() => setVisible(true)}
-        data-revealed={visible ? "true" : "false"}
-        className={`reveal-section will-change-transform ${className}`}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-
-  if (luxurySpring) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
+        initial={{ opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.16 }}
         transition={{
           type: "spring",
-          stiffness: 90,
-          damping: 18,
+          stiffness: 60,
+          damping: 22,
           delay: delayMs / 1000,
         }}
         onViewportEnter={() => setVisible(true)}
@@ -88,35 +51,16 @@ export function RevealSection({
     );
   }
 
-  if (editorialSlide) {
+  if (motionProfile === "festive" || elasticSpring) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: -16, y: 18 }}
-        whileInView={{ opacity: 1, x: 0, y: 0 }}
-        viewport={{ once: true, amount: 0.18 }}
-        transition={{
-          duration: 0.75,
-          ease: [0.22, 1, 0.36, 1],
-          delay: delayMs / 1000,
-        }}
-        onViewportEnter={() => setVisible(true)}
-        data-revealed={visible ? "true" : "false"}
-        className={`reveal-section will-change-transform ${className}`}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-
-  if (organicFluid) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        initial={{ opacity: 0, y: 22, scale: 0.97 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.18 }}
+        viewport={{ once: true, amount: 0.16 }}
         transition={{
-          duration: 0.85,
-          ease: [0.22, 1, 0.36, 1],
+          type: "spring",
+          stiffness: 85,
+          damping: 16,
           delay: delayMs / 1000,
         }}
         onViewportEnter={() => setVisible(true)}
@@ -135,14 +79,14 @@ export function RevealSection({
         whileInView="show"
         viewport={{ once: true, amount: 0.16 }}
         variants={{
-          hidden: { opacity: 0, y: 22 },
+          hidden: { opacity: 0, y: 20 },
           show: {
             opacity: 1,
             y: 0,
             transition: {
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              staggerChildren: 0.11,
+              duration: 0.9,
+              ease: SILK_EASE,
+              staggerChildren: 0.14,
               delayChildren: delayMs / 1000,
             },
           },
@@ -156,16 +100,41 @@ export function RevealSection({
     );
   }
 
+  if (luxurySpring || organicFluid || motionProfile === "cinematic") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.985 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.18 }}
+        transition={{
+          duration: 0.95,
+          ease: SILK_EASE,
+          delay: delayMs / 1000,
+        }}
+        onViewportEnter={() => setVisible(true)}
+        data-revealed={visible ? "true" : "false"}
+        className={`reveal-section will-change-transform ${className}`}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
   return (
-    <div
-      ref={ref}
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{
+        duration: 0.9,
+        ease: SILK_EASE,
+        delay: delayMs / 1000,
+      }}
+      onViewportEnter={() => setVisible(true)}
       data-revealed={visible ? "true" : "false"}
-      style={{ transitionDelay: `${delayMs}ms` }}
-      className={`reveal-section transition-all duration-700 ease-out will-change-transform ${
-        visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-      } ${className}`}
+      className={`reveal-section will-change-transform ${className}`}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

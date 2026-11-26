@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Volume2, VolumeX, Play, Pause } from "lucide-react";
 
 interface AudioPlayerFloatProps {
@@ -17,6 +17,10 @@ interface AudioPlayerFloatProps {
   compactBottomLeft?: boolean;
 }
 
+const TARGET_VOLUME = 0.85;
+const FADE_DURATION_MS = 2800;
+const FADE_STEP_MS = 40;
+
 export function AudioPlayerFloat({
   src,
   title,
@@ -31,42 +35,94 @@ export function AudioPlayerFloat({
   compactBottomLeft = false,
 }: AudioPlayerFloatProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fadeTimerRef = useRef<number | null>(null);
   const [actuallyPlaying, setActuallyPlaying] = React.useState(false);
+
+  const stopFade = useCallback(() => {
+    if (fadeTimerRef.current !== null) {
+      window.clearInterval(fadeTimerRef.current);
+      fadeTimerRef.current = null;
+    }
+  }, []);
+
+  const startCinematicFadeIn = useCallback(
+    (audio: HTMLAudioElement) => {
+      stopFade();
+      audio.volume = 0;
+      const startTime = performance.now();
+      fadeTimerRef.current = window.setInterval(() => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(1, elapsed / FADE_DURATION_MS);
+        // Smooth ease-out curve for gentle emotional swell
+        const eased = 1 - Math.pow(1 - progress, 2);
+        audio.volume = Math.min(TARGET_VOLUME, Number((TARGET_VOLUME * eased).toFixed(3)));
+        if (progress >= 1) {
+          audio.volume = TARGET_VOLUME;
+          stopFade();
+        }
+      }, FADE_STEP_MS);
+    },
+    [stopFade]
+  );
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying) {
+      audio.volume = 0;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
-          .then(() => setActuallyPlaying(true))
+          .then(() => {
+            setActuallyPlaying(true);
+            startCinematicFadeIn(audio);
+          })
           .catch(() => {
             // Browser blocked autoplay until direct user gesture on player
             setActuallyPlaying(false);
+            stopFade();
           });
       } else {
         setActuallyPlaying(!audio.paused);
+        if (!audio.paused) startCinematicFadeIn(audio);
       }
     } else {
+      stopFade();
       audio.pause();
+      audio.volume = 0;
       setActuallyPlaying(false);
     }
-  }, [isPlaying, src]);
+  }, [isPlaying, src, startCinematicFadeIn, stopFade]);
+
+  useEffect(() => {
+    return () => {
+      stopFade();
+    };
+  }, [stopFade]);
 
   const handleDirectClick = () => {
     const audio = audioRef.current;
     if (audio) {
       if (actuallyPlaying) {
+        stopFade();
         audio.pause();
+        audio.volume = 0;
         setActuallyPlaying(false);
         if (isPlaying) onToggle();
       } else {
+        audio.volume = 0;
         const p = audio.play();
         if (p !== undefined) {
-          p.then(() => setActuallyPlaying(true)).catch(() => setActuallyPlaying(false));
+          p.then(() => {
+            setActuallyPlaying(true);
+            startCinematicFadeIn(audio);
+          }).catch(() => {
+            setActuallyPlaying(false);
+            stopFade();
+          });
         } else {
           setActuallyPlaying(true);
+          startCinematicFadeIn(audio);
         }
         if (!isPlaying) onToggle();
       }

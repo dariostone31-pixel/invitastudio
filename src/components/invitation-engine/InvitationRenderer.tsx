@@ -39,6 +39,15 @@ import { OrnamentDivider } from "./OrnamentDivider";
 import { RsvpModal } from "./RsvpModal";
 import { RevealSection } from "./RevealSection";
 import { AmbientParticles } from "./AmbientParticles";
+import {
+  SoulGlassCard,
+  SoulGlassItem,
+  SoulKenBurns,
+  SoulParallaxBackdrop,
+  SoulScrollTimeline,
+  SoulSilkReveal,
+  SoulTimelineDot,
+} from "@/components/motion/SoulChoreography";
 import { CornerOrnaments, CircularSaveSeal } from "./CornerOrnaments";
 import { CollaborativeAlbumSection } from "./CollaborativeAlbumSection";
 import { TriviaSection } from "./TriviaSection";
@@ -508,6 +517,7 @@ export function InvitationRenderer({
     !isModernKids &&
     !isHombreClub;
   const useCinematicXvHero = isXvStar || isEditorialPhoto;
+  const motionProfile = skin.motionProfile;
   const activeFontKey = customFont || skin.fontDisplay;
   const isScriptHeroFont = activeFontKey === "script" || activeFontKey === "pinyon";
   const heroTitleAnimClass = !gateOpened
@@ -877,9 +887,11 @@ export function InvitationRenderer({
         />
       )}
 
-      {/* Ambient Falling Petals / Sparkles: solo en temáticas nocturnas / mágicas */}
+      {/* Ambient Falling Petals / Sparkles: solo en temáticas nocturnas / mágicas con inercia de scroll */}
       {showAmbientParticles && (
-        <AmbientParticles category={skin.category} layoutId={layoutId} color={palette.accent} />
+        <SoulParallaxBackdrop range={motionProfile === "festive" ? 20 : 14} className="pointer-events-none fixed inset-0 z-10 overflow-hidden">
+          <AmbientParticles category={skin.category} layoutId={layoutId} color={palette.accent} />
+        </SoulParallaxBackdrop>
       )}
 
       {/* Fondo atmosférico sutil en escritorio */}
@@ -1117,15 +1129,46 @@ export function InvitationRenderer({
             <div aria-hidden="true" className="paper-texture absolute inset-0 z-0 opacity-60" />
           )
         )}
+        {/* Capas botánicas / acuarela con Parallax sutil (-25px -> +25px) en modo cinematográfico */}
+        {motionProfile === "cinematic" && (
+          <SoulParallaxBackdrop
+            range={25}
+            className="pointer-events-none absolute inset-0 z-[1] overflow-hidden opacity-[0.16]"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 400 800"
+              className="h-full w-full"
+              fill="none"
+              style={{ color: textAccentOnBg }}
+            >
+              <path
+                d="M-15 140C40 165 75 215 62 280C49 345 12 375 -10 420"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+              <ellipse cx="48" cy="212" rx="18" ry="7" transform="rotate(-28 48 212)" fill="currentColor" fillOpacity="0.22" />
+              <ellipse cx="56" cy="260" rx="16" ry="6" transform="rotate(24 56 260)" fill="currentColor" fillOpacity="0.18" />
+              <path
+                d="M415 390C360 425 325 480 340 555C355 630 390 665 412 720"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+              <ellipse cx="352" cy="480" rx="18" ry="7" transform="rotate(28 352 480)" fill="currentColor" fillOpacity="0.2" />
+              <ellipse cx="346" cy="532" rx="16" ry="6" transform="rotate(-22 346 532)" fill="currentColor" fillOpacity="0.18" />
+            </svg>
+          </SoulParallaxBackdrop>
+        )}
         {/* ================= HERO SECTION ================= */}
         {useCinematicXvHero ? (
           /* TIEMPO 3 — HERO FOTOGRÁFICO CINEMATOGRÁFICO (XV Gala Rosa / Princesa Imperial / Editorial Sobre con Foto) */
           <section id="xv-hero" className="relative overflow-hidden">
             <div className="relative h-[82vh] min-h-[540px] max-h-[660px] w-full overflow-hidden">
-              <img
+              <SoulKenBurns
                 src={heroImage}
                 alt={eventTitle}
-                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                eager
+                className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
               />
               {heroOverlayTint && (
                 <div
@@ -1251,10 +1294,11 @@ export function InvitationRenderer({
                 className="relative aspect-[4/5] w-full overflow-hidden rounded-t-full rounded-b-[20px] border"
                 style={{ borderColor: "rgba(184, 107, 75, 0.35)" }}
               >
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div
                   className="pointer-events-none absolute inset-0"
@@ -1327,11 +1371,12 @@ export function InvitationRenderer({
           </section>
         ) : isFullscreen || isEditorialPaper ? (
           <section className="relative overflow-hidden">
-            <div className={`relative w-full overflow-hidden ${isFullscreen ? "h-[460px] sm:h-[520px]" : "h-[420px] sm:h-[460px]"}`}>
-              <img
+            <div className={`relative w-full overflow-hidden ${motionProfile === "cinematic" ? "h-[500px] sm:h-[540px]" : isFullscreen ? "h-[460px] sm:h-[520px]" : "h-[420px] sm:h-[460px]"}`}>
+              <SoulKenBurns
                 src={heroImage}
                 alt={eventTitle}
-                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                eager
+                className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
               />
               {heroOverlayTint && (
                 <div
@@ -1341,12 +1386,12 @@ export function InvitationRenderer({
                 />
               )}
               {!isEditorialPaper && (
-                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-black/80" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/20 to-black/78" />
               )}
               {isEditorialPaper && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
                   style={{
                     background: `linear-gradient(to bottom, transparent, ${isMarfil ? "#FAF7F2" : palette.bg})`,
                   }}
@@ -1369,17 +1414,17 @@ export function InvitationRenderer({
                 </>
               )}
 
-              {/* Framed plaque: ivory paper plaque on editorial-sobre, fine double hairline glass on fullscreen photographic hero — positioned low so faces remain clear */}
-              <div className="absolute inset-0 flex items-end justify-center px-4 pb-8 sm:px-6 sm:pb-10">
+              {/* Tarjeta hero en tercio inferior con cristal esmerilado y coreografía de seda */}
+              <div className={`absolute inset-0 flex flex-col justify-end px-4 sm:px-6 ${motionProfile === "cinematic" ? "pb-10 sm:pb-14" : "pb-8 sm:pb-10"}`}>
+                <div className="mt-auto flex justify-center">
                 {isMarfil ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={gateOpened ? { opacity: 1, y: 0 } : { opacity: 0.92, y: 8 }}
-                    transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative w-full max-w-[324px] rounded-[20px] bg-[#FFFDFA]/95 px-5 py-5 text-center sm:px-6 sm:py-6"
+                  <SoulGlassCard
+                    immediate
+                    motionProfile={motionProfile}
+                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
                     style={{
-                      border: "1px solid rgba(183, 138, 78, 0.45)",
-                      boxShadow: "0 18px 40px -15px rgba(45, 30, 20, 0.12)",
+                      backgroundColor: "rgba(255, 253, 250, 0.88)",
+                      borderColor: "rgba(183, 138, 78, 0.48)",
                       color: palette.text,
                     }}
                   >
@@ -1388,58 +1433,62 @@ export function InvitationRenderer({
                       className="pointer-events-none absolute inset-[4px] rounded-[16px]"
                       style={{ border: "1px solid rgba(183, 138, 78, 0.45)" }}
                     />
-                    <p
-                      key={gateOpened ? "ey-open" : "ey-closed"}
-                      className={`font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em] ${
-                        gateOpened ? "type-eyebrow-reveal" : ""
-                      }`}
-                      style={{ color: textAccentOnSurface }}
-                    >
-                      {sample.eyebrow}
-                    </p>
-                    <motion.h1
-                      key={gateOpened ? "h1-open" : "h1-closed"}
-                      initial={gateOpened ? { opacity: 0, y: 8 } : false}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.2, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                      className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
-                      style={{ color: palette.text }}
-                    >
-                      {eventTitle}
-                    </motion.h1>
-                    <motion.span
-                      aria-hidden="true"
-                      key={gateOpened ? "rule-open" : "rule-closed"}
-                      initial={gateOpened ? { scaleX: 0 } : { scaleX: 1 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ duration: 0.95, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                      className="relative mx-auto mt-2.5 block h-[1px] w-24 origin-center"
-                      style={{ backgroundColor: "rgba(183, 138, 78, 0.78)" }}
-                    />
-                    <div
-                      className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
-                      style={{ borderColor: "rgba(183, 138, 78, 0.35)" }}
-                    >
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {dateDisplay.split(" ")[0]}
-                      </span>
-                      <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
-                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
-                      </span>
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {timeDisplay}
-                      </span>
-                    </div>
-                  </motion.div>
+                    <SoulGlassItem>
+                      <p
+                        key={gateOpened ? "ey-open" : "ey-closed"}
+                        className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
+                        style={{ color: textAccentOnSurface }}
+                      >
+                        {sample.eyebrow}
+                      </p>
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <SoulSilkReveal
+                        as="h1"
+                        immediate
+                        delay={0.12}
+                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        style={{ color: palette.text }}
+                      >
+                        {eventTitle}
+                      </SoulSilkReveal>
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <motion.span
+                        aria-hidden="true"
+                        key={gateOpened ? "rule-open" : "rule-closed"}
+                        initial={gateOpened ? { scaleX: 0 } : { scaleX: 1 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: 0.95, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="relative mx-auto mt-2.5 block h-[1px] w-24 origin-center"
+                        style={{ backgroundColor: "rgba(183, 138, 78, 0.78)" }}
+                      />
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <div
+                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        style={{ borderColor: "rgba(183, 138, 78, 0.35)" }}
+                      >
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                          {dateDisplay.split(" ")[0]}
+                        </span>
+                        <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
+                          {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                        </span>
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                          {timeDisplay}
+                        </span>
+                      </div>
+                    </SoulGlassItem>
+                  </SoulGlassCard>
                 ) : isBotanica ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={gateOpened ? { opacity: 1, y: 0 } : { opacity: 0.94, y: 6 }}
-                    transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative w-full max-w-[324px] rounded-[20px] bg-white/80 px-5 py-5 text-center backdrop-blur-[8px] sm:px-6 sm:py-6"
+                  <SoulGlassCard
+                    immediate
+                    motionProfile={motionProfile}
+                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
                     style={{
-                      border: "1px solid rgba(95, 125, 91, 0.48)",
-                      boxShadow: "0 18px 40px -16px rgba(36, 48, 36, 0.16)",
+                      backgroundColor: "rgba(255, 255, 255, 0.78)",
+                      borderColor: "rgba(95, 125, 91, 0.48)",
                       color: palette.text,
                     }}
                   >
@@ -1448,47 +1497,56 @@ export function InvitationRenderer({
                       className="pointer-events-none absolute inset-[4px] rounded-[16px]"
                       style={{ border: "1px solid rgba(95, 125, 91, 0.34)" }}
                     />
-                    <p
-                      key={gateOpened ? "ey-open" : "ey-closed"}
-                      className={`font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em] ${
-                        gateOpened ? "type-eyebrow-reveal" : ""
-                      }`}
-                      style={{ color: textAccentOnSurface }}
-                    >
-                      {sample.eyebrow}
-                    </p>
-                    <h1
-                      key={gateOpened ? "h1-open" : "h1-closed"}
-                      className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
-                      style={{ color: palette.text }}
-                    >
-                      {eventTitle}
-                    </h1>
-                    <span
-                      aria-hidden="true"
-                      className="type-rule-draw relative mx-auto mt-2 block h-[1.5px] w-16"
-                      style={{ backgroundColor: palette.accent }}
-                    />
-                    <div
-                      className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
-                      style={{ borderColor: "rgba(95, 125, 91, 0.35)" }}
-                    >
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {dateDisplay.split(" ")[0]}
-                      </span>
-                      <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
-                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
-                      </span>
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {timeDisplay}
-                      </span>
-                    </div>
-                  </motion.div>
+                    <SoulGlassItem>
+                      <p
+                        className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
+                        style={{ color: textAccentOnSurface }}
+                      >
+                        {sample.eyebrow}
+                      </p>
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <SoulSilkReveal
+                        as="h1"
+                        immediate
+                        delay={0.12}
+                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        style={{ color: palette.text }}
+                      >
+                        {eventTitle}
+                      </SoulSilkReveal>
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <span
+                        aria-hidden="true"
+                        className="type-rule-draw relative mx-auto mt-2 block h-[1.5px] w-16"
+                        style={{ backgroundColor: palette.accent }}
+                      />
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <div
+                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        style={{ borderColor: "rgba(95, 125, 91, 0.35)" }}
+                      >
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                          {dateDisplay.split(" ")[0]}
+                        </span>
+                        <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
+                          {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                        </span>
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+                          {timeDisplay}
+                        </span>
+                      </div>
+                    </SoulGlassItem>
+                  </SoulGlassCard>
                 ) : isEditorialPaper ? (
-                  <div
-                    className="relative w-full max-w-[324px] rounded-[20px] border px-5 py-5 text-center shadow-[0_18px_38px_-16px_rgba(42,36,32,0.22)] sm:px-6 sm:py-6"
+                  <SoulGlassCard
+                    immediate
+                    motionProfile={motionProfile}
+                    className="relative w-full max-w-[324px] rounded-[20px] px-5 py-5 text-center sm:px-6 sm:py-6"
                     style={{
-                      backgroundColor: `${palette.surface}F2`,
+                      backgroundColor: `${palette.surface}D8`,
                       borderColor: palette.border,
                       color: palette.text,
                     }}
@@ -1498,77 +1556,95 @@ export function InvitationRenderer({
                       className="pointer-events-none absolute inset-2 rounded-[14px] border opacity-55"
                       style={{ borderColor: palette.accent }}
                     />
-                    <p
-                      key={gateOpened ? "ey-open" : "ey-closed"}
-                      className={`font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em] ${
-                        gateOpened ? "type-eyebrow-reveal" : ""
-                      }`}
-                      style={{ color: textAccentOnSurface }}
-                    >
-                      {sample.eyebrow}
-                    </p>
-                    <h1
-                      key={gateOpened ? "h1-open" : "h1-closed"}
-                      className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
-                      style={{ color: palette.text }}
-                    >
-                      {eventTitle}
-                    </h1>
-                    <span
-                      aria-hidden="true"
-                      className="type-rule-draw relative mx-auto mt-2 block h-[1.5px] w-16"
-                      style={{ backgroundColor: palette.accent }}
-                    />
-                    <div
-                      className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
-                      style={{ borderColor: palette.border }}
-                    >
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {dateDisplay.split(" ")[0]}
-                      </span>
-                      <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
-                        {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
-                      </span>
-                      <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
-                        {timeDisplay}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-full max-w-[356px] rounded-2xl border border-white/55 bg-black/35 p-1.5 text-center text-white shadow-2xl backdrop-blur-[4px]">
-                    <div className="rounded-xl border border-white/25 px-5 py-6">
+                    <SoulGlassItem>
                       <p
-                        key={gateOpened ? "ey-open" : "ey-closed"}
-                        className={`font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 ${
-                          gateOpened ? "type-eyebrow-reveal" : ""
-                        }`}
+                        className="font-ui-jost relative text-[11px] font-semibold uppercase tracking-[0.24em]"
+                        style={{ color: textAccentOnSurface }}
                       >
                         {sample.eyebrow}
                       </p>
-                      <h1
-                        key={gateOpened ? "h1-open" : "h1-closed"}
-                        className={`text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont} ${heroTitleAnimClass}`}
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <SoulSilkReveal
+                        as="h1"
+                        immediate
+                        delay={0.12}
+                        className={`relative mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        style={{ color: palette.text }}
                       >
                         {eventTitle}
-                      </h1>
+                      </SoulSilkReveal>
+                    </SoulGlassItem>
+                    <SoulGlassItem>
                       <span
                         aria-hidden="true"
-                        className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-16 bg-white/80"
+                        className="type-rule-draw relative mx-auto mt-2 block h-[1.5px] w-16"
+                        style={{ backgroundColor: palette.accent }}
                       />
-                      <div className="mt-4 grid grid-cols-3 items-center border-y border-white/55 py-2.5 text-center">
-                        <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                    </SoulGlassItem>
+                    <SoulGlassItem>
+                      <div
+                        className="relative mt-4 grid grid-cols-3 items-center border-y py-2.5 text-center"
+                        style={{ borderColor: palette.border }}
+                      >
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
                           {dateDisplay.split(" ")[0]}
                         </span>
-                        <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
+                        <span className={`text-3xl font-bold leading-none ${sectionHeadingFont}`} style={{ color: textAccentOnSurface }}>
                           {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
                         </span>
-                        <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                        <span className="font-ui-jost text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
                           {timeDisplay}
                         </span>
                       </div>
+                    </SoulGlassItem>
+                  </SoulGlassCard>
+                ) : (
+                  <SoulGlassCard
+                    immediate
+                    isDark
+                    motionProfile={motionProfile}
+                    className="relative w-full max-w-[356px] rounded-2xl p-1.5 text-center text-white"
+                  >
+                    <div className="rounded-xl border border-white/25 px-5 py-6">
+                      <SoulGlassItem>
+                        <p className="font-ui-jost text-on-image text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95">
+                          {sample.eyebrow}
+                        </p>
+                      </SoulGlassItem>
+                      <SoulGlassItem>
+                        <SoulSilkReveal
+                          as="h1"
+                          immediate
+                          delay={0.12}
+                          className={`text-on-image mt-3 break-words py-1 text-4xl sm:text-5xl font-semibold leading-[1.22] ${displayFont}`}
+                        >
+                          {eventTitle}
+                        </SoulSilkReveal>
+                      </SoulGlassItem>
+                      <SoulGlassItem>
+                        <span
+                          aria-hidden="true"
+                          className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-16 bg-white/80"
+                        />
+                      </SoulGlassItem>
+                      <SoulGlassItem>
+                        <div className="mt-4 grid grid-cols-3 items-center border-y border-white/55 py-2.5 text-center">
+                          <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                            {dateDisplay.split(" ")[0]}
+                          </span>
+                          <span className={`text-on-image text-3xl font-bold leading-none ${sectionHeadingFont}`}>
+                            {dateDisplay.match(/\d{1,2}/)?.[0] || "17"}
+                          </span>
+                          <span className="font-ui-jost text-on-image text-[11px] uppercase tracking-[0.18em] text-white/95">
+                            {timeDisplay}
+                          </span>
+                        </div>
+                      </SoulGlassItem>
                     </div>
-                  </div>
+                  </SoulGlassCard>
                 )}
+                </div>
               </div>
             </div>
 
@@ -1648,10 +1724,11 @@ export function InvitationRenderer({
               </div>
 
               <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#181818]">
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/15 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-left text-white">
@@ -1792,10 +1869,11 @@ export function InvitationRenderer({
               </div>
 
               <div className="relative h-[240px] w-full overflow-hidden border-b" style={{ borderColor: "rgba(15, 37, 55, 0.14)" }}>
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F2537]/82 via-[#0F2537]/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white">
@@ -1903,10 +1981,11 @@ export function InvitationRenderer({
               style={{ backgroundColor: palette.surface, borderColor: palette.border }}
             >
               <div className="relative h-[250px] w-full overflow-hidden">
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
                 <div className="absolute left-4 right-4 top-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-white">
@@ -2015,10 +2094,11 @@ export function InvitationRenderer({
               </svg>
 
               <div className="relative h-[340px] w-full overflow-hidden border" style={{ borderColor: "rgba(212, 175, 55, 0.3)" }}>
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div
                   className="absolute inset-0"
@@ -2091,10 +2171,11 @@ export function InvitationRenderer({
               }}
             >
               <div className="relative h-[340px] w-full overflow-hidden">
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div
                   className="absolute inset-0"
@@ -2159,10 +2240,11 @@ export function InvitationRenderer({
           <section className="relative overflow-hidden px-5 pt-6 pb-4 text-center">
             <div className="relative border p-2" style={{ borderColor: "rgba(200, 138, 75, 0.45)" }}>
               <div className="relative h-[330px] w-full overflow-hidden">
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover contrast-105 ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`contrast-105 ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div
                   className="absolute inset-0"
@@ -2233,10 +2315,11 @@ export function InvitationRenderer({
               style={{ borderColor: `${palette.accent}35` }}
             >
               <div className="relative h-64 w-full overflow-hidden rounded-[26px]">
-                <img
+                <SoulKenBurns
                   src={heroImage}
                   alt={eventTitle}
-                  className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                  eager
+                  className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
                 />
                 <div
                   className="absolute inset-0"
@@ -2308,10 +2391,11 @@ export function InvitationRenderer({
           /* NEON DARK & INFANTIL ANIMADO HERO */
           <section className="relative overflow-hidden">
             <div className="relative h-[320px] sm:h-[360px] w-full overflow-hidden">
-              <img
+              <SoulKenBurns
                 src={heroImage}
                 alt={eventTitle}
-                className={`animate-ken-burns h-full w-full object-cover ${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
+                eager
+                className={`${skin.imageFilter ?? ""} ${heroPhotoFilterClass}`}
               />
               {heroOverlayTint && (
                 <div
@@ -2418,7 +2502,7 @@ export function InvitationRenderer({
         <div className="px-5 pb-24">
           {/* ================= CUENTA REGRESIVA / MODO RECUERDO ================= */}
           {memoryMode ? (
-            <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <section
                 id="xv-countdown"
                 className="mt-6 rounded-[28px] border p-6 text-center shadow-sm"
@@ -2444,7 +2528,7 @@ export function InvitationRenderer({
             </RevealSection>
           ) : (
             sections.countdown && (
-              <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+              <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
                 <div
                   id="xv-countdown"
                   className={
@@ -2490,7 +2574,7 @@ export function InvitationRenderer({
 
           {/* ================= PADRES / PADRINOS ================= */}
           {!isEssentialPlan && parentsList && parentsList.length > 0 && (
-            <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section className="text-center">
                 <AnimatedSectionMedallion accentColor={textAccentOnBg} surfaceColor={palette.surface} layoutId={layoutId}>
@@ -2530,7 +2614,7 @@ export function InvitationRenderer({
 
           {/* ================= HISTORIA (Diferenciada por Layout) ================= */}
           {sections.story && storyBody && (
-            <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               {isXvStar ? (
                 <section
@@ -2706,7 +2790,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= LUGARES & MAPA & CALENDARIO ================= */}
-          <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
           <section
             id="xv-coords"
@@ -2735,9 +2819,12 @@ export function InvitationRenderer({
                   {isXvNocturno || isNeon ? "01 // DÓNDE & CUÁNDO" : isTicket ? "Puerta & Ubicación" : "Dónde & Cuándo"}
                 </p>
               )}
-              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}>
+              <SoulSilkReveal
+                as="h2"
+                className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}
+              >
                 {isXvStar ? "Agenda & Recepción" : "Coordenadas del Evento"}
-              </h2>
+              </SoulSilkReveal>
               {isHombreClub ? (
                 <motion.span
                   aria-hidden="true"
@@ -2781,20 +2868,109 @@ export function InvitationRenderer({
             )}
 
             <div className="space-y-4">
-              {locations.map((loc, idx) => (
+              {locations.map((loc, idx) => {
+                const locArchPhoto =
+                  galleryList.length > 0
+                    ? galleryList[idx % galleryList.length]
+                    : heroImage;
+
+                if (motionProfile === "cinematic" && !isBoardingPass && !isTicket && !isNewspaper) {
+                  return (
+                    <SoulGlassCard
+                      key={`${loc.label}-${idx}`}
+                      isDark={palette.isDark}
+                      motionProfile="cinematic"
+                      className={`${cardRadius} p-5 sm:p-6 text-center`}
+                      style={{
+                        backgroundColor: isMarfil
+                          ? "rgba(255, 253, 250, 0.84)"
+                          : isBotanica
+                          ? "rgba(255, 255, 255, 0.76)"
+                          : isBohoPampas
+                          ? "rgba(255, 253, 249, 0.84)"
+                          : undefined,
+                        borderColor: isMarfil
+                          ? "rgba(183, 138, 78, 0.45)"
+                          : isBotanica
+                          ? "rgba(95, 125, 91, 0.36)"
+                          : isBohoPampas
+                          ? "rgba(184, 107, 75, 0.36)"
+                          : undefined,
+                      }}
+                    >
+                      {locArchPhoto && (
+                        <SoulGlassItem className="mb-4">
+                          <div className="mx-auto w-44 overflow-hidden rounded-t-full border border-white/60 shadow-lg" style={{ borderColor: palette.border }}>
+                            <img
+                              src={locArchPhoto}
+                              alt={`${loc.label} - ${loc.venue}`}
+                              loading="lazy"
+                              className={`aspect-[4/5] w-full rounded-t-full object-cover shadow-lg ${skin.imageFilter ?? ""}`}
+                            />
+                          </div>
+                        </SoulGlassItem>
+                      )}
+                      <SoulGlassItem>
+                        <span
+                          className="inline-block rounded-full px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em]"
+                          style={{
+                            backgroundColor: palette.surfaceAlt,
+                            borderColor: palette.border,
+                            color: textAccentOnAlt,
+                          }}
+                        >
+                          {loc.label}
+                        </span>
+                      </SoulGlassItem>
+                      <SoulGlassItem>
+                        <h3 className="mt-2.5 break-words text-lg font-semibold">{loc.venue}</h3>
+                      </SoulGlassItem>
+                      <SoulGlassItem>
+                        <p className="mt-1.5 break-words text-[15px] leading-[1.6]" style={{ color: palette.textMuted }}>
+                          {loc.address} · {loc.city}
+                        </p>
+                        <p
+                          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold"
+                          style={{ color: textAccentOnSurface }}
+                        >
+                          <Clock className="h-4 w-4" strokeWidth={1.75} />
+                          {loc.time}
+                        </p>
+                      </SoulGlassItem>
+                      <SoulGlassItem className="mt-4">
+                        <motion.a
+                          href={loc.mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.015 }}
+                          whileTap={{ scale: 0.94 }}
+                          transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                          className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.12em] transition-opacity hover:opacity-90"
+                          style={{
+                            backgroundColor: buttonBg,
+                            color: palette.accentText,
+                          }}
+                        >
+                          <MapPin className="h-4 w-4" strokeWidth={1.75} />
+                          Ver en Google Maps
+                        </motion.a>
+                      </SoulGlassItem>
+                    </SoulGlassCard>
+                  );
+                }
+
+                return (
                 <motion.div
                   key={`${loc.label}-${idx}`}
-                  variants={
-                    isBotanica || isBoardingPass
-                      ? {
-                          hidden: { opacity: 0, y: 18 },
-                          show: {
-                            opacity: 1,
-                            y: 0,
-                            transition: { duration: 0.65, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] },
-                          },
-                        }
-                      : undefined
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.16 }}
+                  transition={
+                    motionProfile === "editorial"
+                      ? { type: "spring", stiffness: 60, damping: 22, delay: idx * 0.08 }
+                      : motionProfile === "festive"
+                      ? { type: "spring", stiffness: 85, damping: 16, delay: idx * 0.08 }
+                      : { duration: 0.8, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }
                   }
                   className={`${cardRadius} border p-5 sm:p-6 ${isTicket && !isXvNocturno ? "text-left" : "text-center"} ${
                     isBotanica ? "backdrop-blur-[8px]" : isNocheGala || isXvNocturno ? "backdrop-blur-md" : ""
@@ -2939,7 +3115,8 @@ export function InvitationRenderer({
                     </motion.a>
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Botones Agendar Fecha */}
@@ -2985,7 +3162,7 @@ export function InvitationRenderer({
 
           {/* ================= ITINERARIO (Diferenciado por Layout) ================= */}
           {sections.schedule && scheduleList.length > 0 && (
-            <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section id="sec-itinerario">
                 <div className="mb-5 text-center">
@@ -2995,7 +3172,12 @@ export function InvitationRenderer({
                   >
                     {isXvNocturno || isNeon ? "02 // LINE-UP" : isHombreClub ? "CLUB SCHEDULE" : "Programa del Día"}
                   </p>
-                  <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}>Itinerario</h2>
+                  <SoulSilkReveal
+                    as="h2"
+                    className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}
+                  >
+                    Itinerario
+                  </SoulSilkReveal>
                   {isHombreClub ? (
                     <motion.span
                       aria-hidden="true"
@@ -3106,12 +3288,12 @@ export function InvitationRenderer({
                     ))}
                   </div>
                 ) : (
-                /* Mobile <640px: left rail full-width cards; >=640px: center axis alternating */
-                <div className="relative space-y-4 pl-6 sm:pl-0">
-                  <div
-                    className="absolute bottom-2 left-[11px] top-2 w-[1.5px] sm:left-1/2 sm:-translate-x-1/2"
-                    style={{ backgroundColor: palette.border }}
-                  />
+                /* Mobile <640px: left rail full-width cards; >=640px: center axis alternating with real-time scroll drawing */
+                <SoulScrollTimeline
+                  accentColor={textAccentOnBg}
+                  baseColor={palette.border}
+                  className="space-y-4 pl-6 sm:pl-0"
+                >
                   {scheduleList.map((item, idx) => {
                     const isLeft = idx % 2 === 0;
                     const itemCardBg = isModernKids
@@ -3131,30 +3313,22 @@ export function InvitationRenderer({
                     return (
                       <motion.div
                         key={item.time + item.title}
-                        variants={
-                          isBotanica
-                            ? {
-                                hidden: { opacity: 0, y: 16 },
-                                show: {
-                                  opacity: 1,
-                                  y: 0,
-                                  transition: {
-                                    duration: 0.62,
-                                    delay: idx * 0.08,
-                                    ease: [0.22, 1, 0.36, 1],
-                                  },
-                                },
-                              }
-                            : undefined
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={
+                          motionProfile === "editorial"
+                            ? { type: "spring", stiffness: 60, damping: 22, delay: idx * 0.06 }
+                            : motionProfile === "festive"
+                            ? { type: "spring", stiffness: 85, damping: 16, delay: idx * 0.06 }
+                            : { duration: 0.75, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }
                         }
                         className="relative sm:grid sm:grid-cols-2 sm:items-center sm:gap-4"
                       >
-                        <span
-                          className="absolute -left-[19px] top-4 z-10 h-3 w-3 rounded-full border-2 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2"
-                          style={{
-                            backgroundColor: textAccentOnBg,
-                            borderColor: palette.bg,
-                          }}
+                        <SoulTimelineDot
+                          accentColor={textAccentOnBg}
+                          surfaceColor={palette.bg}
+                          index={idx}
                         />
                         {isLeft ? (
                           <>
@@ -3218,7 +3392,7 @@ export function InvitationRenderer({
                       </motion.div>
                     );
                   })}
-                </div>
+                </SoulScrollTimeline>
                 )}
               </section>
             </RevealSection>
@@ -3226,7 +3400,7 @@ export function InvitationRenderer({
 
           {/* ================= GALERÍA DE FOTOS (Collage Bento en Fullscreen / Polaroid en Editorial / Prensa en Diario) ================= */}
           {sections.gallery && galleryList.length > 0 && (
-            <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <section id="sec-galeria">
                 <div className="mb-5 text-center">
@@ -3245,9 +3419,12 @@ export function InvitationRenderer({
                       ? "Archivo Fotográfico"
                       : "Recuerdos"}
                   </p>
-                  <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                  <SoulSilkReveal
+                    as="h2"
+                    className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}
+                  >
                     Momentos Especiales
-                  </h2>
+                  </SoulSilkReveal>
                   <span
                     aria-hidden="true"
                     className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
@@ -3553,7 +3730,7 @@ export function InvitationRenderer({
                     ))}
                   </div>
                 ) : (
-                  /* Visor principal con transición suave + tiras de miniaturas */
+                  /* Visor principal con transición suave + marco en arco editorial en modo cinematográfico */
                   <div
                     className={`relative overflow-hidden ${cardRadius} ${isNewspaper ? "border-2 p-2" : "border p-2.5"} ${cardShadow}`}
                     style={{
@@ -3565,15 +3742,19 @@ export function InvitationRenderer({
                       type="button"
                       onClick={() => setLightboxIdx(activeGalleryIdx)}
                       aria-label="Ampliar foto destacada"
-                      className={`relative block aspect-[4/5] w-full overflow-hidden ${innerRadius}`}
+                      className={`relative block aspect-[4/5] w-full overflow-hidden ${
+                        motionProfile === "cinematic" && !isNewspaper
+                          ? "rounded-t-full rounded-b-[18px] shadow-lg"
+                          : innerRadius
+                      }`}
                     >
                       <img
                         key={galleryList[activeGalleryIdx]}
                         src={galleryList[activeGalleryIdx] || galleryList[0]}
                         alt={`Momento ${activeGalleryIdx + 1}`}
                         className={`anim-gallery-slide h-full w-full object-cover ${
-                          skin.imageFilter ?? ""
-                        }`}
+                          motionProfile === "cinematic" && !isNewspaper ? "rounded-t-full shadow-lg" : ""
+                        } ${skin.imageFilter ?? ""}`}
                       />
                       <span
                         className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-md"
@@ -3644,7 +3825,7 @@ export function InvitationRenderer({
 
           {/* ================= DRESS CODE ================= */}
           {sections.dressCode && (
-          <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               id="xv-dress"
@@ -3720,9 +3901,12 @@ export function InvitationRenderer({
                 {isXvNocturno || isNeon ? "03 // DRESS CODE" : "Código de Vestimenta"}
               </p>
             )}
-            <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}>
+            <SoulSilkReveal
+              as="h2"
+              className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}
+            >
               {dressCodeLabel}
-            </h2>
+            </SoulSilkReveal>
             {isHombreClub ? (
               <motion.span
                 aria-hidden="true"
@@ -3751,8 +3935,22 @@ export function InvitationRenderer({
                     { name: "Marfil Suave", hex: "#EFE6D5" },
                   ]
                 : sample.dressCode.swatches
-              ).map((sw) => (
-                <div key={sw.name} className="flex flex-col items-center gap-1.5">
+              ).map((sw, idx) => (
+                <motion.div
+                  key={sw.name}
+                  initial={{ opacity: 0, y: 12, scale: 0.88 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={
+                    motionProfile === "festive"
+                      ? { type: "spring", stiffness: 85, damping: 16, delay: idx * 0.08 }
+                      : motionProfile === "editorial"
+                      ? { type: "spring", stiffness: 60, damping: 22, delay: idx * 0.07 }
+                      : { duration: 0.75, delay: idx * 0.09, ease: [0.22, 1, 0.36, 1] }
+                  }
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  className="flex flex-col items-center gap-1.5"
+                >
                   <span
                     className="h-8 w-8 rounded-full border-2 shadow-sm"
                     style={{
@@ -3763,7 +3961,7 @@ export function InvitationRenderer({
                   <span className="text-[11px] font-medium" style={{ color: isXvStar ? "#5D4B3B" : palette.textMuted }}>
                     {sw.name}
                   </span>
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -3785,7 +3983,7 @@ export function InvitationRenderer({
 
           {/* ================= SOLO ADULTOS (OPCIONAL) ================= */}
           {!isEssentialPlan && customAdultsOnly && (
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               className={`${cardRadius} border p-6 text-center ${cardShadow}`}
@@ -3820,7 +4018,7 @@ export function InvitationRenderer({
 
           {/* ================= VALOR DE TARJETA (OPCIONAL) ================= */}
           {!isEssentialPlan && customTarjetaPricing && customTarjetaPricing.length > 0 && (
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${isBotanica ? "backdrop-blur-[8px]" : isNocheGala ? "backdrop-blur-md" : ""} ${cardShadow}`}
@@ -3907,7 +4105,7 @@ export function InvitationRenderer({
 
           {/* ================= REGALOS / VAQUITA + COPIAR ALIAS ================= */}
           {sections.gifts && (
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               id="sec-regalos"
@@ -3920,9 +4118,12 @@ export function InvitationRenderer({
               <AnimatedSectionMedallion accentColor={textAccentOnSurface} surfaceColor={palette.surfaceAlt} layoutId={layoutId}>
                 <CelebrationGiftIcon category={skin.category} skinId={skin.id} className="h-7 w-7" />
               </AnimatedSectionMedallion>
-            <h2 className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+            <SoulSilkReveal
+              as="h2"
+              className={`${sectionTitleAnimClass} mt-3 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}
+            >
               {sample.gifts.title}
-            </h2>
+            </SoulSilkReveal>
             <span
               aria-hidden="true"
               className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
@@ -3999,7 +4200,7 @@ export function InvitationRenderer({
 
           {/* ================= MURO DE BUENOS DESEOS / FIRMAS ================= */}
           {sections.wishes && (
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section className="space-y-3.5">
               <div className="text-center">
@@ -4012,9 +4213,12 @@ export function InvitationRenderer({
                 >
                   Libro de Firmas
                 </p>
-                <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+                <SoulSilkReveal
+                  as="h2"
+                  className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}
+                >
                   Buenos Deseos
-                </h2>
+                </SoulSilkReveal>
                 <span
                   aria-hidden="true"
                   className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
@@ -4064,7 +4268,7 @@ export function InvitationRenderer({
 
           {/* ================= LOS PROTAGONISTAS (2 CARDS FOTO 1:1) ================= */}
           {!isEssentialPlan && galleryList.length >= 2 && (skin.category === "boda" || skin.category === "xv") && (
-            <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <div className="mt-8 grid grid-cols-2 gap-3.5">
                 {galleryList.slice(0, 2).map((img, i) => (
                   <div
@@ -4118,7 +4322,7 @@ export function InvitationRenderer({
 
           {/* ================= MÚSICA PARA LA FIESTA / PLAYLIST DJ (PRO & LLAVE EN MANO) ================= */}
           {allowDjSongs && sections.djSongs && !memoryMode && (
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               className={`${cardRadius} ${isNewspaper ? "border-2" : "border"} p-6 text-center ${isBotanica ? "backdrop-blur-[8px]" : isNocheGala ? "backdrop-blur-md" : ""} ${cardShadow}`}
@@ -4143,9 +4347,12 @@ export function InvitationRenderer({
               >
                 Playlist de la Fiesta
               </p>
-              <h2 className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
+              <SoulSilkReveal
+                as="h2"
+                className={`${sectionTitleAnimClass} mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}
+              >
                 ¿Qué tema no puede faltar?
-              </h2>
+              </SoulSilkReveal>
               <span
                 aria-hidden="true"
                 className="type-rule-draw mx-auto mt-2 block h-[1.5px] w-14"
@@ -4265,7 +4472,7 @@ export function InvitationRenderer({
 
           {/* ================= MINI-TRIVIA CON PODIO (PRO & LLAVE EN MANO) ================= */}
           {!isEssentialPlan && sections.trivia && triviaQuestions.length > 0 && !memoryMode && (
-            <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+            <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
               <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
               <TriviaSection
                 eventSlug={eventSlug}
@@ -4288,7 +4495,7 @@ export function InvitationRenderer({
           {!isEssentialPlan &&
             sections.collaborativeAlbum &&
             Boolean(albumUrl || instagramHandle || eventHashtag) && (
-              <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+              <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
                 <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
                 <CollaborativeAlbumSection
                   albumUrl={albumUrl}
@@ -4307,7 +4514,7 @@ export function InvitationRenderer({
 
           {/* ================= CONFIRMAR ASISTENCIA (RSVP NATIVO) ================= */}
           {sections.rsvp && !memoryMode && (
-          <RevealSection luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil || isXvStar} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala || isXvNocturno || isHombreClub} botanicalStagger={isBotanica || isBoardingPass} elasticSpring={isModernKids}>
             <OrnamentDivider layoutId={layoutId} category={skin.category} skinId={skin.id} color={textAccentOnBg} />
             <section
               id="xv-rsvp"
@@ -4351,9 +4558,12 @@ export function InvitationRenderer({
                   05 // CONFIRMACIÓN VIP
                 </p>
               )}
-              <h2 className={`${sectionTitleAnimClass} mt-2 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}>
+              <SoulSilkReveal
+                as="h2"
+                className={`${sectionTitleAnimClass} mt-2 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont} ${isHombreClub ? "uppercase tracking-[0.06em]" : ""}`}
+              >
                 ¿Contamos con vos?
-              </h2>
+              </SoulSilkReveal>
               {isHombreClub ? (
                 <motion.span
                   aria-hidden="true"
@@ -4402,7 +4612,7 @@ export function InvitationRenderer({
           )}
 
           {/* ================= BLOQUE GRACIAS EMOCIONAL (SIN APARIENCIA DE FORMULARIO) ================= */}
-          <RevealSection luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
+          <RevealSection motionProfile={motionProfile} luxurySpring={isMarfil} editorialSlide={isMagazine} organicFluid={isBohoPampas || isNocheGala} botanicalStagger={isBotanica || isBoardingPass}>
             <section
               className={`relative mt-9 overflow-hidden ${isNewspaper ? "rounded-none border" : "rounded-[24px]"}`}
               style={isNewspaper ? { borderColor: palette.border } : undefined}
