@@ -290,7 +290,7 @@ export function CatalogShowcase() {
             </div>
 
             <a
-              href="https://vercel.app"
+              href="https://invitafigus.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="font-ui-jost inline-flex min-h-[46px] shrink-0 items-center justify-center rounded-full border border-[#B78A4E] bg-[#2A121B] px-6 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#FAF7F2] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6B1E30] hover:shadow-md"
