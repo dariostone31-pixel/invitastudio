@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp, hasValidImageMagicBytes } from "@/lib/security";
 
 const PRIMARY_UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
 const TMP_UPLOAD_DIR = "/tmp/invita-con-alma-uploads";
@@ -41,6 +43,15 @@ function resolveUploadDir(): { dir: string; ephemeral: boolean } {
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`upload-img:${ip}`, 25, 10 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas subidas seguidas. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   try {
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
@@ -73,6 +84,12 @@ export async function POST(req: Request) {
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
+      if (!hasValidImageMagicBytes(buffer)) {
+        return NextResponse.json(
+          { error: `El archivo ${file.name} no es una imagen válida.` },
+          { status: 400 }
+        );
+      }
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const safeName = `img-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
 

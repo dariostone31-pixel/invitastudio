@@ -214,6 +214,92 @@ export function CatalogShowcase() {
           );
         })}
       </div>
+
+      {/* Curaduría Cruzada hacia InvitaFigus — Visible exclusivamente en Infantiles (Niños / Niñas) */}
+      {(selectedCat === "nino" || selectedCat === "nina") && (
+        <motion.aside
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: STUDIO_EASE }}
+          aria-label="Edición temática deportiva InvitaFigus"
+          className="relative mt-10 overflow-hidden rounded-2xl border border-[#B78A4E]/55 bg-[#FAF7F2] p-6 shadow-[0_22px_50px_-24px_rgba(42,18,27,0.22)] sm:p-8"
+        >
+          {/* Doble marco fino dorado editorial */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-2.5 rounded-xl border border-[#B78A4E]/25"
+          />
+
+          <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              {/* Distintivo SVG fino a medida: Escudo geométrico + tipografía 10 */}
+              <div
+                aria-hidden="true"
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-[#B78A4E]/40 bg-[#FFFBFA] shadow-sm"
+              >
+                <svg
+                  viewBox="0 0 64 72"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-14 w-14"
+                >
+                  <path
+                    d="M32 4L56 13.5V33.5C56 49.2 45.6 61.5 32 67.5C18.4 61.5 8 49.2 8 33.5V13.5L32 4Z"
+                    stroke="#B78A4E"
+                    strokeWidth="1.5"
+                    fill="#FAF7F2"
+                  />
+                  <path
+                    d="M32 9L51 16.8V33.5C51 46.4 42.5 56.6 32 61.8C21.5 56.6 13 46.4 13 33.5V16.8L32 9Z"
+                    stroke="#6B1E30"
+                    strokeOpacity="0.45"
+                    strokeWidth="1"
+                  />
+                  <path
+                    d="M25 14L32 10.5L39 14"
+                    stroke="#B78A4E"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                  <text
+                    x="32"
+                    y="43"
+                    textAnchor="middle"
+                    fill="#2A121B"
+                    fontFamily="Georgia, serif"
+                    fontWeight="700"
+                    fontSize="21"
+                    letterSpacing="-0.5"
+                  >
+                    10
+                  </text>
+                </svg>
+              </div>
+
+              <div className="max-w-2xl">
+                <p className="font-ui-jost text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A6331]">
+                  EDICIÓN TEMÁTICA · COLECCIÓN DEPORTIVA
+                </p>
+                <h3 className="font-display-cormorant mt-1.5 text-2xl font-semibold leading-snug text-[#2A121B] sm:text-3xl">
+                  ¿Buscás una propuesta 100% futbolera para su cumple?
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#5F464D]">
+                  Diseñamos un estudio exclusivo para pequeños fanáticos: invitaciones interactivas estilo figurita de colección con los colores y escudos de su club o selección, listas para compartir en minutos.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-ui-jost inline-flex min-h-[46px] shrink-0 items-center justify-center rounded-full border border-[#B78A4E] bg-[#2A121B] px-6 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#FAF7F2] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6B1E30] hover:shadow-md"
+            >
+              Explorar InvitaFigus →
+            </a>
+          </div>
+        </motion.aside>
+      )}
     </section>
   );
 }

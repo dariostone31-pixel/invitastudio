@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { addDjSongRequest, getEventBySlug, voteDjSongRequest } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/security";
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`songs-post:${ip}`, 30, 10 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas sugerencias seguidas. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const eventSlug = String(body.eventSlug || "").trim();
@@ -44,6 +55,15 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`songs-vote:${ip}`, 40, 10 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiados votos seguidos." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const eventSlug = String(body.eventSlug || "").trim();

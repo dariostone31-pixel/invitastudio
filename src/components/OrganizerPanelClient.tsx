@@ -29,6 +29,9 @@ import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import type { EventRecord, PreloadedGuest, RsvpRecord } from "@/lib/db";
 import { getWhatsAppHref } from "@/config/business";
 import { PaymentPendingBanner } from "./PaymentPendingBanner";
+import { QrTableCardGenerator } from "./QrTableCardGenerator";
+import { MusicCatalogPicker } from "./MusicCatalogPicker";
+import { getSkinById } from "@/templates/catalog";
 
 interface OrganizerPanelClientProps {
   event: EventRecord;
@@ -130,6 +133,11 @@ export function OrganizerPanelClient({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPanelLink, setCopiedPanelLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
+  const panelSkin = useMemo(() => getSkinById(event.skinId), [event.skinId]);
+  const [audioSelection, setAudioSelection] = useState<string>(event.audioOverride || "");
+  const [savingAudio, setSavingAudio] = useState(false);
+  const [savedAudioOk, setSavedAudioOk] = useState(false);
+  const [audioSaveError, setAudioSaveError] = useState<string | null>(null);
   const isPaid =
     event.paymentStatus === "pagado" ||
     (event.status === "publicada" &&
@@ -1478,6 +1486,116 @@ export function OrganizerPanelClient({
             )}
           </section>
         </div>
+
+        {/* Generador de Cartel QR de Mesa Personalizado (Álbum Colaborativo) */}
+        <QrTableCardGenerator event={event} isPaid={isPaid} />
+
+        {/* Selector rápido de Música de Fondo (incluye regla estricta de silencio) */}
+        <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm print:hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#6B1E30]">
+                <Music className="h-3.5 w-3.5" />
+                Música de Fondo de tu Invitación
+              </span>
+              <h2 className="mt-1 font-cormorant text-2xl font-bold text-stone-900">
+                Catálogo Musical &amp; Silencio
+              </h2>
+              <p className="mt-0.5 text-xs text-stone-500">
+                {isEssentialPlan
+                  ? "Tu Plan Esencial incluye la música predeterminada del diseño, o podés silenciarla por completo."
+                  : "Elegí la pista temática por categoría (incluye Infantiles, Bautismos y Comuniones) o seleccioná Sin audio."}
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={savingAudio}
+              onClick={async () => {
+                setSavingAudio(true);
+                setSavedAudioOk(false);
+                setAudioSaveError(null);
+                try {
+                  const res = await fetch(`/api/panel/${event.panelToken}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      audioOverride:
+                        audioSelection === "none"
+                          ? "none"
+                          : isEssentialPlan
+                          ? ""
+                          : audioSelection,
+                    }),
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setAudioSaveError(data.error || "No se pudo guardar la música.");
+                  } else {
+                    setSavedAudioOk(true);
+                    setTimeout(() => setSavedAudioOk(false), 3000);
+                  }
+                } catch {
+                  setAudioSaveError("Error de conexión al guardar la música.");
+                } finally {
+                  setSavingAudio(false);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-60"
+            >
+              {savedAudioOk ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  Música guardada
+                </>
+              ) : savingAudio ? (
+                "Guardando..."
+              ) : (
+                "Guardar música"
+              )}
+            </button>
+          </div>
+
+          <div className="mt-4">
+            {isEssentialPlan ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAudioSelection("")}
+                  className={`rounded-xl border px-3.5 py-2 text-xs font-semibold ${
+                    audioSelection !== "none"
+                      ? "border-[#6B1E30] bg-[#6B1E30]/10 text-[#6B1E30]"
+                      : "border-stone-200 bg-white text-stone-700"
+                  }`}
+                >
+                  Música del modelo ({panelSkin.sample.audioTitle})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAudioSelection("none")}
+                  className={`rounded-xl border px-3.5 py-2 text-xs font-semibold ${
+                    audioSelection === "none"
+                      ? "border-stone-900 bg-stone-900 text-white"
+                      : "border-stone-200 bg-white text-stone-700"
+                  }`}
+                >
+                  Sin audio (silencio total)
+                </button>
+              </div>
+            ) : (
+              <MusicCatalogPicker
+                value={audioSelection}
+                onChange={setAudioSelection}
+                skinCategory={panelSkin.category}
+                defaultTrackLabel={panelSkin.sample.audioTitle}
+                defaultTrackUrl={panelSkin.sample.audioUrl}
+                compact
+              />
+            )}
+            {audioSaveError && (
+              <p className="mt-2 text-xs text-rose-700">{audioSaveError}</p>
+            )}
+          </div>
+        </section>
       </main>
 
       {/* Vista exclusiva para Impresión / Guardar PDF (controlada por checkboxes del organizador) */}

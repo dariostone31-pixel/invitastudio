@@ -1,6 +1,42 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { getEventById, updateEventRecord } from "@/lib/db";
+
+function verifyMercadoPagoSignature(
+  req: Request,
+  paymentId: string,
+  secret: string
+): boolean {
+  const sigHeader = req.headers.get("x-signature") || "";
+  const reqId = req.headers.get("x-request-id") || "";
+  if (!sigHeader || !reqId) return false;
+
+  const parts = Object.fromEntries(
+    sigHeader.split(",").map((part) => {
+      const [k, v] = part.split("=").map((s) => s.trim());
+      return [k, v];
+    })
+  );
+  const ts = parts.ts;
+  const v1 = parts.v1;
+  if (!ts || !v1) return false;
+
+  const manifest = `id:${paymentId};request-id:${reqId};ts:${ts};`;
+  const computed = crypto
+    .createHmac("sha256", secret)
+    .update(manifest)
+    .digest("hex");
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(computed, "hex"),
+      Buffer.from(v1, "hex")
+    );
+  } catch {
+    return false;
+  }
+}
 
 export async function GET() {
   return NextResponse.json({ ok: true, endpoint: "mercadopago-webhook" });
@@ -26,10 +62,15 @@ export async function POST(req: Request) {
 
     const topic = String(body.type || body.topic || queryTopic || "");
     const dataObj = body.data as Record<string, unknown> | undefined;
-    const paymentId = String(dataObj?.id || queryId || "");
+    const paymentId = String(dataObj?.id || queryId || "").trim();
 
-    if (topic !== "payment" || !paymentId) {
+    if (topic !== "payment" || !/^[a-zA-Z0-9_-]{1,64}$/.test(paymentId)) {
       return NextResponse.json({ ok: true, ignored: true });
+    }
+
+    const webhookSecret = process.env.MP_WEBHOOK_SECRET?.trim();
+    if (webhookSecret && !verifyMercadoPagoSignature(req, paymentId, webhookSecret)) {
+      return NextResponse.json({ error: "Firma inválida" }, { status: 401 });
     }
 
     const client = new MercadoPagoConfig({ accessToken });

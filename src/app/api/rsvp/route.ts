@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { addRsvp, getEventByPanelToken, listRsvpsForSlug } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/security";
 
 export async function GET(req: Request) {
+  const ip = getClientIp(req);
+  const rlGet = checkRateLimit(`rsvp-get:${ip}`, 40, 5 * 60_000);
+  if (!rlGet.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas consultas seguidas." },
+      { status: 429, headers: { "Retry-After": String(rlGet.retryAfterSec) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
   const panelToken =
@@ -23,10 +34,19 @@ export async function GET(req: Request) {
   }
 
   const rsvps = await listRsvpsForSlug(slug);
-  return NextResponse.json({ rsvps });
+  return NextResponse.json({ rsvps }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rlPost = checkRateLimit(`rsvp-post:${ip}`, 30, 10 * 60_000);
+  if (!rlPost.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas confirmaciones desde esta conexión. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rlPost.retryAfterSec) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { eventSlug, guestName, attending, passesUsed, companions, dietary, song, message } = body;

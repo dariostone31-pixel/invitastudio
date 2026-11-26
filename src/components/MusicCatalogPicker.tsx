@@ -32,6 +32,7 @@ export function MusicCatalogPicker({
     getDefaultMusicCategoryForSkin(skinCategory)
   );
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [previewNote, setPreviewNote] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export function MusicCatalogPicker({
 
   const togglePreview = (url: string) => {
     if (!url || url === "none") return;
+    setPreviewNote(null);
 
     if (playingUrl === url && audioRef.current) {
       audioRef.current.pause();
@@ -63,10 +65,17 @@ export function MusicCatalogPicker({
     const audio = new Audio(url);
     audioRef.current = audio;
     audio.onended = () => setPlayingUrl(null);
+    audio.onerror = () => {
+      setPlayingUrl(null);
+      setPreviewNote("No se pudo cargar esta pista de audio todavía.");
+    };
     audio
       .play()
       .then(() => setPlayingUrl(url))
-      .catch(() => setPlayingUrl(null));
+      .catch(() => {
+        setPlayingUrl(null);
+        setPreviewNote("No se pudo reproducir esta pista de audio todavía.");
+      });
   };
 
   const visibleGroups =
@@ -261,6 +270,11 @@ export function MusicCatalogPicker({
             </div>
           ))}
         </div>
+        {previewNote && (
+          <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-800">
+            {previewNote}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { verifyAdminPass } from "@/lib/adminAuth";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp, hasValidAudioMagicBytes } from "@/lib/security";
 
 const PRIMARY_UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
 const TMP_UPLOAD_DIR = "/tmp/invita-con-alma-uploads";
@@ -45,6 +47,15 @@ function resolveUploadDir(): string {
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`upload-audio:${ip}`, 20, 10 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas solicitudes. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   const pass = req.headers.get("x-admin-pass");
   const auth = verifyAdminPass(pass);
   if (!auth.ok) {
@@ -83,6 +94,12 @@ export async function POST(req: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (!hasValidAudioMagicBytes(buffer)) {
+      return NextResponse.json(
+        { error: "El archivo no corresponde a un formato de audio válido." },
+        { status: 400 }
+      );
+    }
     const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
     const safeName = `audio-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
 

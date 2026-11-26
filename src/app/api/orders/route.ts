@@ -4,8 +4,19 @@ import { verifyAdminPass } from "@/lib/adminAuth";
 import { LEGAL_VERSION } from "@/config/legal";
 import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
 import { sanitizeEventLocations } from "@/lib/locationUtils";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp, sanitizeSafeUrl } from "@/lib/security";
 
 export async function GET(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`admin-list:${ip}`, 20, 10 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   const pass = req.headers.get("x-admin-pass") || new URL(req.url).searchParams.get("pass");
   const auth = verifyAdminPass(pass);
   if (!auth.ok) {
@@ -28,10 +39,19 @@ export async function GET(req: Request) {
     }))
   );
 
-  return NextResponse.json({ events });
+  return NextResponse.json({ events }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rlPost = checkRateLimit(`orders-create:${ip}`, 15, 15 * 60_000);
+  if (!rlPost.allowed) {
+    return NextResponse.json(
+      { error: "Demasiados pedidos seguidos desde esta conexión. Esperá unos minutos." },
+      { status: 429, headers: { "Retry-After": String(rlPost.retryAfterSec) } }
+    );
+  }
+
   try {
     if (process.env.VERCEL === "1" && getDbMode() !== "postgres") {
       return NextResponse.json(
@@ -254,24 +274,27 @@ export async function POST(req: Request) {
           : undefined,
       quote: quote && String(quote).trim() ? String(quote).trim() : undefined,
       parentsOrHosts: cleanParents,
-      storyTitle: allowFullCustom && storyTitle ? String(storyTitle) : undefined,
-      storyText: allowFullCustom && storyText ? String(storyText) : undefined,
+      storyTitle: allowFullCustom && storyTitle ? String(storyTitle).slice(0, 120) : undefined,
+      storyText: allowFullCustom && storyText ? String(storyText).slice(0, 2000) : undefined,
       schedule: cleanSchedule,
-      heroImageUrl: allowFullCustom && heroImageUrl ? String(heroImageUrl) : undefined,
+      heroImageUrl: allowFullCustom ? sanitizeSafeUrl(heroImageUrl, { allowRelative: true }) || undefined : undefined,
       heroOverlayOverride:
         allowFullCustom && heroOverlayOverride ? heroOverlayOverride : undefined,
       galleryImages:
         allowFullCustom && Array.isArray(galleryImages)
-          ? galleryImages.map(String).slice(0, 8)
+          ? galleryImages
+              .slice(0, 8)
+              .map((u) => sanitizeSafeUrl(u, { allowRelative: true }))
+              .filter((u): u is string => Boolean(u))
           : undefined,
       fontOverride: allowFullCustom && fontOverride ? fontOverride : undefined,
-      accentOverride: allowFullCustom && accentOverride ? String(accentOverride) : undefined,
+      accentOverride: allowFullCustom && accentOverride ? String(accentOverride).slice(0, 24) : undefined,
       audioOverride: cleanAudio,
       songRequest: cleanSongRequest,
-      albumUrl: allowFullCustom && albumUrl ? String(albumUrl).trim() : undefined,
+      albumUrl: allowFullCustom ? sanitizeSafeUrl(albumUrl, { allowRelative: false }) || undefined : undefined,
       instagramHandle:
-        allowFullCustom && instagramHandle ? String(instagramHandle).trim() : undefined,
-      eventHashtag: allowFullCustom && eventHashtag ? String(eventHashtag).trim() : undefined,
+        allowFullCustom && instagramHandle ? String(instagramHandle).trim().slice(0, 80) : undefined,
+      eventHashtag: allowFullCustom && eventHashtag ? String(eventHashtag).trim().slice(0, 80) : undefined,
       triviaQuestions: cleanTrivia,
       enabledSections: mergedEnabledSections,
       termsAccepted: true,

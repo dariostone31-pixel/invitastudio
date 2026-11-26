@@ -26,8 +26,8 @@ export async function GET(
   context: { params: Promise<{ filename: string }> }
 ) {
   const { filename } = await context.params;
-  // Prevent path traversal; only allow safe generated filenames
-  if (!/^[a-zA-Z0-9._-]+$/.test(filename)) {
+  // Prevent path traversal; only allow safe generated filenames without ".."
+  if (!/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9]{2,5}$/.test(filename)) {
     return NextResponse.json({ error: "Archivo inválido" }, { status: 400 });
   }
 
@@ -43,7 +43,7 @@ export async function GET(
     : null;
 
   if (!targetPath) {
-    return NextResponse.json({ error: "Imagen no encontrada" }, { status: 404 });
+    return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 });
   }
 
   const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
@@ -54,6 +54,8 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": contentType,
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });

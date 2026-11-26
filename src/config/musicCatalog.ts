@@ -1,4 +1,4 @@
-export type MusicCategoryId = "boda" | "xv" | "hombre";
+export type MusicCategoryId = "boda" | "xv" | "hombre" | "infantil" | "bautismo";
 
 export interface MusicTrackOption {
   id: string;
@@ -126,6 +126,52 @@ export const MUSIC_CATEGORIES: MusicCategoryGroup[] = [
       },
     ],
   },
+  {
+    id: "infantil",
+    label: "Infantiles & Princesas",
+    shortLabel: "Infantil",
+    tracks: [
+      {
+        id: "infantil-mi-princesa",
+        label: "Mi Princesa (Infantil)",
+        title: "Mi Princesa (Infantil)",
+        artist: "Música Temática Infantil",
+        value: "/audio/infantil-mi-princesa.mp3",
+        category: "infantil",
+      },
+      {
+        id: "infantil-fiesta-alegre",
+        label: "Fiesta Infantil Alegre",
+        title: "Fiesta Infantil Alegre",
+        artist: "Música Temática Infantil",
+        value: "/audio/infantil-fiesta-alegre.mp3",
+        category: "infantil",
+      },
+    ],
+  },
+  {
+    id: "bautismo",
+    label: "Bautismos & Comuniones",
+    shortLabel: "Bautismo / Comunión",
+    tracks: [
+      {
+        id: "bautismo-el-bautismo",
+        label: "El Bautismo (Emotiva)",
+        title: "El Bautismo (Emotiva)",
+        artist: "Música Temática Ceremonial",
+        value: "/audio/bautismo-el-bautismo.mp3",
+        category: "bautismo",
+      },
+      {
+        id: "comunion-dulce-luz",
+        label: "Mi Primera Comunión",
+        title: "Mi Primera Comunión",
+        artist: "Música Temática Ceremonial",
+        value: "/audio/comunion-dulce-luz.mp3",
+        category: "bautismo",
+      },
+    ],
+  },
 ];
 
 export const ALL_MUSIC_TRACKS: MusicTrackOption[] = MUSIC_CATEGORIES.flatMap(
@@ -146,5 +192,7 @@ export function getDefaultMusicCategoryForSkin(skinCategory?: string): MusicCate
   if (skinCategory === "boda") return "boda";
   if (skinCategory === "xv") return "xv";
   if (skinCategory === "hombre") return "hombre";
+  if (skinCategory === "nino" || skinCategory === "nina") return "infantil";
+  if (skinCategory === "bautismo" || skinCategory === "comunion") return "bautismo";
   return "all";
 }

@@ -2,23 +2,43 @@ import { NextResponse } from "next/server";
 import { getEventByPanelToken, updateEventByPanelToken } from "@/lib/db";
 import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
 import { sanitizeEventLocations } from "@/lib/locationUtils";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp, sanitizeSafeUrl } from "@/lib/security";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   context: { params: Promise<{ token: string }> }
 ) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`panel-get:${ip}`, 60, 5 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas consultas seguidas." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   const { token } = await context.params;
   const event = await getEventByPanelToken(token);
   if (!event) {
     return NextResponse.json({ error: "Panel no encontrado" }, { status: 404 });
   }
-  return NextResponse.json({ event });
+  return NextResponse.json({ event }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function PATCH(
   req: Request,
   context: { params: Promise<{ token: string }> }
 ) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`panel-patch:${ip}`, 45, 5 * 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas actualizaciones seguidas. Esperá un momento." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   const { token } = await context.params;
   try {
     const existing = await getEventByPanelToken(token);
@@ -109,6 +129,18 @@ export async function PATCH(
           giftHolder: typeof body.giftHolder === "string" ? body.giftHolder.trim().slice(0, 120) : undefined,
           dressCode: body.dressCode,
           quote: typeof body.quote === "string" ? body.quote.trim() : undefined,
+          audioOverride:
+            requestedAudio === "none"
+              ? "none"
+              : requestedAudio === ""
+              ? ""
+              : undefined,
+          albumUrl:
+            typeof body.albumUrl === "string"
+              ? sanitizeSafeUrl(body.albumUrl, { allowRelative: false, maxLength: 500 }) ?? ""
+              : undefined,
+          eventHashtag:
+            typeof body.eventHashtag === "string" ? body.eventHashtag.trim().slice(0, 80) : undefined,
           ...(essentialSectionsPatch ? { enabledSections: essentialSectionsPatch } : {}),
         }
       : {
@@ -141,33 +173,51 @@ export async function PATCH(
             typeof body.tarjetaNote === "string"
               ? body.tarjetaNote.trim().slice(0, 180)
               : undefined,
-          quote: body.quote,
+          quote: typeof body.quote === "string" ? body.quote.trim().slice(0, 500) : undefined,
           parentsOrHosts: body.parentsOrHosts,
-          storyTitle: body.storyTitle,
-          storyText: body.storyText,
+          storyTitle: typeof body.storyTitle === "string" ? body.storyTitle.trim().slice(0, 120) : undefined,
+          storyText: typeof body.storyText === "string" ? body.storyText.trim().slice(0, 2000) : undefined,
           schedule: body.schedule,
-          heroImageUrl: body.heroImageUrl,
+          heroImageUrl:
+            typeof body.heroImageUrl === "string"
+              ? sanitizeSafeUrl(body.heroImageUrl, { allowRelative: true })
+              : undefined,
           heroOverlayOverride: body.heroOverlayOverride,
-          galleryImages: body.galleryImages,
+          galleryImages: Array.isArray(body.galleryImages)
+            ? body.galleryImages
+                .slice(0, 8)
+                .map((u: unknown) => sanitizeSafeUrl(u, { allowRelative: true }))
+                .filter((u: string | undefined): u is string => Boolean(u))
+            : undefined,
           fontOverride: body.fontOverride,
-          accentOverride: body.accentOverride,
+          accentOverride:
+            typeof body.accentOverride === "string"
+              ? body.accentOverride.trim().slice(0, 24)
+              : undefined,
           audioOverride: safeAudio,
           ...(isAsistido && typeof body.songRequest === "string"
             ? { songRequest: body.songRequest.trim().slice(0, 220) }
             : {}),
           ...(isAsistido
             ? {
-                triviaTitle: typeof body.triviaTitle === "string" ? body.triviaTitle : undefined,
+                triviaTitle: typeof body.triviaTitle === "string" ? body.triviaTitle.trim().slice(0, 120) : undefined,
                 triviaQuestions: Array.isArray(body.triviaQuestions)
                   ? body.triviaQuestions
                   : undefined,
               }
             : {}),
-          albumUrl: typeof body.albumUrl === "string" ? body.albumUrl.trim() : undefined,
+          albumUrl:
+            typeof body.albumUrl === "string"
+              ? sanitizeSafeUrl(body.albumUrl, { allowRelative: false, maxLength: 500 }) ?? ""
+              : undefined,
           instagramHandle:
-            typeof body.instagramHandle === "string" ? body.instagramHandle.trim() : undefined,
+            typeof body.instagramHandle === "string"
+              ? body.instagramHandle.trim().slice(0, 80)
+              : undefined,
           eventHashtag:
-            typeof body.eventHashtag === "string" ? body.eventHashtag.trim() : undefined,
+            typeof body.eventHashtag === "string"
+              ? body.eventHashtag.trim().slice(0, 80)
+              : undefined,
           guestList: Array.isArray(body.guestList)
             ? body.guestList
                 .slice(0, 500)
@@ -211,7 +261,10 @@ export async function PATCH(
     if (!updated) {
       return NextResponse.json({ error: "Panel no encontrado" }, { status: 404 });
     }
-    return NextResponse.json({ ok: true, event: updated });
+    return NextResponse.json(
+      { ok: true, event: updated },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch {
     return NextResponse.json({ error: "Error guardando personalización" }, { status: 500 });
   }
