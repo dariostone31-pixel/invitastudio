@@ -25,6 +25,12 @@ import { MusicCatalogPicker } from "@/components/MusicCatalogPicker";
 import { SubtitleSelectField } from "@/components/SubtitleSelectField";
 import { resolveEventSubtitle } from "@/config/subtitlePresets";
 import {
+  captureUtmAndLeadFromUrl,
+  getStoredLeadId,
+  getStoredUtms,
+  setStoredLeadId,
+} from "@/lib/utm";
+import {
   ARGENTINA_BANK_ENTITIES,
   OTHER_BANK_OPTION,
   isKnownBankEntity,
@@ -167,6 +173,7 @@ function EncargarForm() {
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [consentMarketing, setConsentMarketing] = useState(false); // DESMARCADO por defecto
 
   // Fotos (Portada única + Galería separada)
   const [heroUploadedUrl, setHeroUploadedUrl] = useState<string>("");
@@ -400,6 +407,70 @@ function EncargarForm() {
       .catch(() => {});
   }, []);
 
+  const trackedLeadIdRef = useRef<string | null>(null);
+  const lastLeadSigRef = useRef<string>("");
+
+  useEffect(() => {
+    captureUtmAndLeadFromUrl();
+    trackedLeadIdRef.current = getStoredLeadId();
+  }, []);
+
+  useEffect(() => {
+    const digits = whatsapp.replace(/\D/g, "");
+    if (digits.length < 8) return;
+    const sig = `${digits}|${contactName}|${selectedPlan}|${selectedSkin}|${eventTitle}|${consentMarketing}`;
+    if (sig === lastLeadSigRef.current) return;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        lastLeadSigRef.current = sig;
+        const utms = getStoredUtms();
+        const res = await fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            leadId: trackedLeadIdRef.current || undefined,
+            stage: "encargar_borrador",
+            source: "encargar",
+            contactName: contactName.trim() || "Cliente en progreso",
+            whatsapp: whatsapp.trim(),
+            email: email.trim() || undefined,
+            category: skinObj.category,
+            skinId: selectedSkin,
+            planId: selectedPlan,
+            eventTitle: eventTitle.trim() || undefined,
+            consentService: true,
+            consentMarketing,
+            consentTextVersion: "v1-2026",
+            consentSource: "encargar_draft",
+            utmSource: utms.utmSource,
+            utmMedium: utms.utmMedium,
+            utmCampaign: utms.utmCampaign,
+            utmContent: utms.utmContent,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.leadId) {
+          trackedLeadIdRef.current = data.leadId;
+          setStoredLeadId(String(data.leadId));
+        }
+      } catch {
+        // captura silenciosa
+      }
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    whatsapp,
+    contactName,
+    email,
+    selectedPlan,
+    selectedSkin,
+    skinObj.category,
+    eventTitle,
+    consentMarketing,
+  ]);
+
   const handleHeroFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -617,6 +688,12 @@ function EncargarForm() {
                 },
               }),
           termsAccepted: true,
+          consentMarketing,
+          leadId: trackedLeadIdRef.current || getStoredLeadId() || undefined,
+          utmSource: getStoredUtms().utmSource,
+          utmMedium: getStoredUtms().utmMedium,
+          utmCampaign: getStoredUtms().utmCampaign,
+          utmContent: getStoredUtms().utmContent,
           contactName: contactName.trim(),
           whatsapp: whatsapp.trim(),
           email: email.trim(),
@@ -715,7 +792,7 @@ function EncargarForm() {
             ? "Ya activamos la producción de tu invitación (< 24 hs hábiles). Podés revisar tu borrador y tu panel desde los botones de abajo."
             : pending
             ? "Apenas Mercado Pago acredite la operación, tu pedido pasará automáticamente a edición."
-            : "Podés reintentar el pago o abonar con 25% OFF por transferencia bancaria."}
+            : "Podés reintentar el pago o abonar por transferencia bancaria (con bonus si transferís: PDF imprimible A4 de 4 carteles QR)."}
         </p>
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {mpSlug && (
@@ -817,7 +894,7 @@ function EncargarForm() {
                   Pagar online con Mercado Pago (Tarjetas / Débito / Cuotas)
                 </span>
                 <span className="mt-0.5 block text-[11px] text-sky-800">
-                  Acreditación automática · Precio de lista: {orderPlanObj.listPrice} ARS
+                  Acreditación automática · Valor: {orderPlanObj.listPrice} ARS
                 </span>
               </div>
             </div>
@@ -842,14 +919,18 @@ function EncargarForm() {
 
         {/* Transferencia Bancaria Directa */}
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-left text-xs text-stone-800">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-bold text-amber-900">
-              Abonar por Transferencia Bancaria: {orderPlanObj.transferPrice} ARS
+              Transferencia Bancaria Directa: {orderPlanObj.transferPrice} ARS
             </span>
-            <span className="text-[11px] text-stone-400 line-through">
-              {orderPlanObj.listPrice}
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
+              Bonus si transferís: PDF A4 x4 carteles QR
             </span>
           </div>
+          <p className="mt-1 text-[11px] text-amber-900">
+            Mismo precio en todos los medios de pago. Bonus si transferís: PDF imprimible A4 con 4 carteles QR para tus mesas y prioridad de activación
+            {orderPlanObj.id === "asistido" ? " (+ Trivia interactiva)" : ""}.
+          </p>
           {BUSINESS_CONFIG.bankAliasConfigured ? (
             <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2">
               <div>
@@ -945,10 +1026,10 @@ function EncargarForm() {
                     }`}
                   >
                     {plan.transferPrice}
-                    <span className="ml-1 text-[10px] font-normal opacity-80">transf.</span>
+                    <span className="ml-1 text-[10px] font-normal opacity-80">ARS único</span>
                   </div>
-                  <div className="text-[10px] line-through opacity-65">
-                    {plan.listPrice} lista / MP
+                  <div className="text-[10px] opacity-80">
+                    Bonus si transferís: PDF A4 con 4 carteles QR
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed opacity-90">{plan.shortDesc}</p>
                 </div>
@@ -969,7 +1050,7 @@ function EncargarForm() {
         {/* Resumen dinámico de lo que incluye la modalidad elegida */}
         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-950">
           <p className="font-bold">
-            Elegiste {planObj.name} ({planObj.transferPrice} por transferencia · {planObj.listPrice} lista):
+            Elegiste {planObj.name} ({planObj.transferPrice} ARS · pago único):
           </p>
           <p className="mt-1 text-[11px] leading-relaxed">
             {selectedPlan === "esencial" &&
@@ -2233,8 +2314,23 @@ function EncargarForm() {
           </div>
         </div>
 
+        {/* Consentimiento opcional de marketing por WhatsApp (DESMARCADO por defecto) */}
+        <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
+          <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-stone-700">
+            <input
+              type="checkbox"
+              checked={consentMarketing}
+              onChange={(e) => setConsentMarketing(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-stone-900"
+            />
+            <span>
+              Quiero recibir también ideas, ofertas y novedades de Invita con el Alma por WhatsApp. Puedo darme de baja cuando quiera respondiendo BAJA.
+            </span>
+          </label>
+        </div>
+
         {/* Aceptación explícita de Condiciones (NO premarcada) + enlace Privacidad */}
-        <div className="mt-5 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
+        <div className="mt-3 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
           <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-stone-700">
             <input
               type="checkbox"

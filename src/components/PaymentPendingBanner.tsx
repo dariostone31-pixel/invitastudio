@@ -96,12 +96,16 @@ export function PaymentPendingBanner({
           <div className="rounded-2xl border border-amber-200 bg-white p-3.5 text-xs">
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-stone-900">
-                Transferencia Bancaria Directa
+                Transferencia Directa · Bonus si transferís
               </span>
               <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-800">
                 {planObj.transferPrice} ARS
               </span>
             </div>
+            <p className="mt-1 text-[11px] text-amber-900">
+              Mismo precio que Mercado Pago. Bonus si transferís: activación prioritaria y PDF imprimible A4 con 4 carteles QR para las mesas
+              {event.planId === "asistido" ? " + Trivia interactiva" : ""}.
+            </p>
 
             {BUSINESS_CONFIG.bankAliasConfigured ? (
               <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">

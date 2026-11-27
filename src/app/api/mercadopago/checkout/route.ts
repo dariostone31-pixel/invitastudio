@@ -43,6 +43,10 @@ export async function POST(req: Request) {
     const client = new MercadoPagoConfig({ accessToken });
     const preference = new Preference(client);
 
+    const leadIdSuffix = event.leadId
+      ? `&leadId=${encodeURIComponent(event.leadId)}`
+      : "";
+
     const response = await preference.create({
       body: {
         items: [
@@ -60,11 +64,12 @@ export async function POST(req: Request) {
           email: event.email,
         },
         external_reference: event.id,
+        metadata: event.leadId ? { lead_id: event.leadId } : undefined,
         statement_descriptor: "INVITASTUDIO",
         back_urls: {
-          success: `${baseUrl}/encargar?mp_status=success&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}`,
-          pending: `${baseUrl}/encargar?mp_status=pending&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}`,
-          failure: `${baseUrl}/encargar?mp_status=failure&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}`,
+          success: `${baseUrl}/encargar?mp_status=success&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}${leadIdSuffix}`,
+          pending: `${baseUrl}/encargar?mp_status=pending&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}${leadIdSuffix}`,
+          failure: `${baseUrl}/encargar?mp_status=failure&order=${encodeURIComponent(event.orderCode)}&panel=${encodeURIComponent(event.panelToken)}&slug=${encodeURIComponent(event.slug)}${leadIdSuffix}`,
         },
         auto_return: "approved",
         notification_url: `${baseUrl}/api/mercadopago/webhook`,

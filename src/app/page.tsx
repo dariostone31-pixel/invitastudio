@@ -69,7 +69,7 @@ const FAQS = [
   },
   {
     q: "¿Cómo se paga desde Argentina?",
-    a: "Podés abonar por Transferencia Bancaria con el valor promocional (25% OFF respecto al precio de lista) o con tarjetas, débito y dinero en cuenta mediante Mercado Pago Checkout Pro.",
+    a: "El precio es idéntico en todos los medios de pago: Transferencia Bancaria Directa (con bonus si transferís: PDF imprimible A4 con 4 carteles QR para las mesas y activación prioritaria) o tarjetas, débito y dinero en cuenta mediante Mercado Pago Checkout Pro.",
   },
 ];
 
@@ -143,8 +143,8 @@ const GUARANTEES = [
     desc: "Se abre directo desde WhatsApp en cualquier celular y mantenemos legibilidad perfecta aunque usen modo oscuro.",
   },
   {
-    title: "Precios y alcance transparentes en ARS",
-    desc: "Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999) por transferencia (25% OFF), sabiendo exactamente qué incluye cada uno.",
+    title: "Precios únicos y transparentes en ARS",
+    desc: "Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999): mismo precio en cualquier medio de pago, con bonus de PDF A4 de 4 carteles QR si transferís.",
   },
 ];
 
@@ -334,9 +334,9 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="px-2 sm:px-4">
-                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">25% OFF</p>
+                  <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">Precio único</p>
                   <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
-                    Transferencia
+                    Mismo precio en cualquier medio de pago
                   </p>
                 </div>
                 <div className="px-2 sm:px-4">
@@ -501,13 +501,65 @@ export default function HomePage() {
           <h2 className="font-display-cormorant mt-3 text-4xl font-semibold text-[#2A121B] sm:text-5xl">
             Elegí tu plan <span className="italic text-[#6B1E30]">sin letras chicas</span>
           </h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-[#7A5A62]">
-            Pagás una sola vez por evento. Incluye borrador inmediato para revisar, activación en &lt; 24 hs hábiles y{" "}
-            <strong className="text-[#2A121B]">25% OFF pagando por transferencia</strong>.
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-[#7A5A62]">
+            El precio es idéntico en todos los medios de pago.{" "}
+            <strong className="text-[#2A121B]">
+              Bonus si transferís: PDF imprimible A4 con 4 carteles QR para las mesas y activación prioritaria
+            </strong>{" "}
+            (en Llave en Mano además incluye la Trivia Interactiva).
           </p>
         </MotionSection>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Bloque F1: organización exacta de invitados sin cifras de cubierto */}
+        <MotionSection delay={0.05}>
+          <div className="mt-8 rounded-[24px] border border-[#B78A4E]/45 bg-gradient-to-br from-[#FAF7F2] via-[#FFFBFA] to-[#FBF1EE] p-6 shadow-sm sm:p-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="font-ui-jost text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A6331]">
+                  ORGANIZACIÓN EN TIEMPO REAL · LISTA LISTA PARA EL SALÓN
+                </span>
+                <h3 className="font-display-cormorant mt-1.5 text-2xl font-semibold leading-snug text-[#2A121B] sm:text-3xl">
+                  Así no te sobran ni te faltan cubiertos.
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-[#5F464D] sm:text-sm">
+                  Una invitación impresa para 100 personas ronda entre $80.000 y $200.000, se pierde, no se edita y no confirma a nadie. Esta se abre en el celular de cada invitado, se edita cuando quieras y te dice exactamente quién viene.
+                </p>
+                <ul className="mt-3.5 grid grid-cols-1 gap-2 text-xs text-[#4A2E35] sm:grid-cols-2">
+                  {[
+                    "Pases nominales por familia: cada grupo sabe cuántos lugares tiene",
+                    "Confirmación en tiempo real, desde tu celular",
+                    "Lista final exportable a Excel para el salón o el catering",
+                    "Alergias y menús especiales, sin llamados de último momento",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#6B1E30]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs font-bold text-[#6B1E30] sm:text-sm">
+                  La lista exacta, sin perseguir a nadie.
+                </p>
+              </div>
+              <div className="grid shrink-0 grid-cols-3 gap-2.5 text-center sm:min-w-[320px]">
+                <div className="rounded-xl border border-[#B78A4E]/30 bg-white px-3 py-3">
+                  <p className="font-display-cormorant text-xl font-bold text-[#6B1E30]">Nominal</p>
+                  <p className="mt-0.5 text-[10px] font-medium text-[#6E5159]">Pases por familia</p>
+                </div>
+                <div className="rounded-xl border border-[#B78A4E]/30 bg-white px-3 py-3">
+                  <p className="font-display-cormorant text-xl font-bold text-[#6B1E30]">En vivo</p>
+                  <p className="mt-0.5 text-[10px] font-medium text-[#6E5159]">Desde tu celular</p>
+                </div>
+                <div className="rounded-xl border border-[#B78A4E]/30 bg-white px-3 py-3">
+                  <p className="font-display-cormorant text-xl font-bold text-[#6B1E30]">Excel</p>
+                  <p className="mt-0.5 text-[10px] font-medium text-[#6E5159]">Lista en 1 toque</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </MotionSection>
+
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {PRICING_PLANS.map((plan, idx) => (
             <MotionSection key={plan.id} delay={idx * 0.08} className="flex">
               <div
@@ -545,10 +597,11 @@ export default function HomePage() {
                     >
                       {plan.transferPrice}
                     </span>
-                    <span className="text-xs opacity-75">ARS transf.</span>
+                    <span className="text-xs opacity-75">ARS · pago único</span>
                   </div>
-                  <p className="mt-1 text-xs opacity-70">
-                    Precio de lista (Mercado Pago / cuotas): {plan.listPrice} ARS
+                  <p className="mt-1 text-xs opacity-80">
+                    Bonus si transferís: PDF A4 con 4 carteles QR
+                    {plan.id === "asistido" ? " + Trivia interactiva" : ""}
                   </p>
 
                   <ul className="mt-6 space-y-2.5 text-xs">

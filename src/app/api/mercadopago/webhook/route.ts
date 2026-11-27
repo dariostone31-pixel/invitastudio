@@ -107,6 +107,8 @@ export async function POST(req: Request) {
           typeof payment.transaction_amount === "number"
             ? Math.round(payment.transaction_amount)
             : undefined,
+        verifiedBy: "mercadopago_webhook",
+        verifiedAt: new Date().toISOString(),
         status: event.status === "pendiente" ? "en_edicion" : event.status,
       });
     } else if (payment.status === "rejected" || payment.status === "cancelled") {

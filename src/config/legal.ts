@@ -8,6 +8,7 @@ export const LEGAL_STATUS = {
   missingProviderFields: [
     !BUSINESS_CONFIG.legalHolderName && "Razón social o nombre completo del responsable",
     !BUSINESS_CONFIG.taxId && "CUIT / identificación fiscal",
+    !BUSINESS_CONFIG.legalAddress && "Domicilio legal del responsable",
     !BUSINESS_CONFIG.supportEmail && "Correo electrónico oficial de soporte y reclamos",
     !BUSINESS_CONFIG.whatsappConfigured && "Número real de WhatsApp comercial",
     !BUSINESS_CONFIG.supportHours && "Horarios confirmados de atención",

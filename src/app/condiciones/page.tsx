@@ -93,7 +93,7 @@ export default function CondicionesPage() {
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h3 className="font-bold text-[#2A121B]">{plan.name}</h3>
                   <span className="text-xs font-semibold text-[#6B1E30]">
-                    {plan.transferPrice} ARS (transferencia) · {plan.listPrice} ARS (lista/MP)
+                    {plan.transferPrice} ARS (Transferencia directa o Mercado Pago)
                   </span>
                 </div>
                 <p className="mt-1 text-xs">{plan.shortDesc}</p>
@@ -159,8 +159,10 @@ export default function CondicionesPage() {
           </h2>
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Formas de pago:</strong> Transferencia bancaria (con el precio promocional
-              exhibido) o pago online a través de Mercado Pago Checkout Pro (precio de lista).
+              <strong>Formas de pago:</strong> Transferencia bancaria o pago online a través de
+              Mercado Pago Checkout Pro, ambos al mismo precio exhibido. Si elegís transferencia,
+              se incluye el bonus de PDF imprimible A4 con 4 carteles QR para mesas y activación
+              prioritaria.
             </li>
             <li>
               <strong>Errores atribuibles al servicio:</strong> si la invitación publicada presenta
@@ -194,6 +196,65 @@ export default function CondicionesPage() {
             </Link>
             , indicando tu código de pedido (ej. <code className="font-mono">INV-...</code>).
           </p>
+        </section>
+
+        <section id="politica-datos" className="space-y-3 text-sm leading-relaxed text-[#574046]">
+          <h2 className="font-display-cormorant text-2xl font-semibold text-[#2A121B]">
+            7. Política de Datos Personales (Ley 25.326)
+          </h2>
+          <p>
+            En cumplimiento de la Ley 25.326 de Protección de Datos Personales de la República
+            Argentina y sus normas complementarias, se informa lo siguiente respecto del tratamiento
+            de datos personales recabados en este sitio:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong>Responsable de la base de datos:</strong>{" "}
+              {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación de razón social"} ·{" "}
+              <strong>CUIT:</strong> {BUSINESS_CONFIG.taxId || "Pendiente de confirmación"} ·{" "}
+              <strong>Domicilio:</strong>{" "}
+              {BUSINESS_CONFIG.legalAddress || "Pendiente de confirmación en configuración"}.
+            </li>
+            <li>
+              <strong>Finalidad del tratamiento:</strong>{" "}
+              <em>(a) Finalidad operativa:</em> creación, personalización, publicación, entrega,
+              cobro, soporte técnico del pedido y comunicaciones transaccionales indispensables.{" "}
+              <em>(b) Finalidad promocional / marketing:</em> envío de ideas, novedades u ofertas por
+              WhatsApp únicamente cuando el titular haya otorgado consentimiento expreso previo
+              mediante la casilla correspondiente (desmarcada por defecto). Todo envío promocional
+              incluye la opción de baja inmediata respondiendo <strong>BAJA</strong>.
+            </li>
+            <li>
+              <strong>Derechos de acceso, rectificación y supresión (Ley 25.326, arts. 14 y 16):</strong>{" "}
+              el titular podrá ejercer gratuitamente su derecho de acceso (con respuesta dentro de
+              los <strong>10 días corridos</strong> desde la solicitud) y los derechos de
+              rectificación, actualización o <strong>supresión de datos</strong> (con respuesta y
+              ejecución dentro de los <strong>5 días hábiles</strong>).
+            </li>
+            <li>
+              <strong>Canal de contacto para ejercer estos derechos:</strong> correo electrónico{" "}
+              {BUSINESS_CONFIG.supportEmail ? (
+                <a
+                  href={`mailto:${BUSINESS_CONFIG.supportEmail}`}
+                  className="font-semibold text-[#6B1E30] underline"
+                >
+                  {BUSINESS_CONFIG.supportEmail}
+                </a>
+              ) : (
+                "pendiente de confirmación en configuración"
+              )}
+              {BUSINESS_CONFIG.whatsappConfigured
+                ? ` o vía WhatsApp oficial (${BUSINESS_CONFIG.whatsappDisplay})`
+                : ""}
+              . Asimismo, la Agencia de Acceso a la Información Pública (AAIP), en su carácter de
+              Órgano de Control de la Ley 25.326, tiene la atribución de atender las denuncias y
+              reclamos que interpongan quienes resulten afectados en sus derechos.
+            </li>
+            <li>
+              <strong>Registro Nacional de Bases de Datos (AAIP):</strong>{" "}
+              {BUSINESS_CONFIG.aaipRegistryStatus}
+            </li>
+          </ul>
         </section>
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#2A121B]/10 pt-5 text-xs text-[#7A5A62]">

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { EditorialDiamondIcon } from "@/components/BrandOrnaments";
 import { buildMapsSearchUrl, deriveInitialsMonogram } from "@/lib/locationUtils";
+import { getStoredLeadId } from "@/lib/utm";
 import { InvitationSkin } from "@/templates/catalog";
 import { getMusicTrackByUrl } from "@/config/musicCatalog";
 import type {
@@ -946,7 +947,12 @@ export function InvitationRenderer({
               Demo: <strong className="text-stone-800">{skin.name}</strong>
             </span>
             <Link
-              href={`/encargar?modelo=${skin.id}`}
+              href={(() => {
+                const lid = getStoredLeadId();
+                return lid
+                  ? `/encargar?modelo=${skin.id}&leadId=${encodeURIComponent(lid)}`
+                  : `/encargar?modelo=${skin.id}`;
+              })()}
               className="rounded-full bg-stone-900 px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-stone-800"
             >
               Elegir este

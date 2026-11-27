@@ -6,6 +6,7 @@ import {
   Camera,
   Check,
   Download,
+  FileText,
   Hash,
   Link2,
   Lock,
@@ -16,6 +17,7 @@ import {
 import type { EventRecord } from "@/lib/db";
 import { getSkinById, type InvitationSkin } from "@/templates/catalog";
 import { deriveInitialsMonogram } from "@/lib/locationUtils";
+import { buildA4FourUpQrPdf } from "@/lib/pdfA4";
 
 interface QrTableCardGeneratorProps {
   event: EventRecord;
@@ -144,6 +146,7 @@ export function QrTableCardGenerator({
   const [savedOk, setSavedOk] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const displayFontProbeRef = useRef<HTMLSpanElement | null>(null);
   const uiFontProbeRef = useRef<HTMLSpanElement | null>(null);
@@ -287,21 +290,19 @@ export function QrTableCardGenerator({
     }
   };
 
-  const handleDownloadPng = async () => {
-    if (!isPaid || !resolvedTargetUrl || downloading) return;
-    setDownloading(true);
-    try {
-      if (document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
-      }
+  const renderCardCanvas = async (): Promise<HTMLCanvasElement | null> => {
+    if (!isPaid || !resolvedTargetUrl) return null;
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
 
-      // 3x print resolution for 4:5 (10x15 cm @ 300 DPI -> 1200 x 1500 px)
-      const W = 1200;
-      const H = 1500;
-      const canvas = document.createElement("canvas");
-      canvas.width = W;
-      canvas.height = H;
-      const ctx = canvas.getContext("2d");
+    // 3x print resolution for 4:5 (10x15 cm @ 300 DPI -> 1200 x 1500 px)
+    const W = 1200;
+    const H = 1500;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Canvas no disponible");
 
       const displayFamily =
@@ -492,7 +493,15 @@ export function QrTableCardGenerator({
         ctx.fillText(line, W / 2, instrStartY + idx * 38);
       });
 
-      // Trigger download
+      return canvas;
+  };
+
+  const handleDownloadPng = async () => {
+    if (!isPaid || !resolvedTargetUrl || downloading) return;
+    setDownloading(true);
+    try {
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
       const pngUrl = canvas.toDataURL("image/png", 1.0);
       const a = document.createElement("a");
       a.href = pngUrl;
@@ -502,6 +511,31 @@ export function QrTableCardGenerator({
       a.remove();
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleDownloadPdfA4 = async () => {
+    if (!isPaid || !resolvedTargetUrl || downloadingPdf) return;
+    setDownloadingPdf(true);
+    try {
+      const canvas = await renderCardCanvas();
+      if (!canvas) return;
+      const jpegBlob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", 0.94)
+      );
+      if (!jpegBlob) return;
+      const jpegBytes = new Uint8Array(await jpegBlob.arrayBuffer());
+      const pdfBlob = buildA4FourUpQrPdf(jpegBytes, canvas.width, canvas.height);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const a = document.createElement("a");
+      a.href = pdfUrl;
+      a.download = `carteles-qr-A4-x4-${event.slug}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(pdfUrl);
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -617,17 +651,28 @@ export function QrTableCardGenerator({
             </button>
 
             {isPaid ? (
-              <button
-                type="button"
-                onClick={handleDownloadPng}
-                disabled={!resolvedTargetUrl || downloading}
-                className="inline-flex items-center gap-2 rounded-full bg-[#6B1E30] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#4A1420] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Download className="h-4 w-4" />
-                {downloading
-                  ? "Generando PNG 300 DPI..."
-                  : "Descargar Cartel QR para Imprimir (PNG)"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadPdfA4}
+                  disabled={!resolvedTargetUrl || downloadingPdf}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#6B1E30] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#4A1420] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FileText className="h-4 w-4" />
+                  {downloadingPdf
+                    ? "Generando PDF A4..."
+                    : "Descargar PDF imprimible A4 (4 carteles)"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPng}
+                  disabled={!resolvedTargetUrl || downloading}
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2.5 text-xs font-semibold text-stone-800 shadow-sm transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4" />
+                  {downloading ? "Generando PNG..." : "PNG individual (10×15)"}
+                </button>
+              </div>
             ) : (
               <a
                 href="#pago-transferencia"

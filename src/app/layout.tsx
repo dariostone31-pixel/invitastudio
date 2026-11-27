@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { UtmTracker } from "@/components/UtmTracker";
 import "./globals.css";
 
 const cormorant = localFont({
@@ -126,6 +127,7 @@ export default function RootLayout({
       className={`${cormorant.variable} ${alexBrush.variable} ${pinyonScript.variable} ${fraunces.variable} ${jost.variable} ${cinzel.variable} ${jakarta.variable} ${oswald.variable} ${fredoka.variable} ${playfair.variable}`}
     >
       <body className="font-jakarta antialiased selection:bg-amber-200/60 selection:text-stone-900">
+        <UtmTracker />
         {children}
       </body>
     </html>

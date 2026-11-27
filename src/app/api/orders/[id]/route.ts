@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { updateEventRecord } from "@/lib/db";
-import { verifyAdminPass } from "@/lib/adminAuth";
+import { recordAdminAuditLog, updateEventRecord } from "@/lib/db";
+import { verifyAdminRequest } from "@/lib/adminAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getClientIp, pickAllowedAdminPatch } from "@/lib/security";
 
@@ -9,7 +9,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   const ip = getClientIp(req);
-  const rl = checkRateLimit(`admin-patch:${ip}`, 30, 10 * 60_000);
+  const rl = checkRateLimit(`admin-patch:${ip}`, 60, 10 * 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Demasiadas solicitudes. Esperá unos minutos." },
@@ -17,8 +17,7 @@ export async function PATCH(
     );
   }
 
-  const pass = req.headers.get("x-admin-pass");
-  const auth = verifyAdminPass(pass);
+  const auth = await verifyAdminRequest(req);
   if (!auth.ok) {
     return NextResponse.json(
       {
@@ -38,9 +37,21 @@ export async function PATCH(
   try {
     const body = (await req.json()) as Record<string, unknown>;
     const safePatch = pickAllowedAdminPatch(body);
+    if (safePatch.paymentStatus === "pagado") {
+      safePatch.verifiedBy = "admin";
+      safePatch.verifiedAt = new Date().toISOString();
+    }
     const updated = await updateEventRecord(id, safePatch);
     if (!updated) {
       return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+    }
+    if (safePatch.paymentStatus === "pagado") {
+      await recordAdminAuditLog({
+        actor: "admin",
+        action: "verify_payment",
+        rowCount: 1,
+        meta: `order=${updated.orderCode}`,
+      }).catch(() => {});
     }
     return NextResponse.json(
       { ok: true, order: updated },

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { verifyAdminPass } from "@/lib/adminAuth";
+import { verifyAdminRequest } from "@/lib/adminAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getClientIp, hasValidAudioMagicBytes } from "@/lib/security";
 
@@ -56,8 +56,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const pass = req.headers.get("x-admin-pass");
-  const auth = verifyAdminPass(pass);
+  const auth = await verifyAdminRequest(req);
   if (!auth.ok) {
     return NextResponse.json(
       {

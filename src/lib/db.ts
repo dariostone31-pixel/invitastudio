@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Pool } from "pg";
+import { normalizePhone, hashIp } from "@/lib/phone";
 
 export type OrderStatus = "pendiente" | "en_edicion" | "publicada";
 export type PaymentStatus = "pendiente" | "pagado" | "rechazado";
@@ -100,6 +101,13 @@ export interface EventRecord {
   mpPreferenceId?: string;
   mpPaymentId?: string;
   paidAmount?: number;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  leadId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
   eventTitle: string;
   dateISO: string;
   dateDisplay: string;
@@ -168,9 +176,73 @@ export interface RsvpRecord {
   createdAt: string;
 }
 
+export type LeadStage =
+  | "prueba_iniciada"
+  | "prueba_capturada"
+  | "encargar_borrador"
+  | "pedido_creado"
+  | "entregado"
+  | "testimonio_pedido"
+  | "testimonio_recibido"
+  | "recompra_ofrecida";
+
+export interface LeadRecord {
+  id: string;
+  stage: LeadStage;
+  source: "minitester" | "encargar" | "demo";
+  contactName: string;
+  whatsapp: string;
+  normalizedPhone: string;
+  email?: string;
+  category?: string;
+  skinId?: string;
+  planId?: string;
+  eventTitle?: string;
+  guestSample?: string;
+  convertedOrderCode?: string;
+  consentService: boolean;
+  consentMarketing: boolean;
+  consentAt?: string;
+  consentTextVersion?: string;
+  consentSource?: string;
+  ipHash?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  testerStep?: string;
+  optedOutAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FunnelEventRecord {
+  id: string;
+  sessionId: string;
+  source: string;
+  step: "step_1" | "step_2" | "step_3" | "step_4" | "generated";
+  category?: string;
+  skinId?: string;
+  utmSource?: string;
+  createdAt: string;
+}
+
+export interface AdminAuditLogRecord {
+  id: string;
+  actor: string;
+  action: string;
+  rowCount: number;
+  meta?: string;
+  createdAt: string;
+}
+
 interface DatabaseShape {
   events: EventRecord[];
   rsvps: RsvpRecord[];
+  leads?: LeadRecord[];
+  funnelEvents?: FunnelEventRecord[];
+  auditLogs?: AdminAuditLogRecord[];
+  marketingOptOuts?: string[];
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -314,9 +386,18 @@ declare global {
 }
 
 export function getDbMode(): "postgres" | "json-local" {
-  return process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0
-    ? "postgres"
-    : "json-local";
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0) {
+    return "postgres";
+  }
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.ALLOW_LOCAL_JSON_STORE === "1"
+  ) {
+    return "json-local";
+  }
+  throw new Error(
+    "DATABASE_URL es obligatorio fuera de NODE_ENV=development. Postgres es la única fuente de verdad."
+  );
 }
 
 function getPool(): Pool {
@@ -427,6 +508,13 @@ async function ensurePgReady(): Promise<Pool> {
         alter table public.events add column if not exists terms_accepted boolean;
         alter table public.events add column if not exists terms_version text;
         alter table public.events add column if not exists terms_accepted_at_utc text;
+        alter table public.events add column if not exists verified_by text;
+        alter table public.events add column if not exists verified_at timestamptz;
+        alter table public.events add column if not exists lead_id text;
+        alter table public.events add column if not exists utm_source text;
+        alter table public.events add column if not exists utm_medium text;
+        alter table public.events add column if not exists utm_campaign text;
+        alter table public.events add column if not exists utm_content text;
         create table if not exists public.rsvps (
           id text primary key,
           event_slug text not null references public.events(slug) on delete cascade,
@@ -437,6 +525,74 @@ async function ensurePgReady(): Promise<Pool> {
           dietary jsonb not null default '[]'::jsonb,
           song text not null default '',
           message text not null default '',
+          created_at timestamptz not null default now()
+        );
+        create table if not exists public.leads (
+          id text primary key,
+          stage text not null default 'prueba_capturada',
+          source text not null default 'minitester',
+          contact_name text not null default '',
+          whatsapp text not null default '',
+          normalized_phone text not null default '',
+          email text,
+          category text,
+          skin_id text,
+          plan_id text,
+          event_title text,
+          guest_sample text,
+          converted_order_code text,
+          consent_service boolean not null default true,
+          consent_marketing boolean not null default false,
+          consent_at timestamptz,
+          consent_text_version text,
+          consent_source text,
+          ip_hash text,
+          utm_source text,
+          utm_medium text,
+          utm_campaign text,
+          utm_content text,
+          tester_step text,
+          opted_out_at timestamptz,
+          created_at timestamptz not null default now(),
+          updated_at timestamptz not null default now()
+        );
+        alter table public.leads add column if not exists normalized_phone text not null default '';
+        alter table public.leads add column if not exists consent_service boolean not null default true;
+        alter table public.leads add column if not exists consent_marketing boolean not null default false;
+        alter table public.leads add column if not exists consent_at timestamptz;
+        alter table public.leads add column if not exists consent_text_version text;
+        alter table public.leads add column if not exists consent_source text;
+        alter table public.leads add column if not exists ip_hash text;
+        alter table public.leads add column if not exists utm_source text;
+        alter table public.leads add column if not exists utm_medium text;
+        alter table public.leads add column if not exists utm_campaign text;
+        alter table public.leads add column if not exists utm_content text;
+        alter table public.leads add column if not exists tester_step text;
+        alter table public.leads add column if not exists opted_out_at timestamptz;
+        create unique index if not exists idx_leads_normalized_phone_stage
+          on public.leads (normalized_phone, stage)
+          where normalized_phone is not null and normalized_phone <> '';
+        create table if not exists public.marketing_opt_outs (
+          normalized_phone text primary key,
+          opted_out_at timestamptz not null default now(),
+          source text not null default 'whatsapp_baja'
+        );
+        create table if not exists public.funnel_events (
+          id text primary key,
+          session_id text not null,
+          source text not null default 'minitester',
+          step text not null,
+          category text,
+          skin_id text,
+          utm_source text,
+          created_at timestamptz not null default now()
+        );
+        create table if not exists public.admin_audit_log (
+          id text primary key,
+          actor text not null default 'admin',
+          action text not null,
+          row_count integer not null default 0,
+          meta text,
           created_at timestamptz not null default now()
         );
       `);
@@ -470,6 +626,13 @@ function rowToEvent(row: Record<string, unknown>): EventRecord {
     mpPreferenceId: row.mp_preference_id ? String(row.mp_preference_id) : undefined,
     mpPaymentId: row.mp_payment_id ? String(row.mp_payment_id) : undefined,
     paidAmount: typeof row.paid_amount === "number" ? row.paid_amount : undefined,
+    verifiedBy: row.verified_by ? String(row.verified_by) : undefined,
+    verifiedAt: row.verified_at ? new Date(String(row.verified_at)).toISOString() : undefined,
+    leadId: row.lead_id ? String(row.lead_id) : undefined,
+    utmSource: row.utm_source ? String(row.utm_source) : undefined,
+    utmMedium: row.utm_medium ? String(row.utm_medium) : undefined,
+    utmCampaign: row.utm_campaign ? String(row.utm_campaign) : undefined,
+    utmContent: row.utm_content ? String(row.utm_content) : undefined,
     eventTitle: String(row.event_title),
     dateISO: String(row.date_iso),
     dateDisplay: String(row.date_display),
@@ -565,10 +728,11 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       trivia_title, trivia_questions, trivia_scores, album_url, instagram_handle, event_hashtag, guest_list,
       memory_mode, enabled_sections,
       terms_accepted, terms_version, terms_accepted_at_utc,
+      verified_by, verified_at, lead_id, utm_source, utm_medium, utm_campaign, utm_content,
       contact_name, whatsapp, email, notes, created_at
     ) values (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57
+      $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64
     )`,
     [
       ev.id,
@@ -623,6 +787,13 @@ async function insertEventPg(pool: Pool, ev: EventRecord) {
       typeof ev.termsAccepted === "boolean" ? ev.termsAccepted : null,
       ev.termsVersion ?? null,
       ev.termsAcceptedAtUtc ?? null,
+      ev.verifiedBy ?? null,
+      ev.verifiedAt ?? null,
+      ev.leadId ?? null,
+      ev.utmSource ?? null,
+      ev.utmMedium ?? null,
+      ev.utmCampaign ?? null,
+      ev.utmContent ?? null,
       ev.contactName,
       ev.whatsapp,
       ev.email,
@@ -662,7 +833,12 @@ function ensureLocalStore(): DatabaseShape {
   }
   try {
     const raw = fs.readFileSync(storePath, "utf-8");
-    return JSON.parse(raw) as DatabaseShape;
+    const parsed = JSON.parse(raw) as DatabaseShape;
+    if (!Array.isArray(parsed.leads)) parsed.leads = [];
+    if (!Array.isArray(parsed.funnelEvents)) parsed.funnelEvents = [];
+    if (!Array.isArray(parsed.auditLogs)) parsed.auditLogs = [];
+    if (!Array.isArray(parsed.marketingOptOuts)) parsed.marketingOptOuts = [];
+    return parsed;
   } catch {
     fs.writeFileSync(storePath, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
     return structuredClone(INITIAL_SEED);
@@ -790,6 +966,11 @@ export async function createOrderEvent(input: {
   termsAccepted: boolean;
   termsVersion: string;
   termsAcceptedAtUtc: string;
+  leadId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
   contactName: string;
   whatsapp: string;
   email: string;
@@ -879,6 +1060,11 @@ export async function createOrderEvent(input: {
     termsAccepted: input.termsAccepted,
     termsVersion: input.termsVersion,
     termsAcceptedAtUtc: input.termsAcceptedAtUtc,
+    leadId: input.leadId?.trim() || undefined,
+    utmSource: input.utmSource?.trim() || undefined,
+    utmMedium: input.utmMedium?.trim() || undefined,
+    utmCampaign: input.utmCampaign?.trim() || undefined,
+    utmContent: input.utmContent?.trim() || undefined,
     contactName: input.contactName,
     whatsapp: input.whatsapp,
     email: input.email,
@@ -907,6 +1093,8 @@ export type EventPatch = Partial<
     | "mpPreferenceId"
     | "mpPaymentId"
     | "paidAmount"
+    | "verifiedBy"
+    | "verifiedAt"
     | "skinId"
     | "eventTitle"
     | "dateISO"
@@ -954,6 +1142,8 @@ const COLUMN_MAP: Record<keyof EventPatch, { col: string; json?: boolean }> = {
   mpPreferenceId: { col: "mp_preference_id" },
   mpPaymentId: { col: "mp_payment_id" },
   paidAmount: { col: "paid_amount" },
+  verifiedBy: { col: "verified_by" },
+  verifiedAt: { col: "verified_at" },
   skinId: { col: "skin_id" },
   eventTitle: { col: "event_title" },
   dateISO: { col: "date_iso" },
@@ -1270,4 +1460,640 @@ export async function addTriviaScore(input: {
   db.events[evIdx] = { ...db.events[evIdx], triviaScores: top };
   saveLocalStore(db);
   return item;
+}
+
+// ================= LEADS / CONSENT / OPT-OUT / FUNNEL / AUDIT =================
+
+const ADVANCED_STAGES = new Set<LeadStage>([
+  "pedido_creado",
+  "entregado",
+  "testimonio_pedido",
+  "testimonio_recibido",
+  "recompra_ofrecida",
+]);
+
+function rowToLead(row: Record<string, unknown>): LeadRecord {
+  return {
+    id: String(row.id),
+    stage: String(row.stage || "prueba_capturada") as LeadStage,
+    source: String(row.source || "minitester") as LeadRecord["source"],
+    contactName: String(row.contact_name ?? ""),
+    whatsapp: String(row.whatsapp ?? ""),
+    normalizedPhone: String(row.normalized_phone ?? ""),
+    email: row.email ? String(row.email) : undefined,
+    category: row.category ? String(row.category) : undefined,
+    skinId: row.skin_id ? String(row.skin_id) : undefined,
+    planId: row.plan_id ? String(row.plan_id) : undefined,
+    eventTitle: row.event_title ? String(row.event_title) : undefined,
+    guestSample: row.guest_sample ? String(row.guest_sample) : undefined,
+    convertedOrderCode: row.converted_order_code ? String(row.converted_order_code) : undefined,
+    consentService: row.consent_service === undefined ? true : Boolean(row.consent_service),
+    consentMarketing: Boolean(row.consent_marketing),
+    consentAt: row.consent_at ? new Date(String(row.consent_at)).toISOString() : undefined,
+    consentTextVersion: row.consent_text_version ? String(row.consent_text_version) : undefined,
+    consentSource: row.consent_source ? String(row.consent_source) : undefined,
+    ipHash: row.ip_hash ? String(row.ip_hash) : undefined,
+    utmSource: row.utm_source ? String(row.utm_source) : undefined,
+    utmMedium: row.utm_medium ? String(row.utm_medium) : undefined,
+    utmCampaign: row.utm_campaign ? String(row.utm_campaign) : undefined,
+    utmContent: row.utm_content ? String(row.utm_content) : undefined,
+    testerStep: row.tester_step ? String(row.tester_step) : undefined,
+    optedOutAt: row.opted_out_at ? new Date(String(row.opted_out_at)).toISOString() : undefined,
+    createdAt: new Date(String(row.created_at)).toISOString(),
+    updatedAt: new Date(String(row.updated_at)).toISOString(),
+  };
+}
+
+export async function listLeads(): Promise<LeadRecord[]> {
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query("select * from public.leads order by updated_at desc limit 500");
+    return res.rows.map(rowToLead);
+  }
+  const db = ensureLocalStore();
+  return [...(db.leads || [])].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function getLeadById(id: string): Promise<LeadRecord | undefined> {
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query("select * from public.leads where id = $1 limit 1", [id]);
+    return res.rows[0] ? rowToLead(res.rows[0]) : undefined;
+  }
+  const db = ensureLocalStore();
+  return (db.leads || []).find((l) => l.id === id);
+}
+
+export async function upsertLead(input: {
+  id?: string;
+  stage: LeadStage;
+  source: LeadRecord["source"];
+  contactName: string;
+  whatsapp: string;
+  email?: string;
+  category?: string;
+  skinId?: string;
+  planId?: string;
+  eventTitle?: string;
+  guestSample?: string;
+  convertedOrderCode?: string;
+  consentService?: boolean;
+  consentMarketing?: boolean;
+  consentTextVersion?: string;
+  consentSource?: string;
+  clientIp?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  testerStep?: string;
+}): Promise<LeadRecord> {
+  const cleanWa = input.whatsapp.trim().slice(0, 32);
+  const normalizedPhone = normalizePhone(cleanWa);
+  const now = new Date().toISOString();
+  const ipHash = input.clientIp ? hashIp(input.clientIp) : undefined;
+  const consentService = input.consentService !== false;
+  const requestedMarketing = Boolean(input.consentMarketing);
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    let optedOut = false;
+    if (normalizedPhone) {
+      const opt = await pool.query(
+        "select opted_out_at from public.marketing_opt_outs where normalized_phone = $1 limit 1",
+        [normalizedPhone]
+      );
+      if (opt.rows[0]) optedOut = true;
+    }
+
+    const consentMarketing = optedOut ? false : requestedMarketing;
+
+    if (input.id) {
+      const existingById = await pool.query("select * from public.leads where id = $1 limit 1", [
+        input.id,
+      ]);
+      if (existingById.rows[0]) {
+        const prev = rowToLead(existingById.rows[0]);
+        const nextStage: LeadStage = ADVANCED_STAGES.has(prev.stage) ? prev.stage : input.stage;
+        const res = await pool.query(
+          `update public.leads set
+            stage = $2,
+            source = $3,
+            contact_name = coalesce(nullif($4, ''), contact_name),
+            whatsapp = coalesce(nullif($5, ''), whatsapp),
+            normalized_phone = coalesce(nullif($6, ''), normalized_phone),
+            email = coalesce(nullif($7, ''), email),
+            category = coalesce(nullif($8, ''), category),
+            skin_id = coalesce(nullif($9, ''), skin_id),
+            plan_id = coalesce(nullif($10, ''), plan_id),
+            event_title = coalesce(nullif($11, ''), event_title),
+            guest_sample = coalesce(nullif($12, ''), guest_sample),
+            converted_order_code = coalesce(nullif($13, ''), converted_order_code),
+            consent_service = $14,
+            consent_marketing = case when $15 then false else (consent_marketing or $16) end,
+            consent_at = coalesce(consent_at, $17),
+            consent_text_version = coalesce(nullif($18, ''), consent_text_version),
+            consent_source = coalesce(nullif($19, ''), consent_source),
+            ip_hash = coalesce(nullif($20, ''), ip_hash),
+            utm_source = coalesce(nullif($21, ''), utm_source),
+            utm_medium = coalesce(nullif($22, ''), utm_medium),
+            utm_campaign = coalesce(nullif($23, ''), utm_campaign),
+            utm_content = coalesce(nullif($24, ''), utm_content),
+            tester_step = coalesce(nullif($25, ''), tester_step),
+            updated_at = $17
+          where id = $1
+          returning *`,
+          [
+            prev.id,
+            nextStage,
+            input.source,
+            input.contactName.trim().slice(0, 100),
+            cleanWa,
+            normalizedPhone,
+            input.email?.trim().slice(0, 140) || "",
+            input.category?.trim().slice(0, 40) || "",
+            input.skinId?.trim().slice(0, 80) || "",
+            input.planId?.trim().slice(0, 40) || "",
+            input.eventTitle?.trim().slice(0, 120) || "",
+            input.guestSample?.trim().slice(0, 100) || "",
+            input.convertedOrderCode?.trim().slice(0, 40) || "",
+            consentService,
+            optedOut,
+            consentMarketing,
+            now,
+            input.consentTextVersion?.trim().slice(0, 40) || "",
+            input.consentSource?.trim().slice(0, 40) || "",
+            ipHash || "",
+            input.utmSource?.trim().slice(0, 80) || "",
+            input.utmMedium?.trim().slice(0, 80) || "",
+            input.utmCampaign?.trim().slice(0, 120) || "",
+            input.utmContent?.trim().slice(0, 120) || "",
+            input.testerStep?.trim().slice(0, 40) || "",
+          ]
+        );
+        return rowToLead(res.rows[0]);
+      }
+    }
+
+    const newId =
+      input.id && /^[a-zA-Z0-9_-]{4,60}$/.test(input.id)
+        ? input.id
+        : `lead-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    if (normalizedPhone) {
+      const res = await pool.query(
+        `insert into public.leads (
+          id, stage, source, contact_name, whatsapp, normalized_phone, email,
+          category, skin_id, plan_id, event_title, guest_sample, converted_order_code,
+          consent_service, consent_marketing, consent_at, consent_text_version, consent_source, ip_hash,
+          utm_source, utm_medium, utm_campaign, utm_content, tester_step, created_at, updated_at
+        ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$16,$16)
+        on conflict (normalized_phone, stage) where normalized_phone is not null and normalized_phone <> ''
+        do update set
+          source = excluded.source,
+          contact_name = coalesce(nullif(excluded.contact_name, ''), public.leads.contact_name),
+          whatsapp = excluded.whatsapp,
+          email = coalesce(excluded.email, public.leads.email),
+          category = coalesce(excluded.category, public.leads.category),
+          skin_id = coalesce(excluded.skin_id, public.leads.skin_id),
+          plan_id = coalesce(excluded.plan_id, public.leads.plan_id),
+          event_title = coalesce(excluded.event_title, public.leads.event_title),
+          guest_sample = coalesce(excluded.guest_sample, public.leads.guest_sample),
+          consent_service = excluded.consent_service,
+          consent_marketing = case when $25 then false else (public.leads.consent_marketing or excluded.consent_marketing) end,
+          consent_at = coalesce(public.leads.consent_at, excluded.consent_at),
+          consent_text_version = coalesce(excluded.consent_text_version, public.leads.consent_text_version),
+          consent_source = coalesce(excluded.consent_source, public.leads.consent_source),
+          ip_hash = coalesce(excluded.ip_hash, public.leads.ip_hash),
+          utm_source = coalesce(excluded.utm_source, public.leads.utm_source),
+          utm_medium = coalesce(excluded.utm_medium, public.leads.utm_medium),
+          utm_campaign = coalesce(excluded.utm_campaign, public.leads.utm_campaign),
+          utm_content = coalesce(excluded.utm_content, public.leads.utm_content),
+          tester_step = coalesce(excluded.tester_step, public.leads.tester_step),
+          updated_at = excluded.updated_at
+        returning *`,
+        [
+          newId,
+          input.stage,
+          input.source,
+          input.contactName.trim().slice(0, 100),
+          cleanWa,
+          normalizedPhone,
+          input.email?.trim().slice(0, 140) || null,
+          input.category?.trim().slice(0, 40) || null,
+          input.skinId?.trim().slice(0, 80) || null,
+          input.planId?.trim().slice(0, 40) || null,
+          input.eventTitle?.trim().slice(0, 120) || null,
+          input.guestSample?.trim().slice(0, 100) || null,
+          input.convertedOrderCode?.trim().slice(0, 40) || null,
+          consentService,
+          consentMarketing,
+          now,
+          input.consentTextVersion?.trim().slice(0, 40) || "v1-2026",
+          input.consentSource?.trim().slice(0, 40) || input.source,
+          ipHash || null,
+          input.utmSource?.trim().slice(0, 80) || null,
+          input.utmMedium?.trim().slice(0, 80) || null,
+          input.utmCampaign?.trim().slice(0, 120) || null,
+          input.utmContent?.trim().slice(0, 120) || null,
+          input.testerStep?.trim().slice(0, 40) || null,
+          optedOut,
+        ]
+      );
+      return rowToLead(res.rows[0]);
+    }
+
+    const inserted = await pool.query(
+      `insert into public.leads (
+        id, stage, source, contact_name, whatsapp, normalized_phone, email,
+        category, skin_id, plan_id, event_title, guest_sample, converted_order_code,
+        consent_service, consent_marketing, consent_at, consent_text_version, consent_source, ip_hash,
+        utm_source, utm_medium, utm_campaign, utm_content, tester_step, created_at, updated_at
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$16,$16) returning *`,
+      [
+        newId,
+        input.stage,
+        input.source,
+        input.contactName.trim().slice(0, 100),
+        cleanWa,
+        normalizedPhone,
+        input.email?.trim().slice(0, 140) || null,
+        input.category?.trim().slice(0, 40) || null,
+        input.skinId?.trim().slice(0, 80) || null,
+        input.planId?.trim().slice(0, 40) || null,
+        input.eventTitle?.trim().slice(0, 120) || null,
+        input.guestSample?.trim().slice(0, 100) || null,
+        input.convertedOrderCode?.trim().slice(0, 40) || null,
+        consentService,
+        consentMarketing,
+        now,
+        input.consentTextVersion?.trim().slice(0, 40) || "v1-2026",
+        input.consentSource?.trim().slice(0, 40) || input.source,
+        ipHash || null,
+        input.utmSource?.trim().slice(0, 80) || null,
+        input.utmMedium?.trim().slice(0, 80) || null,
+        input.utmCampaign?.trim().slice(0, 120) || null,
+        input.utmContent?.trim().slice(0, 120) || null,
+        input.testerStep?.trim().slice(0, 40) || null,
+      ]
+    );
+    return rowToLead(inserted.rows[0]);
+  }
+
+  // Fallback dev local JSON (NODE_ENV=development)
+  const db = ensureLocalStore();
+  const leads = db.leads || [];
+  const optedOut = Boolean(normalizedPhone && (db.marketingOptOuts || []).includes(normalizedPhone));
+  const consentMarketing = optedOut ? false : requestedMarketing;
+
+  const idx = leads.findIndex(
+    (l) =>
+      (input.id && l.id === input.id) ||
+      (normalizedPhone && l.normalizedPhone === normalizedPhone && l.stage === input.stage)
+  );
+  if (idx !== -1) {
+    const prev = leads[idx];
+    const updated: LeadRecord = {
+      ...prev,
+      stage: ADVANCED_STAGES.has(prev.stage) ? prev.stage : input.stage,
+      source: input.source,
+      contactName: input.contactName.trim().slice(0, 100) || prev.contactName,
+      whatsapp: cleanWa || prev.whatsapp,
+      normalizedPhone: normalizedPhone || prev.normalizedPhone,
+      email: input.email?.trim().slice(0, 140) || prev.email,
+      category: input.category?.trim().slice(0, 40) || prev.category,
+      skinId: input.skinId?.trim().slice(0, 80) || prev.skinId,
+      planId: input.planId?.trim().slice(0, 40) || prev.planId,
+      eventTitle: input.eventTitle?.trim().slice(0, 120) || prev.eventTitle,
+      guestSample: input.guestSample?.trim().slice(0, 100) || prev.guestSample,
+      convertedOrderCode: input.convertedOrderCode?.trim().slice(0, 40) || prev.convertedOrderCode,
+      consentService,
+      consentMarketing: optedOut ? false : prev.consentMarketing || consentMarketing,
+      consentAt: prev.consentAt || now,
+      consentTextVersion: prev.consentTextVersion || input.consentTextVersion || "v1-2026",
+      consentSource: prev.consentSource || input.consentSource || input.source,
+      ipHash: prev.ipHash || ipHash,
+      utmSource: input.utmSource?.trim().slice(0, 80) || prev.utmSource,
+      utmMedium: input.utmMedium?.trim().slice(0, 80) || prev.utmMedium,
+      utmCampaign: input.utmCampaign?.trim().slice(0, 120) || prev.utmCampaign,
+      utmContent: input.utmContent?.trim().slice(0, 120) || prev.utmContent,
+      testerStep: input.testerStep?.trim().slice(0, 40) || prev.testerStep,
+      updatedAt: now,
+    };
+    leads[idx] = updated;
+    db.leads = leads;
+    saveLocalStore(db);
+    return updated;
+  }
+
+  const created: LeadRecord = {
+    id:
+      input.id && /^[a-zA-Z0-9_-]{4,60}$/.test(input.id)
+        ? input.id
+        : `lead-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    stage: input.stage,
+    source: input.source,
+    contactName: input.contactName.trim().slice(0, 100),
+    whatsapp: cleanWa,
+    normalizedPhone,
+    email: input.email?.trim().slice(0, 140) || undefined,
+    category: input.category?.trim().slice(0, 40) || undefined,
+    skinId: input.skinId?.trim().slice(0, 80) || undefined,
+    planId: input.planId?.trim().slice(0, 40) || undefined,
+    eventTitle: input.eventTitle?.trim().slice(0, 120) || undefined,
+    guestSample: input.guestSample?.trim().slice(0, 100) || undefined,
+    convertedOrderCode: input.convertedOrderCode?.trim().slice(0, 40) || undefined,
+    consentService,
+    consentMarketing,
+    consentAt: now,
+    consentTextVersion: input.consentTextVersion?.trim().slice(0, 40) || "v1-2026",
+    consentSource: input.consentSource?.trim().slice(0, 40) || input.source,
+    ipHash,
+    utmSource: input.utmSource?.trim().slice(0, 80) || undefined,
+    utmMedium: input.utmMedium?.trim().slice(0, 80) || undefined,
+    utmCampaign: input.utmCampaign?.trim().slice(0, 120) || undefined,
+    utmContent: input.utmContent?.trim().slice(0, 120) || undefined,
+    testerStep: input.testerStep?.trim().slice(0, 40) || undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
+  db.leads = [created, ...leads].slice(0, 500);
+  saveLocalStore(db);
+  return created;
+}
+
+export async function updateLeadStage(
+  id: string,
+  stage: LeadStage
+): Promise<LeadRecord | null> {
+  const now = new Date().toISOString();
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query(
+      "update public.leads set stage = $2, updated_at = $3 where id = $1 returning *",
+      [id, stage, now]
+    );
+    return res.rows[0] ? rowToLead(res.rows[0]) : null;
+  }
+  const db = ensureLocalStore();
+  const idx = (db.leads || []).findIndex((l) => l.id === id);
+  if (idx === -1) return null;
+  const updated: LeadRecord = { ...db.leads![idx], stage, updatedAt: now };
+  db.leads![idx] = updated;
+  saveLocalStore(db);
+  return updated;
+}
+
+export async function deleteLeadById(id: string): Promise<boolean> {
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query("delete from public.leads where id = $1 returning id", [id]);
+    return (res.rowCount ?? 0) > 0;
+  }
+  const db = ensureLocalStore();
+  const before = (db.leads || []).length;
+  db.leads = (db.leads || []).filter((l) => l.id !== id);
+  if (db.leads.length === before) return false;
+  saveLocalStore(db);
+  return true;
+}
+
+export async function optOutMarketingByPhone(
+  phone: string,
+  source = "whatsapp_baja"
+): Promise<{
+  normalizedPhone: string;
+  affectedLeads: number;
+  alreadyOptedOut: boolean;
+}> {
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone) {
+    return { normalizedPhone: "", affectedLeads: 0, alreadyOptedOut: false };
+  }
+  const now = new Date().toISOString();
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const existingOpt = await pool.query(
+      "select normalized_phone from public.marketing_opt_outs where normalized_phone = $1",
+      [normalizedPhone]
+    );
+    const alreadyOptedOut = (existingOpt.rowCount ?? 0) > 0;
+    await pool.query(
+      `insert into public.marketing_opt_outs (normalized_phone, opted_out_at, source)
+       values ($1, $2, $3)
+       on conflict (normalized_phone) do nothing`,
+      [normalizedPhone, now, source]
+    );
+    const res = await pool.query(
+      `update public.leads
+       set consent_marketing = false,
+           opted_out_at = coalesce(opted_out_at, $2),
+           updated_at = case when consent_marketing = true or opted_out_at is null then $2 else updated_at end
+       where normalized_phone = $1 and (consent_marketing = true or opted_out_at is null)
+       returning id`,
+      [normalizedPhone, now]
+    );
+    return { normalizedPhone, affectedLeads: res.rowCount ?? 0, alreadyOptedOut };
+  }
+
+  const db = ensureLocalStore();
+  const optOuts = new Set(db.marketingOptOuts || []);
+  const alreadyOptedOut = optOuts.has(normalizedPhone);
+  optOuts.add(normalizedPhone);
+  db.marketingOptOuts = Array.from(optOuts);
+  let affectedLeads = 0;
+  db.leads = (db.leads || []).map((l) => {
+    if (l.normalizedPhone === normalizedPhone || normalizePhone(l.whatsapp) === normalizedPhone) {
+      if (l.consentMarketing || !l.optedOutAt) {
+        affectedLeads += 1;
+        return {
+          ...l,
+          consentMarketing: false,
+          optedOutAt: l.optedOutAt || now,
+          updatedAt: now,
+        };
+      }
+    }
+    return l;
+  });
+  saveLocalStore(db);
+  return { normalizedPhone, affectedLeads, alreadyOptedOut };
+}
+
+export async function markLeadConverted(input: {
+  leadId?: string;
+  whatsapp: string;
+  orderCode: string;
+}): Promise<void> {
+  const normalized = normalizePhone(input.whatsapp);
+  const now = new Date().toISOString();
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    if (input.leadId) {
+      const r = await pool.query(
+        "update public.leads set stage = 'pedido_creado', converted_order_code = $2, updated_at = $3 where id = $1 returning id",
+        [input.leadId, input.orderCode, now]
+      );
+      if ((r.rowCount ?? 0) > 0) return;
+    }
+    if (normalized) {
+      await pool.query(
+        "update public.leads set stage = 'pedido_creado', converted_order_code = $2, updated_at = $3 where normalized_phone = $1 and stage not in ('pedido_creado','entregado','testimonio_pedido','testimonio_recibido','recompra_ofrecida')",
+        [normalized, input.orderCode, now]
+      );
+    }
+    return;
+  }
+
+  const db = ensureLocalStore();
+  let changed = false;
+  db.leads = (db.leads || []).map((l) => {
+    const matchById = Boolean(input.leadId && l.id === input.leadId);
+    const matchByPhone = Boolean(
+      normalized && (l.normalizedPhone === normalized || normalizePhone(l.whatsapp) === normalized)
+    );
+    if ((matchById || matchByPhone) && !ADVANCED_STAGES.has(l.stage)) {
+      changed = true;
+      return {
+        ...l,
+        stage: "pedido_creado",
+        convertedOrderCode: input.orderCode,
+        updatedAt: now,
+      };
+    }
+    return l;
+  });
+  if (changed) saveLocalStore(db);
+}
+
+export async function markLeadConvertedByWhatsapp(
+  whatsapp: string,
+  orderCode: string
+): Promise<void> {
+  return markLeadConverted({ whatsapp, orderCode });
+}
+
+export async function recordFunnelEvent(input: {
+  sessionId: string;
+  source: string;
+  step: FunnelEventRecord["step"];
+  category?: string;
+  skinId?: string;
+  utmSource?: string;
+}): Promise<FunnelEventRecord> {
+  const record: FunnelEventRecord = {
+    id: `fe-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    sessionId: input.sessionId.slice(0, 64),
+    source: input.source.slice(0, 32),
+    step: input.step,
+    category: input.category?.slice(0, 40),
+    skinId: input.skinId?.slice(0, 80),
+    utmSource: input.utmSource?.slice(0, 80),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      `insert into public.funnel_events (id, session_id, source, step, category, skin_id, utm_source, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        record.id,
+        record.sessionId,
+        record.source,
+        record.step,
+        record.category ?? null,
+        record.skinId ?? null,
+        record.utmSource ?? null,
+        record.createdAt,
+      ]
+    );
+    return record;
+  }
+
+  const db = ensureLocalStore();
+  const list = db.funnelEvents || [];
+  db.funnelEvents = [record, ...list].slice(0, 1000);
+  saveLocalStore(db);
+  return record;
+}
+
+export async function listFunnelEvents(): Promise<FunnelEventRecord[]> {
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query(
+      "select * from public.funnel_events order by created_at desc limit 1000"
+    );
+    return res.rows.map((r) => ({
+      id: String(r.id),
+      sessionId: String(r.session_id),
+      source: String(r.source),
+      step: String(r.step) as FunnelEventRecord["step"],
+      category: r.category ? String(r.category) : undefined,
+      skinId: r.skin_id ? String(r.skin_id) : undefined,
+      utmSource: r.utm_source ? String(r.utm_source) : undefined,
+      createdAt: new Date(String(r.created_at)).toISOString(),
+    }));
+  }
+  const db = ensureLocalStore();
+  return [...(db.funnelEvents || [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function recordAdminAuditLog(input: {
+  actor?: string;
+  action: string;
+  rowCount?: number;
+  meta?: string;
+}): Promise<void> {
+  const record: AdminAuditLogRecord = {
+    id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    actor: (input.actor || "admin").slice(0, 60),
+    action: input.action.slice(0, 80),
+    rowCount: Math.max(0, Math.round(input.rowCount ?? 0)),
+    meta: input.meta?.slice(0, 300),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      `insert into public.admin_audit_log (id, actor, action, row_count, meta, created_at)
+       values ($1,$2,$3,$4,$5,$6)`,
+      [record.id, record.actor, record.action, record.rowCount, record.meta ?? null, record.createdAt]
+    );
+    return;
+  }
+
+  const db = ensureLocalStore();
+  db.auditLogs = [record, ...(db.auditLogs || [])].slice(0, 500);
+  saveLocalStore(db);
+}
+
+export async function listAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query(
+      "select * from public.admin_audit_log order by created_at desc limit 100"
+    );
+    return res.rows.map((r) => ({
+      id: String(r.id),
+      actor: String(r.actor),
+      action: String(r.action),
+      rowCount: Number(r.row_count ?? 0),
+      meta: r.meta ? String(r.meta) : undefined,
+      createdAt: new Date(String(r.created_at)).toISOString(),
+    }));
+  }
+  const db = ensureLocalStore();
+  return [...(db.auditLogs || [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function isVerifiedPaidOrder(ev: EventRecord): boolean {
+  if (ev.paymentStatus !== "pagado") return false;
+  if (ev.paymentMethod === "mercadopago") {
+    return Boolean(ev.mpPaymentId || (ev.verifiedBy && ev.verifiedAt));
+  }
+  return Boolean(ev.verifiedBy && ev.verifiedAt);
 }

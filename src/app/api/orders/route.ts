@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { createOrderEvent, getDbMode, listEvents, listRsvpsForSlug } from "@/lib/db";
-import { verifyAdminPass } from "@/lib/adminAuth";
+import {
+  createOrderEvent,
+  getDbMode,
+  listEvents,
+  listRsvpsForSlug,
+  markLeadConverted,
+  upsertLead,
+} from "@/lib/db";
+import { verifyAdminRequest } from "@/lib/adminAuth";
 import { LEGAL_VERSION } from "@/config/legal";
 import { CURATED_AUDIO_URLS } from "@/config/musicCatalog";
 import { sanitizeEventLocations } from "@/lib/locationUtils";
@@ -9,7 +16,7 @@ import { getClientIp, sanitizeSafeUrl } from "@/lib/security";
 
 export async function GET(req: Request) {
   const ip = getClientIp(req);
-  const rl = checkRateLimit(`admin-list:${ip}`, 20, 10 * 60_000);
+  const rl = checkRateLimit(`admin-list:${ip}`, 40, 10 * 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Demasiados intentos. Esperá unos minutos." },
@@ -17,8 +24,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const pass = req.headers.get("x-admin-pass") || new URL(req.url).searchParams.get("pass");
-  const auth = verifyAdminPass(pass);
+  const auth = await verifyAdminRequest(req);
   if (!auth.ok) {
     return NextResponse.json(
       {
@@ -27,7 +33,10 @@ export async function GET(req: Request) {
             ? "Panel de administración no configurado en este entorno."
             : "No autorizado",
       },
-      { status: auth.reason === "unconfigured" ? 503 : 401 }
+      {
+        status: auth.reason === "unconfigured" ? 503 : 401,
+        headers: { "Cache-Control": "no-store" },
+      }
     );
   }
 
@@ -300,11 +309,46 @@ export async function POST(req: Request) {
       termsAccepted: true,
       termsVersion: LEGAL_VERSION,
       termsAcceptedAtUtc: new Date().toISOString(),
+      leadId: typeof body.leadId === "string" ? body.leadId.trim().slice(0, 60) : undefined,
+      utmSource: typeof body.utmSource === "string" ? body.utmSource.trim().slice(0, 80) : undefined,
+      utmMedium: typeof body.utmMedium === "string" ? body.utmMedium.trim().slice(0, 80) : undefined,
+      utmCampaign:
+        typeof body.utmCampaign === "string" ? body.utmCampaign.trim().slice(0, 120) : undefined,
+      utmContent:
+        typeof body.utmContent === "string" ? body.utmContent.trim().slice(0, 120) : undefined,
       contactName: String(contactName).trim(),
       whatsapp: String(whatsapp).trim(),
       email: String(email).trim(),
       notes: String(notes || "").trim(),
     });
+
+    await upsertLead({
+      id: typeof body.leadId === "string" ? body.leadId : undefined,
+      stage: "pedido_creado",
+      source: "encargar",
+      contactName: String(contactName).trim(),
+      whatsapp: String(whatsapp).trim(),
+      email: String(email).trim(),
+      skinId: String(skinId || "boda-sobre-marfil"),
+      planId: validPlan,
+      eventTitle: String(eventTitle).trim(),
+      convertedOrderCode: created.orderCode,
+      consentService: true,
+      consentMarketing: body.consentMarketing === true,
+      consentTextVersion: "v1-2026",
+      consentSource: "encargar_submit",
+      clientIp: ip,
+      utmSource: typeof body.utmSource === "string" ? body.utmSource : undefined,
+      utmMedium: typeof body.utmMedium === "string" ? body.utmMedium : undefined,
+      utmCampaign: typeof body.utmCampaign === "string" ? body.utmCampaign : undefined,
+      utmContent: typeof body.utmContent === "string" ? body.utmContent : undefined,
+    }).catch(() => {});
+
+    await markLeadConverted({
+      leadId: typeof body.leadId === "string" ? body.leadId : undefined,
+      whatsapp: String(whatsapp),
+      orderCode: created.orderCode,
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true, order: created }, { status: 201 });
   } catch (err) {
