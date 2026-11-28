@@ -4677,6 +4677,43 @@ export function InvitationRenderer({
             </section>
           </RevealSection>
 
+          {/* ================= CTA REFERIDOS MODO RECUERDO (H6) ================= */}
+          {memoryMode && (
+            <RevealSection motionProfile={motionProfile}>
+              <section
+                aria-label="Creá una invitación como esta"
+                className={`mt-8 border p-6 text-center shadow-sm ${
+                  isNewspaper ? "rounded-none" : "rounded-[24px]"
+                }`}
+                style={{
+                  backgroundColor: palette.surfaceAlt,
+                  borderColor: palette.border,
+                  color: palette.text,
+                }}
+              >
+                <p className="font-ui-jost text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: textAccentOnAlt }}>
+                  Modo Recuerdo · Referidos
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-relaxed">
+                  ¿Fue el cumple / la boda de alguien que querés? Hacé su invitación
+                </p>
+                <Link
+                  href="/?utm_source=recuerdo&utm_campaign=referido#modelos"
+                  className={`mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold uppercase tracking-[0.14em] shadow-sm transition-transform hover:scale-[1.02] ${
+                    isNewspaper ? "rounded-none" : "rounded-full"
+                  }`}
+                  style={{
+                    backgroundColor: buttonBg,
+                    color: palette.accentText,
+                  }}
+                >
+                  <span>Ver modelos</span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </section>
+            </RevealSection>
+          )}
+
           {/* ================= FOOTER VIRAL VISIBLE ================= */}
           <footer className="mt-12 border-t pt-6 text-center" style={{ borderColor: palette.border }}>
             <Link

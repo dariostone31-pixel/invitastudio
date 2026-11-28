@@ -95,7 +95,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Invita con el Alma — Invitaciones Digitales de Studio",
     description:
-      "41 diseños interactivos con sobre animado, música, mapa en 1 toque y panel RSVP para WhatsApp en menos de 24 hs.",
+      "41 diseños interactivos con sobre animado, música, mapa en 1 toque y panel RSVP para WhatsApp. Listo en menos de 24 hs hábiles; activación automática con Mercado Pago.",
     url: "/",
     siteName: "Invita con el Alma",
     images: [
@@ -111,7 +111,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Invita con el Alma — Invitaciones Digitales de Studio",
     description:
-      "Invitaciones interactivas con sobre animado, música y RSVP inteligente en menos de 24 hs.",
+      "Invitaciones interactivas con sobre animado, música y RSVP inteligente listo en menos de 24 hs hábiles.",
     images: ["/images/templates/boda-jardin-botanico.webp"],
   },
 };

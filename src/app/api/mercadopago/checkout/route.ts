@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
-import { getEventById, updateEventRecord } from "@/lib/db";
+import { getEventById, getEventByOrderCode, updateEventRecord } from "@/lib/db";
 import { PRICING_PLANS, BUSINESS_CONFIG } from "@/config/business";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const orderId = String(body.orderId || "");
-    if (!orderId) {
+    const orderId = String(body.orderId || "").trim();
+    const orderCode = String(body.orderCode || "").trim();
+    if (!orderId && !orderCode) {
       return NextResponse.json({ error: "Falta orderId" }, { status: 400 });
     }
 
-    const event = await getEventById(orderId);
+    const event =
+      (orderId ? await getEventById(orderId) : undefined) ||
+      (orderCode ? await getEventByOrderCode(orderCode) : undefined);
     if (!event) {
       return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
     }
@@ -86,6 +89,7 @@ export async function POST(req: Request) {
       mode: "live",
       preferenceId: response.id,
       initPoint: response.init_point,
+      checkoutUrl: response.init_point,
       sandboxInitPoint: response.sandbox_init_point,
     });
   } catch (err) {

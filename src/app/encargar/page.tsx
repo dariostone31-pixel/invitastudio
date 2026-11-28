@@ -95,6 +95,8 @@ function EncargarForm() {
   const mpOrder = searchParams.get("order");
   const mpPanel = searchParams.get("panel");
   const mpSlug = searchParams.get("slug");
+  const mpPaymentId =
+    searchParams.get("payment_id") || searchParams.get("collection_id");
 
   const [selectedPlan, setSelectedPlan] = useState<"esencial" | "pro" | "asistido">(initialPlan);
   const [selectedSkin, setSelectedSkin] = useState(initialSkin);
@@ -414,6 +416,19 @@ function EncargarForm() {
     captureUtmAndLeadFromUrl();
     trackedLeadIdRef.current = getStoredLeadId();
   }, []);
+
+  useEffect(() => {
+    if (mpStatus !== "success" || !mpPaymentId) return;
+    fetch("/api/mercadopago/verify-return", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paymentId: mpPaymentId,
+        orderCode: mpOrder || undefined,
+        panelToken: mpPanel || undefined,
+      }),
+    }).catch(() => {});
+  }, [mpStatus, mpPaymentId, mpOrder, mpPanel]);
 
   useEffect(() => {
     const digits = whatsapp.replace(/\D/g, "");
@@ -791,10 +806,10 @@ function EncargarForm() {
         </h1>
         <p className="mt-2 text-sm text-stone-600">
           {approved
-            ? "Ya activamos la producción de tu invitación (< 24 hs hábiles). Podés revisar tu borrador y tu panel desde los botones de abajo."
+            ? "Pagos con Mercado Pago: activación automática confirmada. Tu enlace público y tu Panel de Organizador ya están desbloqueados y listos para compartir."
             : pending
-            ? "Apenas Mercado Pago acredite la operación, tu pedido pasará automáticamente a edición."
-            : "Podés reintentar el pago o abonar por transferencia bancaria (con bonus si transferís: PDF imprimible A4 de 4 carteles QR)."}
+            ? "Apenas Mercado Pago acredite la operación, tu invitación y tu panel quedarán desbloqueados automáticamente."
+            : "Podés reintentar el pago o abonar por transferencia bancaria (se activan en el próximo horario de atención L-V 9-19, Sáb 9-13, con bonus de Pack Ampliado de 8 carteles en 3 tamaños: A3, A5 y stickers)."}
         </p>
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {mpSlug && (
@@ -861,15 +876,15 @@ function EncargarForm() {
           enlaces o sacales captura).
         </p>
 
-        {/* Acceso inmediato a la invitación, panel y ajuste opcional */}
+        {/* Acceso inmediato al borrador privado, panel y ajuste opcional */}
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link
-            href={`/i/${createdOrder.slug}`}
+            href={`/panel/${createdOrder.panelToken}/preview`}
             target="_blank"
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-stone-900 bg-stone-900 px-3 py-3 text-xs font-semibold text-white hover:bg-stone-800"
           >
             <ExternalLink className="h-4 w-4" />
-            Ver Invitación en Vivo
+            Ver Borrador Privado
           </Link>
           <Link
             href={`/panel/${createdOrder.panelToken}`}
@@ -896,7 +911,7 @@ function EncargarForm() {
                   Pagar online con Mercado Pago (Tarjetas / Débito / Cuotas)
                 </span>
                 <span className="mt-0.5 block text-[11px] text-sky-800">
-                  Acreditación automática · Valor: {orderPlanObj.listPrice} ARS
+                  Activación automática al instante (incluso fines de semana) · Valor: {orderPlanObj.listPrice} ARS
                 </span>
               </div>
             </div>
@@ -926,12 +941,11 @@ function EncargarForm() {
               Transferencia Bancaria Directa: {orderPlanObj.transferPrice} ARS
             </span>
             <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
-              Bonus si transferís: PDF A4 x4 carteles QR
+              Bonus si transferís: Pack Ampliado 8 carteles
             </span>
           </div>
           <p className="mt-1 text-[11px] text-amber-900">
-            Mismo precio en todos los medios de pago. Bonus si transferís: PDF imprimible A4 con 4 carteles QR para tus mesas y prioridad de activación
-            {orderPlanObj.id === "asistido" ? " (+ Trivia interactiva)" : ""}.
+            Mismo precio en todos los medios de pago. Transferencias: se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13). Bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños (A3 para la entrada, A5 para mesas y stickers para copas) con la estética de tu modelo + activación prioritaria.
           </p>
           {BUSINESS_CONFIG.bankAliasConfigured ? (
             <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2">
@@ -1031,7 +1045,7 @@ function EncargarForm() {
                     <span className="ml-1 text-[10px] font-normal opacity-80">ARS único</span>
                   </div>
                   <div className="text-[10px] opacity-80">
-                    Bonus si transferís: PDF A4 con 4 carteles QR
+                    Bonus si transferís: Pack Ampliado 8 carteles (A3, A5, stickers)
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed opacity-90">{plan.shortDesc}</p>
                 </div>
@@ -1062,6 +1076,51 @@ function EncargarForm() {
             {selectedPlan === "asistido" &&
               "Modalidad Llave en Mano: podés cargar tus textos/fotos ahora si querés adelantarlos, o enviarnos todo por soporte y nuestro equipo arma la invitación completa, links individuales y por familia, Trivia y cambios asistidos."}
           </p>
+        </div>
+
+        {/* H4: Captura temprana de WhatsApp + checkbox marketing (desmarcado por defecto) en Paso 1 */}
+        <div className="mt-5 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4 sm:p-5">
+          <p className="text-xs font-bold text-stone-900">
+            Tus datos de WhatsApp para guardar tu borrador y enviarte tu enlace *
+          </p>
+          <p className="mt-0.5 text-[11px] text-stone-600">
+            Si dejás tu WhatsApp acá, guardamos tu avance para que no pierdas lo que cargaste y podamos ayudarte si necesitás asistencia.
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-stone-700">Tu Nombre *</label>
+              <input
+                type="text"
+                required
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Ej. Carolina"
+                className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-stone-700">WhatsApp *</label>
+              <input
+                type="tel"
+                required
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="Ej. 388 412 3456"
+                className="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+              />
+            </div>
+          </div>
+          <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-stone-700">
+            <input
+              type="checkbox"
+              checked={consentMarketing}
+              onChange={(e) => setConsentMarketing(e.target.checked)}
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-stone-900"
+            />
+            <span>
+              Quiero recibir también ideas, ofertas y novedades de Invita con el Alma por WhatsApp. Puedo darme de baja cuando quiera respondiendo BAJA.
+            </span>
+          </label>
         </div>
       </div>
 
@@ -2259,38 +2318,17 @@ function EncargarForm() {
       {/* Paso 4: Entrega del link y aceptación de condiciones */}
       <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
         <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
-          Paso 4 · Datos para entregarte tu link
+          Paso 4 · Confirmación y entrega de tu link
         </span>
         <div className="mt-2 rounded-2xl border border-stone-200 bg-stone-50 p-3.5 text-xs leading-relaxed text-stone-600">
-          <strong className="text-stone-900">¿Cómo funciona este paso?</strong> Apenas enviás el
-          formulario, en esta misma pantalla se generan tu <strong>borrador en vivo</strong> y tu{" "}
-          <strong>Panel de Organizador</strong>. Tu WhatsApp y Email los usamos para coordinar la
-          confirmación del pago y enviarte tu enlace definitivo listo en menos de 24 hs hábiles.
+          <strong className="text-stone-900">¿Cómo funciona la activación?</strong> Apenas enviás el
+          formulario, accedés a tu <strong>borrador privado</strong> y tu{" "}
+          <strong>Panel de Organizador</strong>. <strong>Listo en menos de 24 hs hábiles.</strong>{" "}
+          Pagos con <strong>Mercado Pago: activación automática</strong> al instante (incluso fines de semana).{" "}
+          <strong>Transferencias:</strong> se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13).
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-stone-700">Tu Nombre *</label>
-            <input
-              type="text"
-              required
-              value={contactName}
-              onChange={(e) => setContactName(e.target.value)}
-              placeholder="Ej. Carolina"
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-stone-700">WhatsApp *</label>
-            <input
-              type="tel"
-              required
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="Ej. 388 412 3456"
-              className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
-            />
-          </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-stone-700">Email *</label>
             <input
@@ -2300,6 +2338,32 @@ function EncargarForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
               className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
+              Tu Nombre (cargado en Paso 1) *
+            </label>
+            <input
+              type="text"
+              required
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              placeholder="Ej. Carolina"
+              className="w-full rounded-xl border border-stone-300 bg-stone-50/60 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-stone-700">
+              WhatsApp (cargado en Paso 1) *
+            </label>
+            <input
+              type="tel"
+              required
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="Ej. 388 412 3456"
+              className="w-full rounded-xl border border-stone-300 bg-stone-50/60 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
             />
           </div>
           <div className="sm:col-span-3">
@@ -2316,23 +2380,8 @@ function EncargarForm() {
           </div>
         </div>
 
-        {/* Consentimiento opcional de marketing por WhatsApp (DESMARCADO por defecto) */}
-        <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
-          <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-stone-700">
-            <input
-              type="checkbox"
-              checked={consentMarketing}
-              onChange={(e) => setConsentMarketing(e.target.checked)}
-              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-stone-900"
-            />
-            <span>
-              Quiero recibir también ideas, ofertas y novedades de Invita con el Alma por WhatsApp. Puedo darme de baja cuando quiera respondiendo BAJA.
-            </span>
-          </label>
-        </div>
-
         {/* Aceptación explícita de Condiciones (NO premarcada) + enlace Privacidad */}
-        <div className="mt-3 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
+        <div className="mt-4 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
           <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-stone-700">
             <input
               type="checkbox"

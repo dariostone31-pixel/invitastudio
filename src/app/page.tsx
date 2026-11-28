@@ -37,7 +37,7 @@ import { BUSINESS_CONFIG, PRICING_PLANS, getWhatsAppHref } from "@/config/busine
 const FAQS = [
   {
     q: "¿Cuándo comienza el plazo de entrega y cuánto demora?",
-    a: "El plazo estimado de entrega (< 24 horas hábiles) comienza una vez recibido tu pedido con los datos del evento y confirmado el pago o comprobante. Apenas enviás el pedido ya podés ver un borrador técnico para revisar antes de compartir.",
+    a: "Listo en menos de 24 hs hábiles. Pagos con Mercado Pago: activación automática al instante, incluso fines de semana. Transferencias: se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13). Apenas enviás el pedido ya podés ver un borrador privado con marca de agua para revisar antes de compartir.",
   },
   {
     q: "¿Qué necesito enviar para armar mi invitación?",
@@ -69,7 +69,7 @@ const FAQS = [
   },
   {
     q: "¿Cómo se paga desde Argentina?",
-    a: "El precio es idéntico en todos los medios de pago: Transferencia Bancaria Directa (con bonus si transferís: PDF imprimible A4 con 4 carteles QR para las mesas y activación prioritaria) o tarjetas, débito y dinero en cuenta mediante Mercado Pago Checkout Pro.",
+    a: "El precio es idéntico en todos los medios de pago: Mercado Pago Checkout Pro (activación automática al instante) o Transferencia Bancaria Directa (se activan en el próximo horario de atención L-V 9-19, Sáb 9-13, con bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños —A3 para la entrada, A5 para mesas y stickers para copas— con la estética de tu modelo + activación prioritaria).",
   },
 ];
 
@@ -104,8 +104,8 @@ const MORE_THAN_INVITE = [
   {
     num: "01",
     icon: Users,
-    title: "Pases individuales o en grupo",
-    desc: "En Llave en Mano, cada invitado recibe el sobre con su nombre, lugares reservados y acceso por momento (ceremonia o fiesta).",
+    title: "Pases individuales o en grupo (Llave en Mano)",
+    desc: "Exclusivo del Plan Llave en Mano: cada invitado recibe el sobre con su nombre, lugares reservados y acceso por momento (ceremonia o fiesta).",
   },
   {
     num: "02",
@@ -144,7 +144,7 @@ const GUARANTEES = [
   },
   {
     title: "Precios únicos y transparentes en ARS",
-    desc: "Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999): mismo precio en cualquier medio de pago, con bonus de PDF A4 de 4 carteles QR si transferís.",
+    desc: "Esencial ($24.999), PRO ($29.999) o Llave en Mano ($34.999): mismo precio en cualquier medio de pago. Bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños (A3 entrada, A5 mesas, stickers copas).",
   },
 ];
 
@@ -292,7 +292,7 @@ export default function HomePage() {
 
             <MotionHeroBlock delay={0.16}>
               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#6E4F57] sm:text-lg">
-                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de studio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente listos en <strong className="text-[#6B1E30]">menos de 24 hs</strong>.
+                Se abre directo en el celular, <strong className="text-[#2A121B]">sin apps ni descargas</strong>. Diseños de studio con sobre animado 3D, música integrada, mapa en 1 toque y confirmación inteligente. <strong className="text-[#6B1E30]">Listo en menos de 24 hs hábiles. Pagos con Mercado Pago: activación automática.</strong>
               </p>
             </MotionHeroBlock>
 
@@ -330,7 +330,7 @@ export default function HomePage() {
                 <div className="px-2 sm:px-4">
                   <p className="font-display-cormorant whitespace-nowrap text-[21px] font-bold text-[#6B1E30] sm:text-3xl">&lt; 24 hs</p>
                   <p className="font-ui-jost mt-0.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-[#7A5A62] sm:text-[11px] sm:tracking-[0.1em]">
-                    Entrega hábil
+                    Hábiles (MP al instante)
                   </p>
                 </div>
                 <div className="px-2 sm:px-4">
@@ -430,7 +430,7 @@ export default function HomePage() {
                 </AnimatedIconBox>
                 <div className="text-xs">
                   <strong className="text-[#2A121B]">¿Querés ver cómo organizás tus invitados?</strong>
-                  <span className="block text-[#7A5A62]">Probá en vivo el panel con pases por familia, alergias y descarga Excel.</span>
+                  <span className="block text-[#7A5A62]">Probá en vivo el panel (demo de Llave en Mano con pases por familia, alergias y descarga Excel).</span>
                 </div>
               </div>
               <MotionTap>
@@ -504,9 +504,9 @@ export default function HomePage() {
           <p className="mx-auto mt-2 max-w-2xl text-sm text-[#7A5A62]">
             El precio es idéntico en todos los medios de pago.{" "}
             <strong className="text-[#2A121B]">
-              Bonus si transferís: PDF imprimible A4 con 4 carteles QR para las mesas y activación prioritaria
+              Pagos con Mercado Pago: activación automática. Transferencias: se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13).
             </strong>{" "}
-            (en Llave en Mano además incluye la Trivia Interactiva).
+            Bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños (A3 para la entrada, A5 para mesas, stickers para copas) con la estética de tu modelo + activación prioritaria.
           </p>
         </MotionSection>
 
@@ -526,7 +526,7 @@ export default function HomePage() {
                 </p>
                 <ul className="mt-3.5 grid grid-cols-1 gap-2 text-xs text-[#4A2E35] sm:grid-cols-2">
                   {[
-                    "Pases nominales por familia: cada grupo sabe cuántos lugares tiene",
+                    "Pases nominales por familia (en Plan Llave en Mano): cada grupo sabe cuántos lugares tiene",
                     "Confirmación en tiempo real, desde tu celular",
                     "Lista final exportable a Excel para el salón o el catering",
                     "Alergias y menús especiales, sin llamados de último momento",
@@ -544,7 +544,7 @@ export default function HomePage() {
               <div className="grid shrink-0 grid-cols-3 gap-2.5 text-center sm:min-w-[320px]">
                 <div className="rounded-xl border border-[#B78A4E]/30 bg-white px-3 py-3">
                   <p className="font-display-cormorant text-xl font-bold text-[#6B1E30]">Nominal</p>
-                  <p className="mt-0.5 text-[10px] font-medium text-[#6E5159]">Pases por familia</p>
+                  <p className="mt-0.5 text-[10px] font-medium text-[#6E5159]">Llave en Mano</p>
                 </div>
                 <div className="rounded-xl border border-[#B78A4E]/30 bg-white px-3 py-3">
                   <p className="font-display-cormorant text-xl font-bold text-[#6B1E30]">En vivo</p>
@@ -600,8 +600,7 @@ export default function HomePage() {
                     <span className="text-xs opacity-75">ARS · pago único</span>
                   </div>
                   <p className="mt-1 text-xs opacity-80">
-                    Bonus si transferís: PDF A4 con 4 carteles QR
-                    {plan.id === "asistido" ? " + Trivia interactiva" : ""}
+                    Bonus si transferís: Pack Ampliado 8 carteles (A3, A5, stickers) + prioridad
                   </p>
 
                   <ul className="mt-6 space-y-2.5 text-xs">
@@ -687,7 +686,7 @@ export default function HomePage() {
                 ¿Tenés tu evento pronto o buscás un diseño 100% a medida?
               </h3>
               <p className="relative z-10 mx-auto mt-2 max-w-lg text-xs leading-relaxed text-[#FBF1EE]/85 sm:text-sm">
-                Elegí uno de nuestros 41 modelos para tener tu link en menos de 24 hs, o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
+                Elegí uno de nuestros 41 modelos: listo en menos de 24 hs hábiles (pagos con Mercado Pago: activación automática), o escribinos por WhatsApp si necesitás una propuesta exclusiva para boda destino o evento corporativo.
               </p>
               <div className="relative z-10 mt-6 flex flex-wrap justify-center gap-3">
                 <MotionTap>

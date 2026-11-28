@@ -115,9 +115,9 @@ export default function CondicionesPage() {
           </h2>
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Inicio del cómputo de entrega:</strong> el plazo estimado de activación y
-              revisión (&lt; 24 horas hábiles) comienza una vez recibido el pedido con los datos
-              obligatorios del evento y confirmado el pago o comprobante correspondiente.
+              <strong>Inicio del cómputo de entrega:</strong> Listo en menos de 24 hs hábiles.
+              Pagos con Mercado Pago: activación automática al instante, incluso fines de semana.
+              Transferencias: se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13).
             </li>
             <li>
               <strong>Borrador inmediato:</strong> al registrar un pedido se genera una vista
@@ -162,9 +162,11 @@ export default function CondicionesPage() {
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
               <strong>Formas de pago:</strong> Transferencia bancaria o pago online a través de
-              Mercado Pago Checkout Pro, ambos al mismo precio exhibido. Si elegís transferencia,
-              se incluye el bonus de PDF imprimible A4 con 4 carteles QR para mesas y activación
-              prioritaria.
+              Mercado Pago Checkout Pro, ambos al mismo precio exhibido. Mercado Pago activa tu
+              invitación automáticamente al acreditarse el pago; las transferencias se activan en el
+              próximo horario de atención (L-V 9-19, Sáb 9-13) e incluyen el bonus de Pack Ampliado
+              de 8 carteles en 3 tamaños (A3 entrada, A5 mesas y stickers para copas) con la estética
+              de tu modelo + activación prioritaria.
             </li>
             <li>
               <strong>Errores atribuibles al servicio:</strong> si la invitación publicada presenta

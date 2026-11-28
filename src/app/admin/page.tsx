@@ -244,6 +244,18 @@ export default function AdminPage() {
     const payRate =
       orders.length > 0 ? Math.round((verifiedPaidOrders.length / orders.length) * 100) : 0;
 
+    const recuerdoOrders = orders.filter((o) => o.utmSource === "recuerdo");
+    const recuerdoPaidOrders = verifiedPaidOrders.filter(
+      (o) => o.utmSource === "recuerdo"
+    );
+    const recuerdoRevenue = recuerdoPaidOrders.reduce(
+      (sum, ev) => sum + getOrderPrice(ev),
+      0
+    );
+    const recuerdoLeadsCount = leads.filter(
+      (l) => l.utmSource === "recuerdo"
+    ).length;
+
     const stageCounts = Object.fromEntries(
       ALL_LEAD_STAGES.map((st) => [st, leads.filter((l) => l.stage === st).length])
     ) as Record<LeadStage, number>;
@@ -267,6 +279,10 @@ export default function AdminPage() {
       abandonedCheckoutLeads,
       trialOnlyLeads,
       payRate,
+      recuerdoOrders,
+      recuerdoPaidOrders,
+      recuerdoRevenue,
+      recuerdoLeadsCount,
       stageCounts,
       testerStepCounts,
     };
@@ -465,7 +481,7 @@ export default function AdminPage() {
             <Lock className="h-6 w-6" />
           </div>
           <h1 className="mt-4 text-center font-cormorant text-3xl font-semibold text-stone-900">
-            Centro de Producción &lt;24 hs
+            Centro de Producción &lt;24 hs hábiles
           </h1>
           <p className="mt-1.5 text-center text-xs text-stone-500">
             Ingresá la clave de estudio para acceder al panel seguro por sesión.
@@ -566,7 +582,7 @@ export default function AdminPage() {
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
         {/* Resumen Ejecutivo / KPIs (solo pagos verificados) */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-emerald-800">
               <span>Ingresos Verificados</span>
@@ -618,6 +634,22 @@ export default function AdminPage() {
             </p>
             <p className="mt-1 text-[11px] text-stone-500">
               {metrics.abandonedCheckoutLeads.length} en carrito · {metrics.trialOnlyLeads.length} en prueba gratis
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-amber-300 bg-gradient-to-br from-amber-50/70 to-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-xs font-semibold text-amber-900">
+              <span>Ventas originadas en recuerdo</span>
+              <EditorialDiamondIcon className="h-4 w-4 text-amber-700" />
+            </div>
+            <p className="mt-2 font-cormorant text-4xl font-bold text-stone-900">
+              {metrics.recuerdoPaidOrders.length}
+              <span className="ml-1.5 font-sans text-xs font-medium text-stone-500">
+                / {metrics.recuerdoOrders.length} ped.
+              </span>
+            </p>
+            <p className="mt-1 text-[11px] text-stone-600">
+              {formatArs(metrics.recuerdoRevenue)} verif. · {metrics.recuerdoLeadsCount} leads UTM recuerdo
             </p>
           </div>
         </section>

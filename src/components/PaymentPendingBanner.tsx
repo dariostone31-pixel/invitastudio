@@ -56,16 +56,19 @@ export function PaymentPendingBanner({
       const res = await fetch("/api/mercadopago/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderCode: event.orderCode }),
+        body: JSON.stringify({ orderId: event.id, orderCode: event.orderCode }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.checkoutUrl) {
+      const targetUrl = data.initPoint || data.checkoutUrl;
+      if (!res.ok || !targetUrl) {
         setMpError(
-          data.error || "No pudimos iniciar Mercado Pago. Podés abonar por transferencia."
+          data.error ||
+            data.message ||
+            "No pudimos iniciar Mercado Pago. Podés abonar por transferencia."
         );
         return;
       }
-      window.location.href = data.checkoutUrl;
+      window.location.href = targetUrl;
     } catch {
       setMpError("Error de conexión con Mercado Pago. Probá por transferencia.");
     } finally {
@@ -103,8 +106,7 @@ export function PaymentPendingBanner({
               </span>
             </div>
             <p className="mt-1 text-[11px] text-amber-900">
-              Mismo precio que Mercado Pago. Bonus si transferís: activación prioritaria y PDF imprimible A4 con 4 carteles QR para las mesas
-              {event.planId === "asistido" ? " + Trivia interactiva" : ""}.
+              Mismo precio que Mercado Pago. Transferencias: se activan en el próximo horario de atención (L-V 9-19, Sáb 9-13). Bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños (A3 para la entrada, A5 para mesas y stickers para copas) con la estética de tu modelo + activación prioritaria.
             </p>
 
             {BUSINESS_CONFIG.bankAliasConfigured ? (
@@ -174,6 +176,9 @@ export function PaymentPendingBanner({
 
           {mercadopagoConfigured && (
             <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-3 text-xs">
+              <p className="mb-2 text-[11px] font-medium text-sky-900">
+                Pagos con Mercado Pago: activación automática al instante (incluso fines de semana).
+              </p>
               <button
                 type="button"
                 onClick={handleMercadoPago}

@@ -46,7 +46,8 @@ export function CatalogShowcase() {
       : INVITATION_SKINS.filter((s) => s.category === selectedCat);
 
   return (
-    <section id="modelos" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <section id="modelos" className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <span id="catalogo" aria-hidden="true" className="pointer-events-none absolute -top-4 left-0" />
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}

@@ -93,7 +93,7 @@ export interface PlanPricing {
 }
 
 export const TRANSFER_BONUS_HEADLINE =
-  "Bonus si transferís: PDF imprimible A4 con 4 carteles QR para mesas + activación prioritaria";
+  "Bonus si transferís: Pack Ampliado de 8 carteles en 3 tamaños (A3 para la entrada, A5 para mesas y stickers para copas) con la estética de tu modelo + activación prioritaria";
 
 export const PRICING_PLANS: PlanPricing[] = [
   {
@@ -115,8 +115,8 @@ export const PRICING_PLANS: PlanPricing[] = [
       "Datos básicos del evento (título, fecha, lugar, dress code)",
       "Cuenta regresiva + 1 Ubicación Google Maps + Calendario",
       "Botón para copiar Alias / CBU en 1 toque",
-      "Confirmación de asistencia (RSVP) en el panel",
-      "PDF imprimible A4 con 4 carteles QR (bonus si transferís)",
+      "Confirmación de asistencia (RSVP) + PDF A4 con 4 carteles QR en tu panel",
+      "Bonus si transferís: Pack Ampliado de 8 carteles (A3 entrada, A5 mesas, stickers copas) + prioridad",
     ],
   },
   {
@@ -140,32 +140,32 @@ export const PRICING_PLANS: PlanPricing[] = [
       "Fotos propias, acabados translúcidos, letras, colores e itinerario",
       "Selección de pista musical del catálogo curado",
       "Solapa Playlist para que tus invitados sugieran canciones al DJ",
-      "Galería de Recuerdos QR + Muro de Buenos Deseos + Excel (.xlsx)",
-      "Modo Recuerdo Post-Evento + PDF A4 con 4 carteles QR (bonus si transferís)",
+      "Galería de Recuerdos QR + PDF A4 de 4 carteles + Muro de Deseos + Excel (.xlsx)",
+      "Modo Recuerdo Post-Evento + Bonus si transferís: Pack Ampliado 8 carteles (A3, A5, stickers)",
     ],
   },
   {
     id: "asistido",
     name: "Llave en Mano",
-    badge: "Pases por familia + Trivia + Asistido",
+    badge: "Pases por familia (Llave en Mano) + Trivia + Asistido",
     listPriceNum: 34999,
     transferPriceNum: 34999,
     listPrice: "$34.999",
     transferPrice: "$34.999",
     shortDesc:
-      "Todo PRO + Invitación individual y por familia (con pases y mesa), Trivia interactiva, canción a elección, carga asistida y Modo Recuerdo.",
+      "Todo PRO + Invitación individual y por familia (con pases y mesa, exclusivo Llave en Mano), Trivia interactiva, canción a elección, carga asistida y Modo Recuerdo.",
     includesPersonalizer: true,
     includesFamilyLinks: true,
     includesAssistedLoad: true,
     features: [
       "Todo lo del Plan PRO incluido (Estudio, 2 ubicaciones y Playlist DJ)",
-      "Invitación individual y en grupo/familia (links nominales, pases y mesa)",
+      "Exclusivo Llave en Mano: invitación individual y por familia (links nominales, pases y mesa)",
       "Juego Interactivo (Trivia personalizada con podio Top 5)",
       "Canción de fondo a tu elección preparada y activada por el equipo",
       "Carga asistida de tus fotos, textos, padres e itinerario",
       "Centro de Envío 1-a-1 por WhatsApp y seguimiento de invitados",
       "Modo Recuerdo Post-Evento (álbum de agradecimientos tras la fiesta)",
-      "PDF A4 con 4 carteles QR + prioridad de publicación < 24 hs hábiles",
+      "Bonus si transferís: Pack Ampliado 8 carteles (A3, A5, stickers) + activación prioritaria",
     ],
   },
 ];

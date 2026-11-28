@@ -1,7 +1,12 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { getEventById, updateEventRecord } from "@/lib/db";
+import {
+  getEventById,
+  getEventByOrderCode,
+  markLeadConverted,
+  updateEventRecord,
+} from "@/lib/db";
 
 function verifyMercadoPagoSignature(
   req: Request,
@@ -77,25 +82,32 @@ export async function POST(req: Request) {
     const paymentClient = new Payment(client);
     const payment = await paymentClient.get({ id: paymentId });
 
-    const eventId = payment.external_reference;
+    const eventId = String(payment.external_reference || "").trim();
     if (!eventId) {
       return NextResponse.json({ ok: true, missingReference: true });
     }
 
-    const event = await getEventById(eventId);
+    const event =
+      (await getEventById(eventId)) || (await getEventByOrderCode(eventId));
     if (!event) {
       return NextResponse.json({ ok: true, eventNotFound: true });
     }
 
     const resolvedPaymentId = String(payment.id ?? paymentId);
 
-    // Idempotencia: si este mismo pago ya acreditó el pedido, no duplicar escritura
+    // Idempotencia: si este mismo pago ya dejó pago acreditado y publicación activa, no duplicar escritura
     if (
       payment.status === "approved" &&
       event.paymentStatus === "pagado" &&
+      event.status === "publicada" &&
       event.mpPaymentId === resolvedPaymentId
     ) {
-      return NextResponse.json({ ok: true, idempotent: true, processed: resolvedPaymentId });
+      return NextResponse.json({
+        ok: true,
+        idempotent: true,
+        processed: resolvedPaymentId,
+        unlocked: true,
+      });
     }
 
     if (payment.status === "approved") {
@@ -109,8 +121,15 @@ export async function POST(req: Request) {
             : undefined,
         verifiedBy: "mercadopago_webhook",
         verifiedAt: new Date().toISOString(),
-        status: event.status === "pendiente" ? "en_edicion" : event.status,
+        // Activación automática 24/7 sin intervención humana: desbloquea /i/[slug] y panel completo
+        status: "publicada",
       });
+
+      await markLeadConverted({
+        leadId: event.leadId,
+        whatsapp: event.whatsapp,
+        orderCode: event.orderCode,
+      }).catch(() => {});
     } else if (payment.status === "rejected" || payment.status === "cancelled") {
       await updateEventRecord(event.id, {
         paymentStatus: "rechazado",
@@ -118,7 +137,12 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ ok: true, processed: resolvedPaymentId, status: payment.status });
+    return NextResponse.json({
+      ok: true,
+      processed: resolvedPaymentId,
+      status: payment.status,
+      unlocked: payment.status === "approved",
+    });
   } catch (err) {
     console.error("Mercado Pago webhook error:", err);
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });

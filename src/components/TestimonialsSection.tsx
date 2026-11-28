@@ -166,7 +166,7 @@ const CLIENT_SOLUTIONS = [
     badge: "02 · Cero caos de mensajes",
     title: "Confirmaciones, menús y mesas ordenadas",
     pain: "Dejás de perseguir respuestas en chats sueltos o perder alergias alimentarias para el catering.",
-    outcome: "Pases nominales por WhatsApp y Excel listo",
+    outcome: "Confirmaciones claras y Excel listo (en Llave en Mano: pases nominales)",
     Icon: FineChecklistRsvpIcon,
   },
   {
@@ -208,7 +208,7 @@ export function TestimonialsSection() {
           <p className="mx-auto mt-2.5 max-w-2xl text-xs leading-relaxed text-[#6E5159] sm:text-sm">
             {items.length > 0
               ? "Opiniones auténticas enviadas por anfitriones que usaron su invitación digital y su panel."
-              : "Cada detalle resuelve un problema concreto desde el día uno: enviar pases claros, ordenar confirmaciones y atesorar recuerdos."}
+              : "Cada detalle resuelve un problema concreto desde el día uno: enviar tu invitación clara, ordenar confirmaciones y atesorar recuerdos."}
           </p>
         </MotionSection>
 
