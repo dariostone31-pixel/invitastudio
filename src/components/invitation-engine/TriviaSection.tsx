@@ -376,7 +376,7 @@ export function TriviaSection({
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 placeholder="Tu nombre para el podio"
-                className={`flex-1 ${innerRadius} border px-3.5 py-2.5 text-sm outline-none`}
+                className={`flex-1 ${innerRadius} border px-3.5 py-2.5 text-base sm:text-sm outline-none`}
                 style={{
                   backgroundColor: palette.bg,
                   borderColor: palette.border,

@@ -154,16 +154,18 @@ export async function POST(req: Request) {
       audioOverride === null || audioOverride === "null"
         ? "none"
         : typeof audioOverride === "string"
-        ? audioOverride
+        ? audioOverride.trim()
         : "";
+    // Si el invitador no elige audio ("" o "none"), el sonido queda desactivado ("none").
+    // Solo suena música si eligió "default" (sugerida del modelo) o una pista del catálogo.
     const cleanAudio =
-      requestedAudio === "none"
+      !requestedAudio || requestedAudio === "none"
         ? "none"
+        : requestedAudio === "default"
+        ? ""
         : allowFullCustom && CURATED_AUDIO_URLS.has(requestedAudio)
         ? requestedAudio
-        : isAsistido && cleanSongRequest && !requestedAudio
-        ? "none"
-        : undefined;
+        : "none";
     const cleanSubtitle =
       typeof subtitleOverride === "string" && subtitleOverride.trim()
         ? subtitleOverride.trim().slice(0, 70)

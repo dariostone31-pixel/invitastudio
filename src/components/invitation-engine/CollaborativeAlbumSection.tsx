@@ -93,7 +93,7 @@ export function CollaborativeAlbumSection({
         className="font-ui-jost mt-2.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
         style={{ color: textAccentOnSurface }}
       >
-        Álbum Colaborativo
+        Galería de Recuerdos
       </p>
 
       <h2 className={`mt-1.5 text-[28px] sm:text-[32px] font-semibold leading-[1.2] ${sectionHeadingFont}`}>
@@ -102,7 +102,7 @@ export function CollaborativeAlbumSection({
 
       <p className="mt-2 text-[14px] leading-relaxed" style={{ color: palette.textMuted }}>
         {albumUrl
-          ? "Escaneá el código QR o tocá el botón para subir tus fotos y videos de la fiesta."
+          ? "Escaneá el código QR o tocá el botón para sumar tus fotos y videos a nuestra galería."
           : "Etiquetanos en tus historias y publicaciones para revivir cada momento juntos."}
       </p>
 
@@ -113,7 +113,7 @@ export function CollaborativeAlbumSection({
         >
           <img
             src={qrDataUrl}
-            alt="Código QR del álbum colaborativo"
+            alt="Código QR de la Galería de Recuerdos"
             className="h-40 w-40 object-contain"
           />
           <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-500">

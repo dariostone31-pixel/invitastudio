@@ -97,7 +97,7 @@ const SECTION_LABELS: { key: keyof EnabledSectionsConfig; label: string }[] = [
   { key: "djSongs", label: "Playlist de la Fiesta (Invitados sugieren canción)" },
   { key: "djVoting", label: "Votación en Playlist (Las más pedidas)" },
   { key: "trivia", label: "Mini-Trivia con Podio (Juego interactivo)" },
-  { key: "collaborativeAlbum", label: "Álbum Colaborativo QR & Hashtag" },
+  { key: "collaborativeAlbum", label: "Galería de Recuerdos (Fotos QR & Hashtag)" },
   { key: "rsvp", label: "Botón Confirmar Asistencia" },
 ];
 
@@ -107,6 +107,11 @@ export function PersonalizerStudioClient({
 }: PersonalizerStudioClientProps) {
   const isEssentialPlan = event.planId === "esencial";
   const isAsistidoPlan = event.planId === "asistido";
+  const isPaid =
+    event.paymentStatus === "pagado" && event.status === "publicada";
+  const [mobilePreviewMode, setMobilePreviewMode] = useState<"compact" | "tall" | "hidden">(
+    "compact"
+  );
   const [activeTab, setActiveTab] = useState<
     "estilo" | "textos" | "fotos" | "modulos"
   >(isEssentialPlan ? "textos" : "estilo");
@@ -176,7 +181,9 @@ export function PersonalizerStudioClient({
   const [accentOverride, setAccentOverride] = useState<string>(
     event.accentOverride || selectedSkin.palette.accent
   );
-  const [audioOverride, setAudioOverride] = useState<string>(event.audioOverride || "");
+  const [audioOverride, setAudioOverride] = useState<string>(
+    event.audioOverride === "none" ? "none" : event.audioOverride || "default"
+  );
   const [songRequest, setSongRequest] = useState<string>(event.songRequest || "");
   const [heroImageUrl, setHeroImageUrl] = useState<string>(event.heroImageUrl || "");
   const [heroOverlayOverride, setHeroOverlayOverride] = useState<HeroOverlayStyle>(
@@ -399,12 +406,12 @@ export function PersonalizerStudioClient({
 
           <div className="flex items-center gap-2.5">
             <Link
-              href={`/i/${event.slug}`}
+              href={isPaid ? `/i/${event.slug}` : `/panel/${event.panelToken}/preview`}
               target="_blank"
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Abrir Link Público
+              {isPaid ? "Abrir Link Público" : "Vista Previa (Borrador)"}
             </Link>
             <button
               type="button"
@@ -435,9 +442,9 @@ export function PersonalizerStudioClient({
           mercadopagoConfigured={mercadopagoConfigured}
         />
       </div>
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-6 sm:px-6 lg:grid-cols-12">
-        {/* Left Controls */}
-        <div className="space-y-5 lg:col-span-6">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-12 lg:gap-8">
+        {/* Left Controls (debajo de la vista previa en móvil, izquierda en desktop) */}
+        <div className="order-2 space-y-5 lg:order-1 lg:col-span-6">
           {saveError && (
             <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
               <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -449,9 +456,10 @@ export function PersonalizerStudioClient({
             <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950">
               <strong>Tu pedido actual es Plan Esencial:</strong> podés editar los datos básicos del
               evento (título, fecha, horario, lugar, dirección, alias y dress code). El Estudio de
-              Personalización completo (fotos propias, colores, tipografías, historia, itinerario y
-              pases por familia) corresponde a <strong>Plan PRO</strong> y{" "}
-              <strong>Llave en Mano</strong>.
+              Personalización completo (fotos propias, colores, tipografías, historia, itinerario,
+              Playlist DJ y Galería de Recuerdos QR) corresponde a <strong>Plan PRO</strong> y{" "}
+              <strong>Llave en Mano</strong> (y los pases nominales por familia son exclusivos de{" "}
+              <strong>Llave en Mano</strong>).
             </div>
           )}
 
@@ -1338,7 +1346,7 @@ export function PersonalizerStudioClient({
               <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 space-y-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-stone-700">
-                    Álbum Colaborativo QR & Redes (opcional)
+                    Galería de Recuerdos QR & Redes (opcional)
                   </p>
                   <p className="mt-0.5 text-[11px] text-stone-500">
                     Pegá el link de Google Fotos o Drive y el QR se genera solo para que tus invitados suban fotos.
@@ -1346,7 +1354,7 @@ export function PersonalizerStudioClient({
                 </div>
                 <div>
                   <label className="mb-1 block text-[11px] font-semibold text-stone-600">
-                    Link del Álbum Compartido (Google Fotos / Drive)
+                    Link de la Galería Compartida (Google Fotos / Drive)
                   </label>
                   <input
                     type="url"
@@ -1600,20 +1608,20 @@ export function PersonalizerStudioClient({
               )}
 
               <div className="pt-2">
-                <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3.5">
+                <label className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3.5">
                   <div>
                     <span className="block text-sm font-bold text-amber-950">
                       Modo Recuerdo (Post-Evento)
                     </span>
-                    <span className="block text-[11px] text-amber-800">
-                      Transforma la cuenta regresiva en un álbum conmemorativo de agradecimientos
+                    <span className="mt-0.5 block text-[11px] leading-relaxed text-amber-800">
+                      Pensado para activar <strong>después de la fiesta</strong>: reemplaza la cuenta regresiva y el botón Confirmar por un mensaje conmemorativo de agradecimiento y mantiene visibles tus fotos, Galería QR y Buenos Deseos.
                     </span>
                   </div>
                   <input
                     type="checkbox"
                     checked={memoryMode}
                     onChange={(e) => setMemoryMode(e.target.checked)}
-                    className="h-4 w-4 accent-amber-700"
+                    className="mt-1 h-4 w-4 shrink-0 accent-amber-700"
                   />
                 </label>
               </div>
@@ -1621,13 +1629,38 @@ export function PersonalizerStudioClient({
           )}
         </div>
 
-        {/* Right Live Mobile Preview */}
-        <div className="lg:col-span-6">
-          <div className="sticky top-20 flex flex-col items-center">
-            <span className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
-              Vista Previa en Tiempo Real (Móvil)
-            </span>
-            <div className="h-[720px] w-full max-w-[400px] overflow-y-auto rounded-[38px] border-[8px] border-stone-900 bg-white shadow-2xl">
+        {/* Right Live Mobile Preview (primero arriba en móvil, columna derecha sticky en desktop) */}
+        <div className="order-1 lg:order-2 lg:col-span-6">
+          <div className="flex flex-col items-center lg:sticky lg:top-20">
+            <div className="mb-2 flex w-full max-w-[400px] items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                Vista Previa en Vivo
+              </span>
+              <div className="flex items-center gap-1 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMobilePreviewMode((m) =>
+                      m === "compact" ? "tall" : m === "tall" ? "hidden" : "compact"
+                    )
+                  }
+                  className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700"
+                >
+                  {mobilePreviewMode === "compact"
+                    ? "Ampliar"
+                    : mobilePreviewMode === "tall"
+                    ? "Ocultar"
+                    : "Mostrar vista"}
+                </button>
+              </div>
+            </div>
+            <div
+              className={`${
+                mobilePreviewMode === "hidden" ? "hidden lg:block" : "block"
+              } ${
+                mobilePreviewMode === "tall" ? "h-[560px]" : "h-[360px]"
+              } w-full max-w-[400px] overflow-y-auto rounded-[34px] border-[7px] border-stone-900 bg-white shadow-2xl transition-all lg:h-[720px] lg:rounded-[38px] lg:border-[8px]`}
+            >
               <InvitationRenderer
                 skin={selectedSkin}
                 eventSlug={event.slug}
@@ -1659,6 +1692,8 @@ export function PersonalizerStudioClient({
                 customAudioUrl={
                   audioOverride === "none"
                     ? "none"
+                    : audioOverride === "default"
+                    ? undefined
                     : !isEssentialPlan
                     ? audioOverride || undefined
                     : undefined

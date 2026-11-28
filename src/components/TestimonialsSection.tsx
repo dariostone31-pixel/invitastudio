@@ -170,10 +170,10 @@ const CLIENT_SOLUTIONS = [
     Icon: FineChecklistRsvpIcon,
   },
   {
-    badge: "03 · Fiesta viva y recuerdos",
-    title: "Playlist DJ y cartel QR 10×15 para mesas",
-    pain: "Cada invitado suma su canción, deja buenos deseos y sube fotos al álbum desde su mesa.",
-    outcome: "Cartel QR listo para imprimir en 300 DPI",
+    badge: "03 · Fiesta viva y post-evento",
+    title: "Playlist DJ, Galería de Recuerdos QR y Modo Recuerdo",
+    pain: "Tus invitados sugieren temas (ves quién pidió cada canción en Excel), suben fotos con QR y tras la fiesta la tarjeta se convierte en álbum.",
+    outcome: "PDF A4 de 4 carteles QR listos para imprimir",
     Icon: FineQrAlbumIcon,
   },
 ];

@@ -332,69 +332,154 @@ export function QrTableCardGenerator({
         ctx.fillRect(gx, gy, 2, 2);
       }
 
-      // 2. Editorial double frame
+      // 2. Editorial double frame + papel elegante con ilustraciones por estilo
       const isSharp = themeKind === "prensa" || themeKind === "lounge" || themeKind === "gala";
       const outerRadius = isSharp ? 0 : 44;
       const innerRadius = isSharp ? 0 : 32;
 
       ctx.strokeStyle = cardColors.border;
-      ctx.lineWidth = themeKind === "prensa" ? 6 : 3;
-      drawRoundedRect(ctx, 42, 42, W - 84, H - 84, outerRadius);
+      ctx.lineWidth = themeKind === "prensa" ? 6 : 3.5;
+      drawRoundedRect(ctx, 40, 40, W - 80, H - 80, outerRadius);
       ctx.stroke();
 
-      ctx.globalAlpha = 0.52;
-      ctx.lineWidth = 2;
-      drawRoundedRect(ctx, 62, 62, W - 124, H - 124, innerRadius);
+      ctx.globalAlpha = 0.48;
+      ctx.lineWidth = 1.8;
+      drawRoundedRect(ctx, 60, 60, W - 120, H - 120, innerRadius);
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Corner ornaments per theme
-      if (themeKind === "botanico") {
+      const drawCornerBotanical = (cx: number, cy: number, sx: number, sy: number) => {
         ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(sx, sy);
         ctx.strokeStyle = cardColors.border;
         ctx.fillStyle = cardColors.border;
-        ctx.globalAlpha = 0.25;
-        const drawLeaf = (lx: number, ly: number, rot: number) => {
+
+        ctx.globalAlpha = 0.65;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(42, 16, 108, 74);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(14, 10);
+        ctx.quadraticCurveTo(64, -6, 124, 18);
+        ctx.stroke();
+
+        const drawDetailedLeaf = (lx: number, ly: number, ang: number, rx: number, ry: number, alpha: number) => {
           ctx.save();
           ctx.translate(lx, ly);
-          ctx.rotate(rot);
+          ctx.rotate(ang);
+          ctx.globalAlpha = alpha;
           ctx.beginPath();
-          ctx.ellipse(0, 0, 32, 11, 0, 0, Math.PI * 2);
+          ctx.moveTo(-rx, 0);
+          ctx.quadraticCurveTo(0, -ry, rx, 0);
+          ctx.quadraticCurveTo(0, ry, -rx, 0);
           ctx.fill();
+          ctx.globalAlpha = Math.min(1, alpha + 0.28);
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.moveTo(-rx * 0.85, 0);
+          ctx.lineTo(rx * 0.85, 0);
+          ctx.stroke();
           ctx.restore();
         };
-        drawLeaf(125, 110, -0.5);
-        drawLeaf(165, 130, 0.25);
-        drawLeaf(W - 125, 110, 0.5);
-        drawLeaf(W - 165, 130, -0.25);
-        drawLeaf(125, H - 110, 0.5);
-        drawLeaf(W - 125, H - 110, -0.5);
+
+        drawDetailedLeaf(34, 18, -0.55, 24, 9, 0.28);
+        drawDetailedLeaf(58, 36, 0.25, 22, 8.5, 0.24);
+        drawDetailedLeaf(84, 58, -0.35, 19, 7.5, 0.26);
+        drawDetailedLeaf(68, 4, -0.25, 21, 8, 0.22);
+        drawDetailedLeaf(102, 14, 0.35, 18, 7, 0.24);
+
+        ctx.fillStyle = cardColors.accent;
+        ctx.globalAlpha = 0.55;
+        for (const [bx, by, br] of [
+          [116, 80, 4.5],
+          [130, 22, 4],
+          [46, 42, 3.5],
+        ]) {
+          ctx.beginPath();
+          ctx.arc(bx, by, br, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.restore();
-      } else if (themeKind === "gala" || themeKind === "marfil" || themeKind === "pastel-xv") {
+      };
+
+      const drawCornerFiligree = (cx: number, cy: number, sx: number, sy: number) => {
         ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(sx, sy);
         ctx.strokeStyle = cardColors.border;
-        ctx.lineWidth = 3;
-        const c = 38;
-        const m = 80;
-        // Top-left L
+        ctx.fillStyle = cardColors.border;
+        ctx.lineWidth = 2.6;
+        ctx.globalAlpha = 0.82;
         ctx.beginPath();
-        ctx.moveTo(m, m + c);
-        ctx.lineTo(m, m);
-        ctx.lineTo(m + c, m);
-        // Top-right L
-        ctx.moveTo(W - m - c, m);
-        ctx.lineTo(W - m, m);
-        ctx.lineTo(W - m, m + c);
-        // Bottom-left L
-        ctx.moveTo(m, H - m - c);
-        ctx.lineTo(m, H - m);
-        ctx.lineTo(m + c, H - m);
-        // Bottom-right L
-        ctx.moveTo(W - m - c, H - m);
-        ctx.lineTo(W - m, H - m);
-        ctx.lineTo(W - m, H - m - c);
+        ctx.moveTo(0, 74);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(74, 0);
         ctx.stroke();
+
+        ctx.lineWidth = 1.6;
+        ctx.globalAlpha = 0.58;
+        ctx.beginPath();
+        ctx.moveTo(12, 54);
+        ctx.quadraticCurveTo(12, 12, 54, 12);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.72;
+        ctx.beginPath();
+        ctx.moveTo(18, 8);
+        ctx.lineTo(25, 15);
+        ctx.lineTo(18, 22);
+        ctx.lineTo(11, 15);
+        ctx.closePath();
+        ctx.fill();
         ctx.restore();
+      };
+
+      const drawCornerStar = (cx: number, cy: number, r: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.fillStyle = cardColors.accent;
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const rad = i % 2 === 0 ? r : r * 0.36;
+          const a = (i * Math.PI) / 4;
+          if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+          else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
+
+      if (themeKind === "botanico") {
+        drawCornerBotanical(72, 72, 1, 1);
+        drawCornerBotanical(W - 72, 72, -1, 1);
+        drawCornerBotanical(72, H - 72, 1, -1);
+        drawCornerBotanical(W - 72, H - 72, -1, -1);
+      } else if (themeKind === "infantil") {
+        drawCornerStar(112, 112, 18);
+        drawCornerStar(148, 92, 10);
+        drawCornerStar(W - 112, 112, 18);
+        drawCornerStar(W - 148, 92, 10);
+        drawCornerStar(112, H - 112, 18);
+        drawCornerStar(W - 112, H - 112, 18);
+        drawCornerFiligree(76, 76, 1, 1);
+        drawCornerFiligree(W - 76, 76, -1, 1);
+        drawCornerFiligree(76, H - 76, 1, -1);
+        drawCornerFiligree(W - 76, H - 76, -1, -1);
+      } else {
+        drawCornerFiligree(76, 76, 1, 1);
+        drawCornerFiligree(W - 76, 76, -1, 1);
+        drawCornerFiligree(76, H - 76, 1, -1);
+        drawCornerFiligree(W - 76, H - 76, -1, -1);
+        if (themeKind === "marfil" || themeKind === "pastel-xv") {
+          drawCornerBotanical(92, 92, 0.72, 0.72);
+          drawCornerBotanical(W - 92, 92, -0.72, 0.72);
+        }
       }
 
       // 3. Top eyebrow + Upper title ('¡Compartí tus fotos con nosotros!')
@@ -404,7 +489,7 @@ export function QrTableCardGenerator({
       ctx.fillStyle = cardColors.accent;
       ctx.font = `600 22px ${uiFamily}`;
       ctx.fillText(
-        "Á L B U M   C O L A B O R A T I V O",
+        "G A L E R Í A   D E   R E C U E R D O S",
         W / 2,
         142
       );
@@ -480,12 +565,12 @@ export function QrTableCardGenerator({
         ctx.fillText(monogram, W / 2, tagY);
       }
 
-      // 7. Bottom instruction ('Escaneá el código con la cámara de tu celular y subí tus recuerdos al álbum')
+      // 7. Bottom instruction
       ctx.fillStyle = cardColors.muted;
       ctx.font = `500 28px ${uiFamily}`;
       const instrLines = wrapTextLines(
         ctx,
-        "Escaneá el código con la cámara de tu celular y subí tus recuerdos al álbum",
+        "Escaneá el código con la cámara de tu celular y sumá tus fotos a nuestra galería",
         W - 230
       );
       const instrStartY = Math.min(H - 125, tagY + 66);
@@ -564,13 +649,13 @@ export function QrTableCardGenerator({
         <div>
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
             <QrCode className="h-3.5 w-3.5" />
-            Álbum Colaborativo &amp; Mesas
+            Galería de Recuerdos &amp; Mesas
           </span>
           <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">
             Generador de Cartel QR de Mesa Personalizado
           </h2>
           <p className="mt-1 text-xs text-stone-500">
-            Formato imprimible <strong>10×15 cm (4:5 · 1200×1500 px)</strong> con la paleta y tipografía de tu modelo{" "}
+            Papelería ilustrada imprimible <strong>10×15 cm (4:5 · 1200×1500 px)</strong> y <strong>PDF A4 con 4 carteles</strong> acorde al estilo de tu modelo{" "}
             <strong className="text-stone-700">{skin.name}</strong>.
           </p>
         </div>
@@ -602,7 +687,7 @@ export function QrTableCardGenerator({
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-stone-700">
               <Link2 className="h-3.5 w-3.5 text-amber-700" />
-              URL de tu Álbum Colaborativo (Google Fotos, Drive, etc.)
+              URL de tu Galería de Recuerdos (Google Fotos, Drive, etc.)
             </label>
             <input
               type="url"
@@ -612,7 +697,7 @@ export function QrTableCardGenerator({
               className="w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-stone-900"
             />
             <p className="mt-1 text-[11px] text-stone-500">
-              Creá una carpeta o álbum compartido con permiso de subida para invitados y pegá el link acá.
+              Creá un álbum o carpeta compartida con permiso de subida para tus invitados y pegá el link acá.
             </p>
           </div>
 
@@ -738,7 +823,7 @@ export function QrTableCardGenerator({
               <div className="club-lounge-walnut absolute inset-0 opacity-90" />
             )}
 
-            {/* Doble filete de marco */}
+            {/* Doble filete de marco + ilustraciones finas de papelería */}
             <div
               aria-hidden="true"
               className={`pointer-events-none absolute inset-2.5 border ${
@@ -757,6 +842,46 @@ export function QrTableCardGenerator({
               style={{ borderColor: cardColors.border }}
             />
 
+            {/* Ilustraciones SVG en esquinas acorde al estilo de la invitación */}
+            {[
+              "top-3.5 left-3.5",
+              "top-3.5 right-3.5 -scale-x-100",
+              "bottom-3.5 left-3.5 -scale-y-100",
+              "bottom-3.5 right-3.5 -scale-x-100 -scale-y-100",
+            ].map((posClass, idx) => (
+              <svg
+                key={idx}
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                className={`pointer-events-none absolute z-10 h-11 w-11 ${posClass}`}
+                style={{ color: cardColors.border }}
+              >
+                {themeKind === "botanico" || themeKind === "marfil" || themeKind === "pastel-xv" ? (
+                  <g fill="none" stroke="currentColor" strokeWidth="1.2">
+                    <path d="M6 6C20 10 34 20 46 36" opacity="0.65" />
+                    <path d="M10 8C24 4 38 6 50 14" opacity="0.55" />
+                    <ellipse cx="20" cy="14" rx="6" ry="2.6" transform="rotate(-28 20 14)" fill="currentColor" opacity="0.28" />
+                    <ellipse cx="32" cy="24" rx="5.5" ry="2.4" transform="rotate(18 32 24)" fill="currentColor" opacity="0.24" />
+                    <ellipse cx="32" cy="7" rx="5" ry="2.2" transform="rotate(-10 32 7)" fill="currentColor" opacity="0.22" />
+                    <circle cx="48" cy="38" r="2" fill={cardColors.accent} stroke="none" opacity="0.6" />
+                    <circle cx="52" cy="15" r="1.8" fill={cardColors.accent} stroke="none" opacity="0.55" />
+                  </g>
+                ) : themeKind === "infantil" ? (
+                  <g fill={cardColors.accent} opacity="0.55">
+                    <path d="M16 8l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" />
+                    <circle cx="30" cy="12" r="1.8" />
+                    <circle cx="10" cy="28" r="1.5" />
+                  </g>
+                ) : (
+                  <g fill="none" stroke="currentColor" strokeWidth="1.4" opacity="0.75">
+                    <path d="M4 28V4h24" />
+                    <path d="M9 22C9 14 14 9 22 9" opacity="0.6" />
+                    <path d="M11 7l3 3-3 3-3-3z" fill="currentColor" stroke="none" opacity="0.7" />
+                  </g>
+                )}
+              </svg>
+            ))}
+
             {/* Contenido interno del cartel 4:5 */}
             <div className="relative z-10 flex h-full flex-col items-center justify-between px-4 py-5 text-center">
               <div className="space-y-1">
@@ -764,7 +889,7 @@ export function QrTableCardGenerator({
                   className="font-ui-jost text-[8px] font-bold uppercase tracking-[0.26em]"
                   style={{ color: cardColors.accent }}
                 >
-                  Álbum Colaborativo
+                  Galería de Recuerdos
                 </p>
                 <p
                   className="font-ui-jost text-[11px] font-semibold"
@@ -795,14 +920,14 @@ export function QrTableCardGenerator({
                 {qrPreviewUrl ? (
                   <img
                     src={qrPreviewUrl}
-                    alt="Código QR del álbum colaborativo"
+                    alt="Código QR de la Galería de Recuerdos"
                     className="h-full w-full object-contain"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-1.5 px-2 text-center text-stone-400">
                     <QrCode className="h-10 w-10 opacity-45" />
                     <span className="text-[10px] leading-tight">
-                      Pegá el link de tu álbum para generar el QR
+                      Pegá el link de tu galería para generar el QR
                     </span>
                   </div>
                 )}
@@ -822,7 +947,7 @@ export function QrTableCardGenerator({
                   className="font-ui-jost mx-auto max-w-[230px] text-[10px] font-medium leading-snug"
                   style={{ color: cardColors.muted }}
                 >
-                  Escaneá el código con la cámara de tu celular y subí tus recuerdos al álbum
+                  Escaneá el código con la cámara de tu celular y sumá tus fotos a nuestra galería
                 </p>
               </div>
             </div>

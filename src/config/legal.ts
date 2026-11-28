@@ -1,19 +1,19 @@
 import { BUSINESS_CONFIG, PRICING_PLANS } from "@/config/business";
 
-export const LEGAL_VERSION = "2026-11-22-v1";
-export const LEGAL_UPDATED_AT = "22 de noviembre de 2026";
+export const LEGAL_VERSION = "2026-11-24-v2";
+export const LEGAL_UPDATED_AT = "24 de noviembre de 2026";
+
+const missingFields = [
+  !BUSINESS_CONFIG.legalHolderName && "Razón social o nombre completo del responsable",
+  !BUSINESS_CONFIG.legalAddress && "Domicilio del responsable",
+  !BUSINESS_CONFIG.whatsappConfigured && "Número real de WhatsApp comercial",
+  !BUSINESS_CONFIG.supportHours && "Horarios confirmados de atención",
+  !BUSINESS_CONFIG.bankAliasConfigured && "Alias / CBU bancario definitivo del titular",
+].filter(Boolean) as string[];
 
 export const LEGAL_STATUS = {
-  isDraftPendingReview: true,
-  missingProviderFields: [
-    !BUSINESS_CONFIG.legalHolderName && "Razón social o nombre completo del responsable",
-    !BUSINESS_CONFIG.taxId && "CUIT / identificación fiscal",
-    !BUSINESS_CONFIG.legalAddress && "Domicilio legal del responsable",
-    !BUSINESS_CONFIG.supportEmail && "Correo electrónico oficial de soporte y reclamos",
-    !BUSINESS_CONFIG.whatsappConfigured && "Número real de WhatsApp comercial",
-    !BUSINESS_CONFIG.supportHours && "Horarios confirmados de atención",
-    !BUSINESS_CONFIG.bankAliasConfigured && "Alias / CBU bancario definitivo del titular",
-  ].filter(Boolean) as string[],
+  isDraftPendingReview: missingFields.length > 0,
+  missingProviderFields: missingFields,
 };
 
 export interface ProviderDocItem {

@@ -53,6 +53,8 @@ export async function PATCH(
     const requestedAudio =
       body.audioOverride === null || body.audioOverride === "null"
         ? "none"
+        : body.audioOverride === "default"
+        ? ""
         : typeof body.audioOverride === "string"
         ? body.audioOverride
         : undefined;

@@ -85,23 +85,27 @@ export function MusicCatalogPicker({
 
   const isKnownOption =
     value === "" ||
+    value === "default" ||
     value === "none" ||
     ALL_MUSIC_TRACKS.some((t) => t.value === value);
+
+  const selectValue = value === "" ? "default" : value;
 
   return (
     <div className="space-y-2.5">
       {/* Native grouped select for fast selection & full accessibility */}
       <select
-        value={value}
+        value={selectValue}
         onChange={(e) => onChange(e.target.value)}
         className={`w-full rounded-xl border border-stone-300 bg-white outline-none focus:border-stone-900 ${
           compact ? "px-3 py-2 text-xs" : "px-3.5 py-2.5 text-sm"
         }`}
       >
-        <option value="">
+        <option value="none">Sin música (desactivado)</option>
+        <option value="default">
           {defaultTrackLabel
-            ? `Música predeterminada del modelo (${defaultTrackLabel})`
-            : "Música predeterminada del modelo"}
+            ? `Música sugerida del modelo (${defaultTrackLabel})`
+            : "Música sugerida del modelo"}
         </option>
         {MUSIC_CATEGORIES.map((group) => (
           <optgroup key={group.id} label={group.label}>
@@ -112,7 +116,6 @@ export function MusicCatalogPicker({
             ))}
           </optgroup>
         ))}
-        <option value="none">Sin audio / Audio externo</option>
         {customUploadedOption && !isKnownOption && (
           <option value={customUploadedOption.value}>
             {customUploadedOption.label}
@@ -161,14 +164,30 @@ export function MusicCatalogPicker({
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              onClick={() => onChange("")}
+              onClick={() => {
+                if (audioRef.current) audioRef.current.pause();
+                setPlayingUrl(null);
+                onChange("none");
+              }}
+              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all ${
+                selectValue === "none"
+                  ? "border-stone-900 bg-stone-900 text-white"
+                  : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+              }`}
+            >
+              <VolumeX className="h-3 w-3" />
+              Sin música
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("default")}
               className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all ${
-                value === ""
+                selectValue === "default"
                   ? "border-[#6B1E30] bg-[#6B1E30]/10 font-semibold text-[#6B1E30]"
                   : "border-stone-200 bg-white text-stone-700 hover:border-stone-400"
               }`}
             >
-              <span>Predeterminada</span>
+              <span>Sugerida del modelo</span>
               {defaultTrackUrl && (
                 <span
                   role="button"
@@ -194,22 +213,6 @@ export function MusicCatalogPicker({
                   )}
                 </span>
               )}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (audioRef.current) audioRef.current.pause();
-                setPlayingUrl(null);
-                onChange("none");
-              }}
-              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all ${
-                value === "none"
-                  ? "border-stone-900 bg-stone-900 text-white"
-                  : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
-              }`}
-            >
-              <VolumeX className="h-3 w-3" />
-              Sin audio
             </button>
           </div>
 

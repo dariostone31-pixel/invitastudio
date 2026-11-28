@@ -112,7 +112,7 @@ function EncargarForm() {
   const [heroOverlayOverride, setHeroOverlayOverride] = useState<HeroOverlayStyle>(
     "natural"
   );
-  const [audioOverride, setAudioOverride] = useState<string>("");
+  const [audioOverride, setAudioOverride] = useState<string>("none");
   const [subtitleOverride, setSubtitleOverride] = useState<string>("");
   const [songRequest, setSongRequest] = useState<string>("");
   const [albumUrl, setAlbumUrl] = useState<string>("");
@@ -656,8 +656,9 @@ function EncargarForm() {
                 fontOverride,
                 accentOverride,
                 audioOverride:
-                  audioOverride ||
-                  (selectedPlan === "asistido" && songRequest.trim() ? "none" : ""),
+                  !audioOverride || audioOverride === "none" || (selectedPlan === "asistido" && songRequest.trim() && audioOverride === "none")
+                    ? "none"
+                    : audioOverride,
                 ...(albumUrl.trim() ? { albumUrl: albumUrl.trim() } : {}),
                 ...(instagramHandle.trim() ? { instagramHandle: instagramHandle.trim() } : {}),
                 ...(eventHashtag.trim() ? { eventHashtag: eventHashtag.trim() } : {}),
@@ -666,7 +667,8 @@ function EncargarForm() {
                   : {}),
               }
             : {
-                ...(audioOverride === "none" ? { audioOverride: "none" } : {}),
+                audioOverride:
+                  !audioOverride || audioOverride === "none" ? "none" : "default",
                 enabledSections: {
                   countdown: true,
                   story: false,
@@ -1056,9 +1058,9 @@ function EncargarForm() {
             {selectedPlan === "esencial" &&
               "Formulario simplificado: cargás solo los datos esenciales del evento y recibís 1 link único con el diseño y la música predeterminada del modelo elegido (no incluye Estudio de Personalización ni links individuales por familia)."}
             {selectedPlan === "pro" &&
-              "Personalización completa incluida: podés editar desde ahora la frase, padres/anfitriones, historia, itinerario y subir fotos propias, y además al confirmar accedés al Estudio en vivo, links personalizados por familia y Excel."}
+              "Personalización completa incluida: podés editar desde ahora la frase, padres/anfitriones, historia, itinerario, música y subir fotos propias, y al confirmar accedés al Estudio en vivo, link único compartible, Playlist DJ, Galería de Recuerdos QR, Modo Recuerdo y Excel."}
             {selectedPlan === "asistido" &&
-              "Modalidad Llave en Mano: podés cargar tus textos/fotos ahora si querés adelantarlos, o enviarnos todo por soporte y nuestro equipo arma la invitación completa, pases por familia y cambios asistidos."}
+              "Modalidad Llave en Mano: podés cargar tus textos/fotos ahora si querés adelantarlos, o enviarnos todo por soporte y nuestro equipo arma la invitación completa, links individuales y por familia, Trivia y cambios asistidos."}
           </p>
         </div>
       </div>
@@ -1768,21 +1770,21 @@ function EncargarForm() {
                   )}
                 </div>
 
-                {/* Álbum Colaborativo QR & Hashtag (opcional) */}
+                {/* Galería de Recuerdos QR & Hashtag (opcional) */}
                 <div className="rounded-2xl border border-stone-200 bg-white p-3.5 space-y-2.5">
                   <div>
                     <p className="text-xs font-semibold text-stone-800">
-                      Álbum Colaborativo QR & Hashtag (opcional)
+                      Galería de Recuerdos · Fotos QR & Hashtag (opcional)
                     </p>
                     <p className="text-[11px] text-stone-500">
-                      Si ya tenés un álbum en Google Fotos/Drive o un #hashtag, se genera un QR automático en la invitación.
+                      Si ya tenés una galería en Google Fotos/Drive o un #hashtag, se genera un QR automático en la invitación.
                     </p>
                   </div>
                   <input
                     type="url"
                     value={albumUrl}
                     onChange={(e) => setAlbumUrl(e.target.value)}
-                    placeholder="Link del álbum compartido (https://photos.app.goo.gl/...)"
+                    placeholder="Link de tu galería compartida (https://photos.app.goo.gl/...)"
                     className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs outline-none focus:border-stone-900"
                   />
                   {albumUrl.toLowerCase().includes("google.com") && (

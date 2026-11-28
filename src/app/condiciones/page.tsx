@@ -41,25 +41,21 @@ export default function CondicionesPage() {
             través de <strong className="text-[#2A121B]">{BUSINESS_CONFIG.brandName}</strong>.
           </p>
 
-          <div
-            role="note"
-            className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950"
-          >
-            <div className="flex items-start gap-2.5">
-              <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
-              <div>
-                <strong>Borrador sujeto a revisión jurídica profesional (Argentina):</strong>{" "}
-                antes de la operación comercial definitiva, este borrador debe revisarse conforme
-                a la Ley 24.240 de Defensa del Consumidor y normativa civil/comercial aplicable.
-                {LEGAL_STATUS.missingProviderFields.length > 0 && (
-                  <p className="mt-1.5">
-                    <strong>Bloqueo pendiente de datos del prestador:</strong>{" "}
-                    {LEGAL_STATUS.missingProviderFields.join(" · ")}.
-                  </p>
-                )}
+          {(LEGAL_STATUS.isDraftPendingReview ||
+            LEGAL_STATUS.missingProviderFields.length > 0) && (
+            <div
+              role="note"
+              className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950"
+            >
+              <div className="flex items-start gap-2.5">
+                <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
+                <div>
+                  <strong>Aviso pendiente de datos del prestador:</strong>{" "}
+                  {LEGAL_STATUS.missingProviderFields.join(" · ")}.
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </header>
 
         <section className="space-y-2.5 text-sm leading-relaxed text-[#574046]">
@@ -67,11 +63,17 @@ export default function CondicionesPage() {
             1. Identificación del prestador y descripción del servicio
           </h2>
           <p>
-            <strong>Prestador:</strong>{" "}
-            {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación del titular"} ·{" "}
-            <strong>CUIT:</strong> {BUSINESS_CONFIG.taxId || "Pendiente de confirmación"} ·{" "}
-            <strong>Contacto:</strong>{" "}
-            {BUSINESS_CONFIG.supportEmail || "Pendiente de confirmación en configuración"}.
+            <strong>Prestador:</strong> {BUSINESS_CONFIG.legalHolderName}
+            {BUSINESS_CONFIG.taxId ? (
+              <>
+                {" "}
+                · <strong>CUIT:</strong> {BUSINESS_CONFIG.taxId}
+              </>
+            ) : null}{" "}
+            · <strong>Sede:</strong> {BUSINESS_CONFIG.legalAddress} ·{" "}
+            <strong>Contacto oficial:</strong>{" "}
+            {BUSINESS_CONFIG.supportEmail ? `${BUSINESS_CONFIG.supportEmail} · ` : ""}
+            WhatsApp {BUSINESS_CONFIG.whatsappDisplay} ({BUSINESS_CONFIG.supportHours}).
           </p>
           <p>
             {BUSINESS_CONFIG.brandName} ofrece la creación, alojamiento web y publicación de
@@ -142,9 +144,9 @@ export default function CondicionesPage() {
             4. Vigencia de publicación y cambios de fecha del evento
           </h2>
           <p>
-            La invitación permanece publicada durante la organización del evento y hasta su cierre o
-            activación del Modo Recuerdo por parte del organizador (plazo máximo exacto de archivo
-            post-evento pendiente de definición operativa sin promesas de almacenamiento perpetuo).
+            La invitación permanece publicada durante toda la organización del evento y después de
+            celebrado si el organizador decide activar el Modo Recuerdo (sujeto al mantenimiento
+            operativo regular de la plataforma o hasta que el titular solicite su baja).
           </p>
           <p>
             Si la fecha, horario o salón del evento se reprograma, el organizador puede actualizar
@@ -210,10 +212,14 @@ export default function CondicionesPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>
               <strong>Responsable de la base de datos:</strong>{" "}
-              {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación de razón social"} ·{" "}
-              <strong>CUIT:</strong> {BUSINESS_CONFIG.taxId || "Pendiente de confirmación"} ·{" "}
-              <strong>Domicilio:</strong>{" "}
-              {BUSINESS_CONFIG.legalAddress || "Pendiente de confirmación en configuración"}.
+              {BUSINESS_CONFIG.legalHolderName}
+              {BUSINESS_CONFIG.taxId ? (
+                <>
+                  {" "}
+                  · <strong>CUIT:</strong> {BUSINESS_CONFIG.taxId}
+                </>
+              ) : null}{" "}
+              · <strong>Domicilio:</strong> {BUSINESS_CONFIG.legalAddress}.
             </li>
             <li>
               <strong>Finalidad del tratamiento:</strong>{" "}
@@ -232,23 +238,24 @@ export default function CondicionesPage() {
               ejecución dentro de los <strong>5 días hábiles</strong>).
             </li>
             <li>
-              <strong>Canal de contacto para ejercer estos derechos:</strong> correo electrónico{" "}
+              <strong>Canal de contacto para ejercer estos derechos:</strong>{" "}
               {BUSINESS_CONFIG.supportEmail ? (
-                <a
-                  href={`mailto:${BUSINESS_CONFIG.supportEmail}`}
-                  className="font-semibold text-[#6B1E30] underline"
-                >
-                  {BUSINESS_CONFIG.supportEmail}
-                </a>
-              ) : (
-                "pendiente de confirmación en configuración"
-              )}
-              {BUSINESS_CONFIG.whatsappConfigured
-                ? ` o vía WhatsApp oficial (${BUSINESS_CONFIG.whatsappDisplay})`
-                : ""}
-              . Asimismo, la Agencia de Acceso a la Información Pública (AAIP), en su carácter de
-              Órgano de Control de la Ley 25.326, tiene la atribución de atender las denuncias y
-              reclamos que interpongan quienes resulten afectados en sus derechos.
+                <>
+                  correo electrónico{" "}
+                  <a
+                    href={`mailto:${BUSINESS_CONFIG.supportEmail}`}
+                    className="font-semibold text-[#6B1E30] underline"
+                  >
+                    {BUSINESS_CONFIG.supportEmail}
+                  </a>{" "}
+                  o{" "}
+                </>
+              ) : null}
+              vía WhatsApp oficial (<strong>{BUSINESS_CONFIG.whatsappDisplay}</strong>,{" "}
+              {BUSINESS_CONFIG.supportHours}). Asimismo, la Agencia de Acceso a la Información
+              Pública (AAIP), en su carácter de Órgano de Control de la Ley 25.326, tiene la
+              atribución de atender las denuncias y reclamos que interpongan quienes resulten
+              afectados en sus derechos.
             </li>
             <li>
               <strong>Registro Nacional de Bases de Datos (AAIP):</strong>{" "}

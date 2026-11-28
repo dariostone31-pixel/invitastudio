@@ -52,12 +52,12 @@ const FAQS = [
     a: "No. Se abre directo en el navegador del celular desde WhatsApp, sin cuentas ni descargas. Además fijamos la paleta de diseño para mantener la legibilidad aunque el teléfono tenga modo oscuro.",
   },
   {
-    q: "¿Puedo enviar enlaces personalizados con el nombre de cada familia?",
-    a: "Sí, en Plan PRO y Llave en Mano. Desde tu Panel Privado generás enlaces con el nombre de cada invitado o familia y la cantidad de lugares reservados o mesa asignada.",
+    q: "¿Puedo enviar enlaces personalizados con el nombre de cada invitado o familia?",
+    a: "Sí, en el Plan Llave en Mano. Desde tu Panel Privado activás el modo individual o en grupo para generar enlaces nominales con el nombre de cada invitado o familia, cantidad de lugares reservados, mesa asignada y seguimiento de envío 1-a-1 por WhatsApp.",
   },
   {
-    q: "¿Cuánto tiempo estará publicada la invitación y qué pasa después?",
-    a: "La invitación permanece publicada durante la organización del evento y hasta que decidas cerrarla o activar el Modo Recuerdo desde tu panel (el plazo definitivo de conservación post-evento está sujeto a definición operativa; podés solicitar su baja en cualquier momento).",
+    q: "¿Qué es el Modo Recuerdo (Post-Evento) y cuánto tiempo dura la invitación?",
+    a: "Cuando termina tu fiesta, con 1 clic en tu panel activás el Modo Recuerdo: la cuenta regresiva y el botón de confirmar asistencia se transforman automáticamente en un álbum conmemorativo de agradecimiento con las fotos de tu Galería de Recuerdos QR y los mensajes del Muro de Buenos Deseos. La invitación permanece publicada durante toda la organización y etapa post-evento (podés solicitar su baja en cualquier momento).",
   },
   {
     q: "¿Qué datos reciben los organizadores y qué pasa con las fotos y respuestas?",
@@ -104,8 +104,8 @@ const MORE_THAN_INVITE = [
   {
     num: "01",
     icon: Users,
-    title: "Cada invitado recibe la suya",
-    desc: "Sobre animado con su nombre grande en la tapa y acceso diferenciado (todo el evento, ceremonia o fiesta).",
+    title: "Pases individuales o en grupo",
+    desc: "En Llave en Mano, cada invitado recibe el sobre con su nombre, lugares reservados y acceso por momento (ceremonia o fiesta).",
   },
   {
     num: "02",
@@ -128,8 +128,8 @@ const MORE_THAN_INVITE = [
   {
     num: "05",
     icon: Camera,
-    title: "Juegos, firmas y Álbum QR",
-    desc: "Mini-Trivia con ranking Top 5, mural de buenos deseos, galería con transiciones y Modo Recuerdo.",
+    title: "Galería de Recuerdos QR & Modo Post-Evento",
+    desc: "Trivia Top 5, buenos deseos, Galería de Recuerdos QR y Modo Recuerdo para transformar la tarjeta en álbum tras la fiesta.",
   },
 ];
 

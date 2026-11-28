@@ -180,7 +180,7 @@ export function RsvpModal({
                   value={guestSearch}
                   onChange={(e) => setGuestSearch(e.target.value)}
                   placeholder="Escribí 2 o más letras de tu nombre..."
-                  className="w-full rounded-xl border px-3 py-2 text-xs outline-none"
+                  className="w-full rounded-xl border px-3 py-2 text-base sm:text-xs outline-none"
                   style={{
                     backgroundColor: palette.surface,
                     borderColor: palette.border,
@@ -228,7 +228,7 @@ export function RsvpModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Familia García López o Sofía Pérez"
-                className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-all focus:ring-2"
+                className="w-full rounded-xl border px-3.5 py-2.5 text-base sm:text-sm outline-none transition-all focus:ring-2"
                 style={{
                   backgroundColor: palette.bg,
                   borderColor: palette.border,
@@ -336,7 +336,7 @@ export function RsvpModal({
                             });
                           }}
                           placeholder={`Nombre del acompañante ${idx + 1}`}
-                          className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                          className="w-full rounded-xl border px-3 py-2 text-base sm:text-sm outline-none"
                           style={{
                             backgroundColor: palette.bg,
                             borderColor: palette.border,
@@ -387,7 +387,7 @@ export function RsvpModal({
                     value={song}
                     onChange={(e) => setSong(e.target.value)}
                     placeholder="Nombre de canción y artista (opcional)"
-                    className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none"
+                    className="w-full rounded-xl border px-3.5 py-2.5 text-base sm:text-sm outline-none"
                     style={{
                       backgroundColor: palette.bg,
                       borderColor: palette.border,
@@ -411,7 +411,7 @@ export function RsvpModal({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Dejá unas lindas palabras (opcional)..."
-                className="w-full rounded-xl border px-3.5 py-2 text-sm outline-none"
+                className="w-full rounded-xl border px-3.5 py-2 text-base sm:text-sm outline-none"
                 style={{
                   backgroundColor: palette.bg,
                   borderColor: palette.border,

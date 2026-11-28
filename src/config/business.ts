@@ -1,5 +1,8 @@
 const DEFAULT_WHATSAPP = "5493885212331";
 const DEFAULT_BANK_ALIAS = "kitdigitales1";
+const DEFAULT_LEGAL_ADDRESS = "San Salvador de Jujuy, Jujuy, Argentina";
+const DEFAULT_SUPPORT_HOURS =
+  "Lunes a Viernes de 9:00 a 19:00 hs · Sábados de 9:00 a 13:00 hs";
 
 const envWhatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
 const isPlaceholderEnvWa =
@@ -23,9 +26,11 @@ export function formatWhatsAppDisplay(digits: string): string {
 
 const rawSupportEmail = (process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "").trim();
 const rawLegalHolder = (process.env.NEXT_PUBLIC_LEGAL_HOLDER || "").trim();
-const rawLegalAddress = (process.env.NEXT_PUBLIC_LEGAL_ADDRESS || "").trim();
+const rawLegalAddress =
+  (process.env.NEXT_PUBLIC_LEGAL_ADDRESS || "").trim() || DEFAULT_LEGAL_ADDRESS;
 const rawTaxId = (process.env.NEXT_PUBLIC_TAX_ID || "").trim();
-const rawSupportHours = (process.env.NEXT_PUBLIC_SUPPORT_HOURS || "").trim();
+const rawSupportHours =
+  (process.env.NEXT_PUBLIC_SUPPORT_HOURS || "").trim() || DEFAULT_SUPPORT_HOURS;
 const rawAaipRegistry = (process.env.NEXT_PUBLIC_AAIP_REGISTRY || "").trim();
 const envBankAlias = (process.env.NEXT_PUBLIC_BANK_ALIAS || "").trim();
 const rawBankAlias =
@@ -117,49 +122,49 @@ export const PRICING_PLANS: PlanPricing[] = [
   {
     id: "pro",
     name: "Plan PRO",
-    badge: "Personalización completa + Pases",
+    badge: "Personalización completa + Estudio",
     listPriceNum: 29999,
     transferPriceNum: 29999,
     listPrice: "$29.999",
     transferPrice: "$29.999",
     shortDesc:
-      "Personalización visual desde el inicio, hasta 2 ubicaciones, catálogo de música, Playlist DJ, links por familia y Excel.",
+      "1 link compartido con personalización visual desde el inicio, Estudio en vivo, 2 ubicaciones, música curada, Playlist DJ, Galería de Recuerdos QR y Excel.",
     includesPersonalizer: true,
-    includesFamilyLinks: true,
+    includesFamilyLinks: false,
     includesAssistedLoad: false,
     highlight: true,
     features: [
-      "Todo lo del Plan Esencial incluido",
+      "Todo lo del Plan Esencial incluido (1 link web único)",
       "Personalización visual completa desde el inicio + Estudio en vivo",
       "Hasta 2 ubicaciones independientes (Ceremonia y Fiesta / Salón)",
       "Fotos propias, acabados translúcidos, letras, colores e itinerario",
       "Selección de pista musical del catálogo curado",
       "Solapa Playlist para que tus invitados sugieran canciones al DJ",
-      "Links nominales por familia con lugares y mesa asignados",
-      "Muro de Buenos Deseos + Excel (.xlsx) + PDF A4 con 4 carteles QR",
+      "Galería de Recuerdos QR + Muro de Buenos Deseos + Excel (.xlsx)",
+      "Modo Recuerdo Post-Evento + PDF A4 con 4 carteles QR (bonus si transferís)",
     ],
   },
   {
     id: "asistido",
     name: "Llave en Mano",
-    badge: "Música a elección + Trivia + Asistido",
+    badge: "Pases por familia + Trivia + Asistido",
     listPriceNum: 34999,
     transferPriceNum: 34999,
     listPrice: "$34.999",
     transferPrice: "$34.999",
     shortDesc:
-      "Todo PRO + Juego Interactivo (Trivia), canción de fondo a tu elección preparada por nuestro equipo y carga completa.",
+      "Todo PRO + Invitación individual y por familia (con pases y mesa), Trivia interactiva, canción a elección, carga asistida y Modo Recuerdo.",
     includesPersonalizer: true,
     includesFamilyLinks: true,
     includesAssistedLoad: true,
     features: [
-      "Todo lo del Plan PRO incluido (2 ubicaciones + Playlist DJ + Estudio)",
+      "Todo lo del Plan PRO incluido (Estudio, 2 ubicaciones y Playlist DJ)",
+      "Invitación individual y en grupo/familia (links nominales, pases y mesa)",
       "Juego Interactivo (Trivia personalizada con podio Top 5)",
       "Canción de fondo a tu elección preparada y activada por el equipo",
       "Carga asistida de tus fotos, textos, padres e itinerario",
-      "Armado de pases personalizados por familia/invitado",
-      "Cambios asistidos previos al evento por canal de soporte",
-      "Plantilla de recordatorio lista para enviar por WhatsApp",
+      "Centro de Envío 1-a-1 por WhatsApp y seguimiento de invitados",
+      "Modo Recuerdo Post-Evento (álbum de agradecimientos tras la fiesta)",
       "PDF A4 con 4 carteles QR + prioridad de publicación < 24 hs hábiles",
     ],
   },

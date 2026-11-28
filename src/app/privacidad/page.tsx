@@ -47,25 +47,21 @@ export default function PrivacidadPage() {
             ellos y qué servicios externos intervienen.
           </p>
 
-          <div
-            role="note"
-            className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950"
-          >
-            <div className="flex items-start gap-2.5">
-              <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
-              <div>
-                <strong>Borrador sujeto a revisión jurídica profesional (Argentina):</strong>{" "}
-                este texto refleja el funcionamiento técnico real del sistema pero no constituye
-                asesoramiento legal ni certificación de cumplimiento.
-                {LEGAL_STATUS.missingProviderFields.length > 0 && (
-                  <p className="mt-1.5">
-                    <strong>Bloqueo pendiente de datos del responsable:</strong>{" "}
-                    {LEGAL_STATUS.missingProviderFields.join(" · ")}.
-                  </p>
-                )}
+          {(LEGAL_STATUS.isDraftPendingReview ||
+            LEGAL_STATUS.missingProviderFields.length > 0) && (
+            <div
+              role="note"
+              className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950"
+            >
+              <div className="flex items-start gap-2.5">
+                <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
+                <div>
+                  <strong>Aviso pendiente de datos del responsable:</strong>{" "}
+                  {LEGAL_STATUS.missingProviderFields.join(" · ")}.
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </header>
 
         <section className="space-y-2.5">
@@ -89,26 +85,26 @@ export default function PrivacidadPage() {
           </ul>
           <div className="mt-3 rounded-2xl border border-[#2A121B]/10 bg-[#FAF8F5] p-4 text-xs leading-relaxed text-[#574046]">
             <p>
-              <strong>Responsable / Titular:</strong>{" "}
-              {BUSINESS_CONFIG.legalHolderName || "Pendiente de confirmación del titular"}
+              <strong>Responsable / Titular:</strong> {BUSINESS_CONFIG.legalHolderName}
+            </p>
+            {BUSINESS_CONFIG.taxId ? (
+              <p>
+                <strong>Identificación fiscal (CUIT):</strong> {BUSINESS_CONFIG.taxId}
+              </p>
+            ) : null}
+            <p>
+              <strong>Sede / Jurisdicción:</strong> {BUSINESS_CONFIG.legalAddress}
+            </p>
+            {BUSINESS_CONFIG.supportEmail ? (
+              <p>
+                <strong>Email de privacidad y soporte:</strong> {BUSINESS_CONFIG.supportEmail}
+              </p>
+            ) : null}
+            <p>
+              <strong>WhatsApp de atención:</strong> {BUSINESS_CONFIG.whatsappDisplay}
             </p>
             <p>
-              <strong>Identificación fiscal (CUIT):</strong>{" "}
-              {BUSINESS_CONFIG.taxId || "Pendiente de confirmación"}
-            </p>
-            <p>
-              <strong>Email de privacidad y soporte:</strong>{" "}
-              {BUSINESS_CONFIG.supportEmail || "Pendiente de confirmación en configuración"}
-            </p>
-            <p>
-              <strong>WhatsApp de atención:</strong>{" "}
-              {BUSINESS_CONFIG.whatsappConfigured
-                ? BUSINESS_CONFIG.whatsappDisplay
-                : "Pendiente de confirmación en configuración"}
-            </p>
-            <p>
-              <strong>Horario de atención:</strong>{" "}
-              {BUSINESS_CONFIG.supportHours || "Pendiente de confirmación operativa"}
+              <strong>Horario de atención:</strong> {BUSINESS_CONFIG.supportHours}
             </p>
           </div>
         </section>
@@ -279,11 +275,10 @@ export default function PrivacidadPage() {
             6. Conservación, eliminación, derechos y seguridad
           </h2>
           <p className="text-sm leading-relaxed text-[#574046]">
-            <strong>Conservación (borrador sujeto a definición operativa):</strong> actualmente la
-            plataforma no ejecuta una rutina automática de borrado tras el evento; los datos e
-            imágenes permanecen almacenados mientras el evento siga activo o hasta que el
-            organizador solicite su baja o modificación por el canal de soporte (sujeto a copias de
-            respaldo técnicas del proveedor de base de datos).
+            <strong>Conservación de datos:</strong> los datos del evento e imágenes permanecen
+            almacenados mientras la invitación siga activa o hasta que el organizador solicite su
+            baja o modificación por el canal de soporte (sujeto a copias de respaldo técnicas del
+            proveedor de base de datos).
           </p>
           <p className="text-sm leading-relaxed text-[#574046]">
             <strong>Derechos de acceso, rectificación y supresión (Ley 25.326, Argentina):</strong>{" "}

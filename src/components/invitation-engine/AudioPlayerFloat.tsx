@@ -95,8 +95,39 @@ export function AudioPlayerFloat({
   }, [isPlaying, src, startCinematicFadeIn, stopFade]);
 
   useEffect(() => {
-    return () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const forceStopAudio = () => {
       stopFade();
+      audio.pause();
+      audio.volume = 0;
+      setActuallyPlaying(false);
+    };
+
+    const handleVisibilityOrExit = () => {
+      if (document.hidden) {
+        forceStopAudio();
+      }
+    };
+
+    const handlePageExit = () => {
+      forceStopAudio();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityOrExit);
+    window.addEventListener("pagehide", handlePageExit);
+    window.addEventListener("beforeunload", handlePageExit);
+    window.addEventListener("blur", handlePageExit);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityOrExit);
+      window.removeEventListener("pagehide", handlePageExit);
+      window.removeEventListener("beforeunload", handlePageExit);
+      window.removeEventListener("blur", handlePageExit);
+      stopFade();
+      audio.pause();
+      audio.volume = 0;
     };
   }, [stopFade]);
 

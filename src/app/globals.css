@@ -33,6 +33,21 @@ body {
   overflow-x: clip;
 }
 
+/* Estabilidad móvil en invitaciones: evita desplazamiento horizontal y auto-zoom de iOS al tocar inputs */
+[data-invitation-root="true"] {
+  overflow-x: clip;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+
+@media (max-width: 767px) {
+  [data-invitation-root="true"] input,
+  [data-invitation-root="true"] select,
+  [data-invitation-root="true"] textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Explicit 3-layer typography helper classes */
 .font-display-cormorant {
   font-family: var(--font-cormorant), Georgia, serif;

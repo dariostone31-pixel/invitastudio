@@ -22,6 +22,25 @@ export async function GET(
 
   const rsvps = await listRsvpsForSlug(event.slug);
 
+  const playlistIds = new Set((event.djPlaylist || []).map((item) => item.id));
+  const rsvpSongs = rsvps
+    .filter((r) => r.song.trim().length > 0 && !playlistIds.has(`rsvp-song-${r.id}`))
+    .map((r) => ({
+      song: r.song,
+      guestName: r.guestName,
+      votes: 1,
+      source: "RSVP",
+      createdAt: r.createdAt,
+    }));
+  const extraSongs = (event.djPlaylist || []).map((item) => ({
+    song: item.song,
+    guestName: item.guestName,
+    votes: item.votes ?? 1,
+    source: "Playlist",
+    createdAt: item.createdAt,
+  }));
+  const allSongs = [...extraSongs, ...rsvpSongs].sort((a, b) => b.votes - a.votes);
+
   const guestsSheetData: (string | number)[][] = [
     [
       "Invitado / Familia",
@@ -43,33 +62,27 @@ export async function GET(
       safeCell(r.message),
       new Date(r.createdAt).toLocaleString("es-AR"),
     ]),
+    [],
+    [],
+    ["PLAYLIST DJ — CANCIONES SUGERIDAS Y QUIÉN LAS ELIGIÓ"],
+    ["Canción / Artista", "Sugerida por (Invitado)", "Votos", "Origen", "Fecha"],
+    ...(allSongs.length > 0
+      ? allSongs.map((s) => [
+          safeCell(s.song),
+          safeCell(s.guestName || "Invitado anónimo"),
+          s.votes,
+          s.source,
+          new Date(s.createdAt).toLocaleString("es-AR"),
+        ])
+      : [["Sin canciones sugeridas todavía", "-", 0, "-", "-"]]),
   ];
 
-  const playlistIds = new Set((event.djPlaylist || []).map((item) => item.id));
-  const rsvpSongs = rsvps
-    .filter((r) => r.song.trim().length > 0 && !playlistIds.has(`rsvp-song-${r.id}`))
-    .map((r) => ({
-      song: r.song,
-      guestName: r.guestName,
-      votes: 1,
-      source: "RSVP",
-      createdAt: r.createdAt,
-    }));
-  const extraSongs = (event.djPlaylist || []).map((item) => ({
-    song: item.song,
-    guestName: item.guestName,
-    votes: item.votes ?? 1,
-    source: "Playlist",
-    createdAt: item.createdAt,
-  }));
-  const allSongs = [...extraSongs, ...rsvpSongs].sort((a, b) => b.votes - a.votes);
-
   const djSheetData: (string | number)[][] = [
-    ["Canción / Artista", "Votos", "Sugerida por", "Origen", "Fecha"],
+    ["Canción / Artista", "Sugerida por (Invitado)", "Votos", "Origen", "Fecha"],
     ...allSongs.map((s) => [
       safeCell(s.song),
+      safeCell(s.guestName || "Invitado anónimo"),
       s.votes,
-      safeCell(s.guestName),
       s.source,
       new Date(s.createdAt).toLocaleString("es-AR"),
     ]),

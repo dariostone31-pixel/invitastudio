@@ -133,11 +133,17 @@ export function OrganizerPanelClient({
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPanelLink, setCopiedPanelLink] = useState(false);
   const isEssentialPlan = event.planId === "esencial";
+  const allowsFamilyLinks = event.planId === "asistido";
   const panelSkin = useMemo(() => getSkinById(event.skinId), [event.skinId]);
-  const [audioSelection, setAudioSelection] = useState<string>(event.audioOverride || "");
+  const [audioSelection, setAudioSelection] = useState<string>(
+    event.audioOverride === "none" ? "none" : event.audioOverride || "default"
+  );
   const [savingAudio, setSavingAudio] = useState(false);
   const [savedAudioOk, setSavedAudioOk] = useState(false);
   const [audioSaveError, setAudioSaveError] = useState<string | null>(null);
+  const [memoryMode, setMemoryMode] = useState<boolean>(Boolean(event.memoryMode));
+  const [savingMemory, setSavingMemory] = useState(false);
+  const [savedMemoryOk, setSavedMemoryOk] = useState(false);
   const isPaid =
     event.paymentStatus === "pagado" ||
     (event.status === "publicada" &&
@@ -457,7 +463,7 @@ export function OrganizerPanelClient({
               {copiedPanelLink ? "¡Link de Panel Copiado!" : "Guardar Link de mi Panel"}
             </button>
             <Link
-              href={`/i/${event.slug}`}
+              href={isPaid ? `/i/${event.slug}` : `/panel/${event.panelToken}/preview`}
               target="_blank"
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-800 hover:border-stone-900"
             >
@@ -687,31 +693,36 @@ export function OrganizerPanelClient({
           </div>
         </section>
 
-        {/* Link único (Esencial) o Generador de Links Personalizados (PRO / Llave en Mano) */}
-        {isEssentialPlan ? (
-          <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
-              Plan Esencial · Link único para compartir
-            </span>
-            <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">
-              Tu enlace único de invitación
-            </h2>
-            <p className="mt-1 text-xs text-stone-600">
-              Compartí este link general por WhatsApp con todos tus invitados. Los pases individuales por familia y la descarga en Excel corresponden a Plan PRO y Llave en Mano.
-            </p>
-            <div className="mt-4 flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:flex-row sm:items-center">
+        {/* Link único (Esencial y PRO) o Generador de Links Personalizados (exclusivo Llave en Mano) */}
+        {!allowsFamilyLinks ? (
+          <section className="space-y-4 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
+                {isEssentialPlan ? "Plan Esencial" : "Plan PRO"} · Link único para compartir
+              </span>
+              <h2 className="mt-1 font-cormorant text-2xl font-semibold text-stone-900">
+                Tu enlace único de invitación
+              </h2>
+              <p className="mt-1 text-xs text-stone-600">
+                Compartí este link general por WhatsApp con todos tus invitados. El modo invitación individual y en grupo por familia (con pases nominales y mesa) es exclusivo del{" "}
+                <strong className="text-stone-900">Plan Llave en Mano</strong>.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:flex-row sm:items-center">
               <div className="min-w-0">
-                <code className="block truncate text-xs text-stone-700">{`/i/${event.slug}`}</code>
-                {!isPaid && (
-                  <p className="mt-1 text-[11px] font-medium text-amber-800">
-                    El botón para copiar y compartir el link con tus invitados se habilitará automáticamente al acreditarse el pago.
+                {isPaid ? (
+                  <code className="block truncate text-xs text-stone-700">{`/i/${event.slug}`}</code>
+                ) : (
+                  <p className="text-[11px] font-medium text-amber-800">
+                    El link público compartible se desbloquea al acreditarse el pago. Mientras tanto podés revisar tu borrador privado desde el botón de vista previa.
                   </p>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {!isPaid ? (
                   <Link
-                    href={`/i/${event.slug}`}
+                    href={`/panel/${event.panelToken}/preview`}
                     target="_blank"
                     className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-4 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100"
                   >
@@ -743,6 +754,35 @@ export function OrganizerPanelClient({
                   </>
                 )}
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-xs text-amber-950">
+              <div className="flex items-start gap-2">
+                <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
+                <div>
+                  <strong>¿Querés enviar pases nominales individuales y por familia?</strong>
+                  <p className="mt-0.5 text-[11px] text-amber-900">
+                    Con <strong>Llave en Mano</strong> saludás a cada grupo por su nombre en el sobre, asignás lugares y mesa, activás la Trivia Interactiva y tenés carga asistida.
+                  </p>
+                </div>
+              </div>
+              {getWhatsAppHref(
+                `¡Hola! Tengo el pedido ${event.orderCode} (${event.eventTitle}) y quiero pasarlo al Plan Llave en Mano para activar pases nominales por familia y Trivia.`
+              ) && (
+                <a
+                  href={
+                    getWhatsAppHref(
+                      `¡Hola! Tengo el pedido ${event.orderCode} (${event.eventTitle}) y quiero pasarlo al Plan Llave en Mano para activar pases nominales por familia y Trivia.`
+                    ) || "#"
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-amber-900 px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-amber-800"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Pasar a Llave en Mano
+                </a>
+              )}
             </div>
           </section>
         ) : (
@@ -820,10 +860,11 @@ export function OrganizerPanelClient({
 
           <div className="mt-4 flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3 sm:flex-row sm:items-center">
             <div className="min-w-0">
-              <code className="block truncate text-xs text-stone-600">{personalizedPath}</code>
-              {!isPaid && (
-                <p className="mt-1 text-[11px] font-medium text-amber-800">
-                  El botón para copiar y compartir el link con tus invitados se habilitará automáticamente al acreditarse el pago.
+              {isPaid ? (
+                <code className="block truncate text-xs text-stone-600">{personalizedPath}</code>
+              ) : (
+                <p className="text-[11px] font-medium text-amber-800">
+                  Link compartible bloqueado hasta acreditar el pago. Podés probar cómo se ve en la vista previa privada con marca de agua.
                 </p>
               )}
             </div>
@@ -831,7 +872,7 @@ export function OrganizerPanelClient({
               {!isPaid ? (
                 <>
                   <Link
-                    href={personalizedPath}
+                    href={`/panel/${event.panelToken}/preview?${personalizedQuery}`}
                     target="_blank"
                     className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-stone-50 px-4 py-1.5 text-xs font-semibold text-stone-800 hover:bg-stone-100"
                   >
@@ -906,8 +947,8 @@ export function OrganizerPanelClient({
         </section>
         )}
 
-        {/* Opción 2 · Carga Masiva tipo Mini-Excel + Centro de Envío 1-a-1 por WhatsApp (PRO / Llave en Mano) */}
-        {!isEssentialPlan && (
+        {/* Opción 2 · Carga Masiva tipo Mini-Excel + Centro de Envío 1-a-1 por WhatsApp (exclusivo Llave en Mano) */}
+        {allowsFamilyLinks && (
           <section className="space-y-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1243,7 +1284,7 @@ export function OrganizerPanelClient({
                               )}
                             </div>
                             <p className="truncate font-mono text-[11px] text-stone-500">
-                              {guestPath}
+                              {isPaid ? guestPath : "Vista previa privada pendiente de pago"}
                               {g.whatsapp ? ` · WA: ${g.whatsapp}` : ""}
                             </p>
                           </div>
@@ -1291,7 +1332,7 @@ export function OrganizerPanelClient({
                             ) : (
                               <>
                                 <Link
-                                  href={guestPath}
+                                  href={`/panel/${event.panelToken}/preview?inv=${encodeURIComponent(g.id)}`}
                                   target="_blank"
                                   className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
                                 >
@@ -1487,8 +1528,69 @@ export function OrganizerPanelClient({
           </section>
         </div>
 
-        {/* Generador de Cartel QR de Mesa Personalizado (Álbum Colaborativo) */}
+        {/* Generador de Cartel QR de Mesa Personalizado (Galería de Recuerdos) */}
         <QrTableCardGenerator event={event} isPaid={isPaid} />
+
+        {/* Modo Recuerdo (Post-Evento) — Explicado y operable en 1 clic */}
+        {!isEssentialPlan && (
+          <section className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50/70 via-white to-white p-6 shadow-sm print:hidden">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="max-w-2xl space-y-1.5">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-800">
+                  <EditorialDiamondIcon className="h-3.5 w-3.5" />
+                  Post-Evento · Modo Recuerdo
+                </span>
+                <h2 className="font-cormorant text-2xl font-bold text-stone-900">
+                  Transformá tu invitación en un álbum conmemorativo después de la fiesta
+                </h2>
+                <p className="text-xs leading-relaxed text-stone-600">
+                  Al activarlo después del evento, la invitación reemplaza automáticamente la cuenta regresiva y el botón de confirmar asistencia por un mensaje de agradecimiento a tus invitados, manteniendo visibles tu galería de fotos, la <strong>Galería de Recuerdos QR</strong> y el <strong>Muro de Buenos Deseos</strong>.
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1.5">
+                <button
+                  type="button"
+                  disabled={savingMemory}
+                  onClick={async () => {
+                    const nextVal = !memoryMode;
+                    setSavingMemory(true);
+                    setSavedMemoryOk(false);
+                    try {
+                      const res = await fetch(`/api/panel/${event.panelToken}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ memoryMode: nextVal }),
+                      });
+                      if (res.ok) {
+                        setMemoryMode(nextVal);
+                        setSavedMemoryOk(true);
+                        setTimeout(() => setSavedMemoryOk(false), 2600);
+                      }
+                    } finally {
+                      setSavingMemory(false);
+                    }
+                  }}
+                  className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold transition-colors ${
+                    memoryMode
+                      ? "bg-amber-800 text-white hover:bg-amber-900"
+                      : "border border-amber-400 bg-amber-100 text-amber-950 hover:bg-amber-200"
+                  }`}
+                >
+                  {savingMemory
+                    ? "Actualizando..."
+                    : memoryMode
+                    ? "Modo Recuerdo ACTIVADO (tocar para desactivar)"
+                    : "Activar Modo Recuerdo"}
+                </button>
+                {savedMemoryOk && (
+                  <span className="text-[11px] font-semibold text-emerald-700">
+                    ¡Estado guardado en tu invitación!
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Selector rápido de Música de Fondo (incluye regla estricta de silencio) */}
         <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm print:hidden">
@@ -1558,17 +1660,17 @@ export function OrganizerPanelClient({
           <div className="mt-4">
             {isEssentialPlan ? (
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAudioSelection("")}
-                  className={`rounded-xl border px-3.5 py-2 text-xs font-semibold ${
-                    audioSelection !== "none"
-                      ? "border-[#6B1E30] bg-[#6B1E30]/10 text-[#6B1E30]"
-                      : "border-stone-200 bg-white text-stone-700"
-                  }`}
-                >
-                  Música del modelo ({panelSkin.sample.audioTitle})
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setAudioSelection("default")}
+                    className={`rounded-xl border px-3.5 py-2 text-xs font-semibold ${
+                      audioSelection !== "none"
+                        ? "border-[#6B1E30] bg-[#6B1E30]/10 text-[#6B1E30]"
+                        : "border-stone-200 bg-white text-stone-700"
+                    }`}
+                  >
+                    Música del modelo ({panelSkin.sample.audioTitle})
+                  </button>
                 <button
                   type="button"
                   onClick={() => setAudioSelection("none")}

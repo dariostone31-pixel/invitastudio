@@ -860,7 +860,8 @@ export function InvitationRenderer({
 
   return (
     <div
-      className="relative min-h-screen w-full"
+      data-invitation-root="true"
+      className="relative min-h-screen w-full overflow-x-clip"
       style={{ backgroundColor: palette.bg, color: palette.text }}
     >
       {/* Gate / Sobre animado */}
@@ -2543,13 +2544,13 @@ export function InvitationRenderer({
                   className="font-ui-jost mt-2 text-[11px] font-semibold uppercase tracking-[0.24em]"
                   style={{ color: textAccentOnAlt }}
                 >
-                  Álbum & Modo Recuerdo
+                  Modo Recuerdo · Post-Evento
                 </p>
                 <h2 className={`mt-1 text-3xl font-semibold ${sectionHeadingFont}`}>
-                  ¡Gracias por haber sido parte!
+                  ¡Gracias por haber sido parte de este día!
                 </h2>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: palette.textMuted }}>
-                  Reviví nuestras fotos favoritas y los mensajes de cariño que dejaron quienes compartieron este día inolvidable.
+                  El evento ya se celebró, pero esta invitación queda guardada como álbum conmemorativo. Reviví nuestras fotos, subí las tuyas en la Galería de Recuerdos y leé los Buenos Deseos.
                 </p>
               </section>
             </RevealSection>
@@ -4395,7 +4396,7 @@ export function InvitationRenderer({
                   value={djGuestName}
                   onChange={(e) => setDjGuestName(e.target.value)}
                   placeholder="Tu nombre (ej. Martín)"
-                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-sm outline-none`}
+                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-base sm:text-sm outline-none`}
                   style={{
                     backgroundColor: palette.bg,
                     borderColor: palette.border,
@@ -4407,7 +4408,7 @@ export function InvitationRenderer({
                   value={djSongText}
                   onChange={(e) => setDjSongText(e.target.value)}
                   placeholder="Canción y artista (ej. Don't Stop Me Now - Queen)"
-                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-sm outline-none`}
+                  className={`w-full ${innerRadius} border px-3.5 py-2.5 text-base sm:text-sm outline-none`}
                   style={{
                     backgroundColor: palette.bg,
                     borderColor: palette.border,
