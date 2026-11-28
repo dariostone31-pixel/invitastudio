@@ -30,6 +30,7 @@ import type {
   FunnelEventRecord,
   LeadRecord,
   LeadStage,
+  MpWebhookLogRecord,
   OrderStatus,
   PaymentStatus,
 } from "@/lib/db";
@@ -88,7 +89,10 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<AdminEventRow[]>([]);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [funnelEvents, setFunnelEvents] = useState<FunnelEventRecord[]>([]);
-  const [activeTab, setActiveTab] = useState<"orders" | "leads">("orders");
+  const [mpLogs, setMpLogs] = useState<MpWebhookLogRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<"orders" | "leads" | "mp_logs">("orders");
+  const [reconcilingMp, setReconcilingMp] = useState(false);
+  const [reconcileMsg, setReconcileMsg] = useState<string | null>(null);
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
   const [utmFilter, setUtmFilter] = useState<string>("all");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -107,10 +111,11 @@ export default function AdminPage() {
     setAuthError(null);
     setLoadingData(true);
     try {
-      const [ordersRes, leadsRes, funnelRes] = await Promise.all([
+      const [ordersRes, leadsRes, funnelRes, mpLogsRes] = await Promise.all([
         fetch("/api/orders", { credentials: "same-origin" }),
         fetch("/api/leads", { credentials: "same-origin" }),
         fetch("/api/funnel-events", { credentials: "same-origin" }),
+        fetch("/api/mercadopago/logs", { credentials: "same-origin" }),
       ]);
 
       if (ordersRes.status === 401) {
@@ -139,9 +144,39 @@ export default function AdminPage() {
         const fData = await funnelRes.json().catch(() => ({}));
         setFunnelEvents(Array.isArray(fData.events) ? fData.events : []);
       }
+      if (mpLogsRes.ok) {
+        const mData = await mpLogsRes.json().catch(() => ({}));
+        setMpLogs(Array.isArray(mData.logs) ? mData.logs : []);
+      }
       setUnlocked(true);
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const handleReconcileMp = async () => {
+    setReconcilingMp(true);
+    setReconcileMsg(null);
+    try {
+      const res = await fetch("/api/mercadopago/reconcile", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setReconcileMsg(data.error || "No se pudo ejecutar la reconciliación.");
+        return;
+      }
+      setReconcileMsg(
+        `Revisados: ${data.checked ?? 0} pendientes · Activados: ${data.activated ?? 0}${
+          Array.isArray(data.activatedCodes) && data.activatedCodes.length > 0
+            ? ` (${data.activatedCodes.join(", ")})`
+            : ""
+        }`
+      );
+      await loadDashboard();
+    } finally {
+      setReconcilingMp(false);
     }
   };
 
@@ -552,6 +587,15 @@ export default function AdminPage() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              onClick={handleReconcileMp}
+              disabled={reconcilingMp}
+              className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-3.5 py-2 text-xs font-semibold text-sky-900 hover:bg-sky-100 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${reconcilingMp ? "animate-spin" : ""}`} />
+              {reconcilingMp ? "Reconciliando..." : "Reconciliar pagos pendientes"}
+            </button>
+            <button
+              type="button"
               onClick={loadDashboard}
               disabled={loadingData}
               className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-60"
@@ -713,6 +757,17 @@ export default function AdminPage() {
             >
               Leads, Embudo y Posventa ({filteredLeads.length})
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("mp_logs")}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors ${
+                activeTab === "mp_logs"
+                  ? "bg-stone-900 text-white"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              Webhooks MP ({mpLogs.length})
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -771,6 +826,12 @@ export default function AdminPage() {
             )}
           </div>
         </div>
+
+        {reconcileMsg && (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs font-medium text-sky-950">
+            <span className="font-bold">Reconciliación Mercado Pago:</span> {reconcileMsg}
+          </div>
+        )}
 
         {activeTab === "leads" ? (
           <section className="space-y-3">
@@ -925,6 +986,125 @@ export default function AdminPage() {
                   </article>
                 );
               })
+            )}
+          </section>
+        ) : activeTab === "mp_logs" ? (
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+              <div>
+                <h2 className="text-sm font-bold text-stone-900">
+                  Auditoría de Webhooks y Reconciliaciones de Mercado Pago (últimos 50)
+                </h2>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  Cada notificación recibida registra verificación HMAC (variantes A–F), consulta real a MP API, validación de monto exacto y resultado.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleReconcileMp}
+                disabled={reconcilingMp}
+                className="inline-flex items-center gap-1.5 rounded-full bg-stone-900 px-4 py-2 text-xs font-bold text-white hover:bg-stone-800 disabled:opacity-60"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${reconcilingMp ? "animate-spin" : ""}`} />
+                {reconcilingMp ? "Reconciliando..." : "Reconciliar pagos pendientes"}
+              </button>
+            </div>
+
+            {mpLogs.length === 0 ? (
+              <div className="rounded-3xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+                Todavía no hay notificaciones de Mercado Pago registradas.
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-3xl border border-stone-200 bg-white shadow-sm">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-stone-200 bg-stone-50 text-[11px] font-bold uppercase tracking-wider text-stone-600">
+                    <tr>
+                      <th className="px-4 py-3">Fecha</th>
+                      <th className="px-4 py-3">Topic / ID</th>
+                      <th className="px-4 py-3">Referencia</th>
+                      <th className="px-4 py-3">Estado / Monto</th>
+                      <th className="px-4 py-3">Firma</th>
+                      <th className="px-4 py-3">Monto OK</th>
+                      <th className="px-4 py-3">Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {mpLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-stone-50/70">
+                        <td className="whitespace-nowrap px-4 py-3 text-[11px] text-stone-500">
+                          {new Date(log.createdAt).toLocaleString("es-AR")}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-[11px] font-bold text-stone-800">
+                            {log.topic}
+                          </span>
+                          <div className="font-mono text-[10px] text-stone-500">
+                            data:{log.dataId}
+                            {log.paymentId && log.paymentId !== log.dataId
+                              ? ` → pay:${log.paymentId}`
+                              : ""}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-[11px] text-stone-700">
+                          {log.externalReference || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-semibold text-stone-800">
+                            {log.status || "—"}
+                          </span>
+                          {typeof log.amount === "number" && (
+                            <div className="text-[11px] text-stone-500">
+                              {formatArs(log.amount)}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {log.firmaOk ? (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                              OK {log.manifestUsed ? `(${log.manifestUsed})` : ""}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+                              Falló
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {log.montoOk ? (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                              Exacto
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600">
+                              No
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                              log.resultado === "activada"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : log.resultado === "firma_invalida" ||
+                                  log.resultado === "reverso_desactivado" ||
+                                  log.resultado === "monto_invalido"
+                                ? "bg-rose-100 text-rose-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {log.resultado}
+                          </span>
+                          {log.detalle && (
+                            <p className="mt-1 max-w-xs text-[10px] text-stone-500">
+                              {log.detalle}
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </section>
         ) : (

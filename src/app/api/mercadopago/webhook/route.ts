@@ -1,59 +1,28 @@
-import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import { recordMpWebhookLog } from "@/lib/db";
 import {
-  getEventById,
-  getEventByOrderCode,
-  markLeadConverted,
-  updateEventRecord,
-} from "@/lib/db";
-
-function verifyMercadoPagoSignature(
-  req: Request,
-  paymentId: string,
-  secret: string
-): boolean {
-  const sigHeader = req.headers.get("x-signature") || "";
-  const reqId = req.headers.get("x-request-id") || "";
-  if (!sigHeader || !reqId) return false;
-
-  const parts = Object.fromEntries(
-    sigHeader.split(",").map((part) => {
-      const [k, v] = part.split("=").map((s) => s.trim());
-      return [k, v];
-    })
-  );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  if (!ts || !v1) return false;
-
-  const manifest = `id:${paymentId};request-id:${reqId};ts:${ts};`;
-  const computed = crypto
-    .createHmac("sha256", secret)
-    .update(manifest)
-    .digest("hex");
-
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(computed, "hex"),
-      Buffer.from(v1, "hex")
-    );
-  } catch {
-    return false;
-  }
-}
+  applyMpPaymentToOrder,
+  fetchMpPaymentById,
+  resolvePaymentIdFromMerchantOrder,
+} from "@/lib/mpOrders";
+import { cleanMpSecret, verifyMpSignature } from "@/lib/mpSignature";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, endpoint: "mercadopago-webhook" });
+  const tokenCargado = Boolean(process.env.MP_ACCESS_TOKEN?.trim());
+  const secretoCargado = cleanMpSecret(process.env.MP_WEBHOOK_SECRET).length > 0;
+  return NextResponse.json({
+    ok: true,
+    endpoint: "mercadopago-webhook",
+    tokenCargado,
+    secretoCargado,
+  });
 }
 
 export async function POST(req: Request) {
-  try {
-    const accessToken = process.env.MP_ACCESS_TOKEN?.trim();
-    if (!accessToken) {
-      return NextResponse.json({ ok: true, ignored: "MP_ACCESS_TOKEN not configured" });
-    }
+  let topic = "";
+  let dataId = "";
 
+  try {
     const url = new URL(req.url);
     const queryTopic = url.searchParams.get("topic") || url.searchParams.get("type");
     const queryId = url.searchParams.get("data.id") || url.searchParams.get("id");
@@ -65,86 +34,173 @@ export async function POST(req: Request) {
       // query-only notification
     }
 
-    const topic = String(body.type || body.topic || queryTopic || "");
+    topic = String(body.type || body.topic || queryTopic || "").trim();
     const dataObj = body.data as Record<string, unknown> | undefined;
-    const paymentId = String(dataObj?.id || queryId || "").trim();
+    dataId = String(queryId || dataObj?.id || "").trim();
 
-    if (topic !== "payment" || !/^[a-zA-Z0-9_-]{1,64}$/.test(paymentId)) {
+    // Control 1: SIEMPRE verificar firma HMAC antes de procesar o consultar MP.
+    // Si falta MP_WEBHOOK_SECRET, x-signature, data.id o la firma no coincide -> 401.
+    const sigCheck = verifyMpSignature({
+      signature: req.headers.get("x-signature"),
+      requestId: req.headers.get("x-request-id"),
+      dataId,
+      secret: process.env.MP_WEBHOOK_SECRET,
+    });
+
+    if (!sigCheck.ok) {
+      await recordMpWebhookLog({
+        topic: topic || "desconocido",
+        dataId: dataId || "sin_id",
+        firmaOk: false,
+        montoOk: false,
+        resultado: "firma_invalida",
+        detalle: sigCheck.reason,
+      }).catch(() => {});
+
+      return NextResponse.json(
+        { error: "Firma inválida", reason: sigCheck.reason },
+        { status: 401 }
+      );
+    }
+
+    if (
+      (topic !== "payment" && topic !== "merchant_order") ||
+      !/^[a-zA-Z0-9_-]{1,64}$/.test(dataId)
+    ) {
+      await recordMpWebhookLog({
+        topic: topic || "vacio",
+        dataId: dataId || "sin_id",
+        firmaOk: true,
+        manifestUsed: sigCheck.manifest,
+        montoOk: false,
+        resultado: "ignorado_topic",
+      }).catch(() => {});
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    const webhookSecret = process.env.MP_WEBHOOK_SECRET?.trim();
-    if (webhookSecret && !verifyMercadoPagoSignature(req, paymentId, webhookSecret)) {
-      return NextResponse.json({ error: "Firma inválida" }, { status: 401 });
-    }
-
-    const client = new MercadoPagoConfig({ accessToken });
-    const paymentClient = new Payment(client);
-    const payment = await paymentClient.get({ id: paymentId });
-
-    const eventId = String(payment.external_reference || "").trim();
-    if (!eventId) {
-      return NextResponse.json({ ok: true, missingReference: true });
-    }
-
-    const event =
-      (await getEventById(eventId)) || (await getEventByOrderCode(eventId));
-    if (!event) {
-      return NextResponse.json({ ok: true, eventNotFound: true });
-    }
-
-    const resolvedPaymentId = String(payment.id ?? paymentId);
-
-    // Idempotencia: si este mismo pago ya dejó pago acreditado y publicación activa, no duplicar escritura
-    if (
-      payment.status === "approved" &&
-      event.paymentStatus === "pagado" &&
-      event.status === "publicada" &&
-      event.mpPaymentId === resolvedPaymentId
-    ) {
-      return NextResponse.json({
-        ok: true,
-        idempotent: true,
-        processed: resolvedPaymentId,
-        unlocked: true,
-      });
-    }
-
-    if (payment.status === "approved") {
-      await updateEventRecord(event.id, {
-        paymentStatus: "pagado",
-        paymentMethod: "mercadopago",
-        mpPaymentId: resolvedPaymentId,
-        paidAmount:
-          typeof payment.transaction_amount === "number"
-            ? Math.round(payment.transaction_amount)
-            : undefined,
-        verifiedBy: "mercadopago_webhook",
-        verifiedAt: new Date().toISOString(),
-        // Activación automática 24/7 sin intervención humana: desbloquea /i/[slug] y panel completo
-        status: "publicada",
-      });
-
-      await markLeadConverted({
-        leadId: event.leadId,
-        whatsapp: event.whatsapp,
-        orderCode: event.orderCode,
+    const accessToken = process.env.MP_ACCESS_TOKEN?.trim();
+    if (!accessToken) {
+      await recordMpWebhookLog({
+        topic,
+        dataId,
+        firmaOk: true,
+        manifestUsed: sigCheck.manifest,
+        montoOk: false,
+        resultado: "error_token_faltante",
+        detalle: "MP_ACCESS_TOKEN no configurado",
       }).catch(() => {});
-    } else if (payment.status === "rejected" || payment.status === "cancelled") {
-      await updateEventRecord(event.id, {
-        paymentStatus: "rechazado",
-        mpPaymentId: resolvedPaymentId,
-      });
+      return NextResponse.json(
+        { error: "MP_ACCESS_TOKEN no configurado" },
+        { status: 500 }
+      );
     }
+
+    // Pozo 5: merchant_order -> resolver paymentId consultando /merchant_orders/{id}
+    let paymentId = dataId;
+    if (topic === "merchant_order") {
+      const orderLookup = await resolvePaymentIdFromMerchantOrder(dataId, accessToken);
+      if (!orderLookup.ok) {
+        await recordMpWebhookLog({
+          topic,
+          dataId,
+          firmaOk: true,
+          manifestUsed: sigCheck.manifest,
+          montoOk: false,
+          resultado: "error_mp_merchant_order",
+          detalle: `HTTP ${orderLookup.status}`,
+        }).catch(() => {});
+        return NextResponse.json(
+          { error: "Error consultando merchant_order" },
+          { status: 500 }
+        );
+      }
+      if (orderLookup.notFound || !orderLookup.paymentId) {
+        await recordMpWebhookLog({
+          topic,
+          dataId,
+          firmaOk: true,
+          manifestUsed: sigCheck.manifest,
+          montoOk: false,
+          resultado: orderLookup.notFound ? "pago_inexistente" : "merchant_order_sin_pagos",
+        }).catch(() => {});
+        return NextResponse.json({
+          ok: true,
+          ignored: true,
+          reason: orderLookup.notFound ? "pago_inexistente" : "merchant_order_sin_pagos",
+        });
+      }
+      paymentId = orderLookup.paymentId;
+    }
+
+    // Control 2: releer el pago real en GET /v1/payments/{id}
+    const paymentRes = await fetchMpPaymentById(paymentId, accessToken);
+    if (!paymentRes.ok) {
+      if (paymentRes.notFound) {
+        // Pozo 4: MP devuelve 404 en "Simular notificación" del panel -> responder 200
+        await recordMpWebhookLog({
+          topic,
+          dataId,
+          paymentId,
+          firmaOk: true,
+          manifestUsed: sigCheck.manifest,
+          montoOk: false,
+          resultado: "pago_inexistente",
+          detalle: "GET /v1/payments devolvió 404 (simulación o pago inexistente)",
+        }).catch(() => {});
+        return NextResponse.json({ ok: true, resultado: "pago_inexistente" });
+      }
+
+      await recordMpWebhookLog({
+        topic,
+        dataId,
+        paymentId,
+        firmaOk: true,
+        manifestUsed: sigCheck.manifest,
+        montoOk: false,
+        resultado: "error_mp_api",
+        detalle: `HTTP ${paymentRes.status}`,
+      }).catch(() => {});
+      return NextResponse.json({ error: "Error consultando MP" }, { status: 500 });
+    }
+
+    // Control 3: aplicar reglas de negocio (referencia, monto exacto, reversos, idempotencia)
+    const outcome = await applyMpPaymentToOrder({
+      payment: paymentRes.payment,
+      fallbackPaymentId: paymentId,
+      source: "mercadopago_webhook",
+    });
+
+    await recordMpWebhookLog({
+      topic,
+      dataId,
+      paymentId: outcome.resolvedPaymentId || paymentId,
+      externalReference: outcome.externalReference || undefined,
+      status: outcome.status || undefined,
+      amount: outcome.amount,
+      firmaOk: true,
+      manifestUsed: sigCheck.manifest,
+      montoOk: outcome.montoOk,
+      resultado: outcome.resultado,
+    }).catch(() => {});
 
     return NextResponse.json({
       ok: true,
-      processed: resolvedPaymentId,
-      status: payment.status,
-      unlocked: payment.status === "approved",
+      resultado: outcome.resultado,
+      processed: outcome.resolvedPaymentId || paymentId,
+      status: outcome.status,
+      unlocked:
+        outcome.resultado === "activada" || outcome.resultado === "duplicado",
     });
   } catch (err) {
     console.error("Mercado Pago webhook error:", err);
+    await recordMpWebhookLog({
+      topic: topic || "error",
+      dataId: dataId || "sin_id",
+      firmaOk: false,
+      montoOk: false,
+      resultado: "error_interno",
+      detalle: err instanceof Error ? err.message : "Error inesperado",
+    }).catch(() => {});
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }

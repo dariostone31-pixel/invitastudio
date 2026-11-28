@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
-import { MercadoPagoConfig, Payment } from "mercadopago";
 import {
   getEventById,
   getEventByOrderCode,
   getEventByPanelToken,
-  markLeadConverted,
-  updateEventRecord,
 } from "@/lib/db";
+import { applyMpPaymentToOrder, fetchMpPaymentById } from "@/lib/mpOrders";
 
 /**
  * Verificación server-side al volver desde Mercado Pago Checkout Pro.
  * Nunca confía en parámetros del navegador: consulta directamente a Mercado Pago API
- * con MP_ACCESS_TOKEN y, si el pago figura "approved", desbloquea de inmediato
- * paymentStatus="pagado" + status="publicada" sin esperar al webhook.
+ * con MP_ACCESS_TOKEN, valida referencia + monto exacto del plan, y si figura "approved"
+ * desbloquea de inmediato paymentStatus="pagado" + status="publicada".
  */
 export async function POST(req: Request) {
   try {
@@ -30,74 +28,65 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, invalidPaymentId: true }, { status: 400 });
     }
 
-    const client = new MercadoPagoConfig({ accessToken });
-    const paymentClient = new Payment(client);
-    const payment = await paymentClient.get({ id: paymentId });
+    const paymentRes = await fetchMpPaymentById(paymentId, accessToken);
+    if (!paymentRes.ok) {
+      if (paymentRes.notFound) {
+        return NextResponse.json({ ok: false, paymentNotFound: true }, { status: 404 });
+      }
+      return NextResponse.json(
+        { ok: false, error: "Error consultando Mercado Pago" },
+        { status: 500 }
+      );
+    }
 
+    const payment = paymentRes.payment;
     const externalRef = String(payment.external_reference || "").trim();
-    const event =
+    const fallbackEvent =
       (externalRef ? await getEventById(externalRef) : undefined) ||
       (externalRef ? await getEventByOrderCode(externalRef) : undefined) ||
       (panelToken ? await getEventByPanelToken(panelToken) : undefined) ||
       (orderCode ? await getEventByOrderCode(orderCode) : undefined);
 
-    if (!event) {
+    if (!fallbackEvent) {
       return NextResponse.json({ ok: false, eventNotFound: true }, { status: 404 });
     }
 
-    // Seguridad: exigir coincidencia con external_reference cuando está presente
     if (
       externalRef &&
-      externalRef !== event.id &&
-      externalRef !== event.orderCode
+      externalRef !== fallbackEvent.id &&
+      externalRef !== fallbackEvent.orderCode
     ) {
       return NextResponse.json({ ok: false, referenceMismatch: true }, { status: 403 });
     }
 
-    const resolvedPaymentId = String(payment.id ?? paymentId);
+    const outcome = await applyMpPaymentToOrder({
+      payment,
+      fallbackPaymentId: paymentId,
+      source: "mercadopago_return_verified",
+      fallbackEvent,
+    });
 
-    if (payment.status === "approved") {
-      if (
-        event.paymentStatus !== "pagado" ||
-        event.status !== "publicada" ||
-        event.mpPaymentId !== resolvedPaymentId
-      ) {
-        await updateEventRecord(event.id, {
-          paymentStatus: "pagado",
-          paymentMethod: "mercadopago",
-          mpPaymentId: resolvedPaymentId,
-          paidAmount:
-            typeof payment.transaction_amount === "number"
-              ? Math.round(payment.transaction_amount)
-              : undefined,
-          verifiedBy: "mercadopago_return_verified",
-          verifiedAt: new Date().toISOString(),
-          status: "publicada",
-        });
-
-        await markLeadConverted({
-          leadId: event.leadId,
-          whatsapp: event.whatsapp,
-          orderCode: event.orderCode,
-        }).catch(() => {});
-      }
-
+    if (outcome.resultado === "activada" || outcome.resultado === "duplicado") {
       return NextResponse.json({
         ok: true,
         approved: true,
         unlocked: true,
-        slug: event.slug,
-        panelToken: event.panelToken,
+        slug: fallbackEvent.slug,
+        panelToken: fallbackEvent.panelToken,
       });
     }
 
     return NextResponse.json({
       ok: true,
       approved: false,
-      status: payment.status || "pending",
+      resultado: outcome.resultado,
+      status: outcome.status || "pending",
     });
   } catch (err) {
     console.error("Mercado Pago verify-return error:", err);
-    return NextResponse.json({ ok: false, error: "No se pudo verificar el pago" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "No se pudo verificar el pago" },
+      { status: 500 }
+    );
   }
 }

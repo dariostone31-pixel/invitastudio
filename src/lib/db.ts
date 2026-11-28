@@ -236,12 +236,29 @@ export interface AdminAuditLogRecord {
   createdAt: string;
 }
 
+export interface MpWebhookLogRecord {
+  id: string;
+  topic: string;
+  dataId: string;
+  paymentId?: string;
+  externalReference?: string;
+  status?: string;
+  amount?: number;
+  firmaOk: boolean;
+  manifestUsed?: string;
+  montoOk: boolean;
+  resultado: string;
+  detalle?: string;
+  createdAt: string;
+}
+
 interface DatabaseShape {
   events: EventRecord[];
   rsvps: RsvpRecord[];
   leads?: LeadRecord[];
   funnelEvents?: FunnelEventRecord[];
   auditLogs?: AdminAuditLogRecord[];
+  mpWebhookLogs?: MpWebhookLogRecord[];
   marketingOptOuts?: string[];
 }
 
@@ -593,6 +610,21 @@ async function ensurePgReady(): Promise<Pool> {
           action text not null,
           row_count integer not null default 0,
           meta text,
+          created_at timestamptz not null default now()
+        );
+        create table if not exists public.mp_webhook_logs (
+          id text primary key,
+          topic text not null default '',
+          data_id text not null default '',
+          payment_id text,
+          external_reference text,
+          status text,
+          amount integer,
+          firma_ok boolean not null default false,
+          manifest_used text,
+          monto_ok boolean not null default false,
+          resultado text not null,
+          detalle text,
           created_at timestamptz not null default now()
         );
       `);
@@ -2096,4 +2128,94 @@ export function isVerifiedPaidOrder(ev: EventRecord): boolean {
     return Boolean(ev.mpPaymentId || (ev.verifiedBy && ev.verifiedAt));
   }
   return Boolean(ev.verifiedBy && ev.verifiedAt);
+}
+
+export async function recordMpWebhookLog(input: {
+  topic: string;
+  dataId: string;
+  paymentId?: string;
+  externalReference?: string;
+  status?: string;
+  amount?: number;
+  firmaOk: boolean;
+  manifestUsed?: string;
+  montoOk: boolean;
+  resultado: string;
+  detalle?: string;
+}): Promise<void> {
+  const record: MpWebhookLogRecord = {
+    id: `mpw-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    topic: input.topic.slice(0, 40),
+    dataId: input.dataId.slice(0, 80),
+    paymentId: input.paymentId?.slice(0, 80),
+    externalReference: input.externalReference?.slice(0, 120),
+    status: input.status?.slice(0, 40),
+    amount: typeof input.amount === "number" ? Math.round(input.amount) : undefined,
+    firmaOk: Boolean(input.firmaOk),
+    manifestUsed: input.manifestUsed?.slice(0, 12),
+    montoOk: Boolean(input.montoOk),
+    resultado: input.resultado.slice(0, 60),
+    detalle: input.detalle?.slice(0, 280),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    await pool.query(
+      `insert into public.mp_webhook_logs (
+         id, topic, data_id, payment_id, external_reference, status, amount,
+         firma_ok, manifest_used, monto_ok, resultado, detalle, created_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [
+        record.id,
+        record.topic,
+        record.dataId,
+        record.paymentId ?? null,
+        record.externalReference ?? null,
+        record.status ?? null,
+        record.amount ?? null,
+        record.firmaOk,
+        record.manifestUsed ?? null,
+        record.montoOk,
+        record.resultado,
+        record.detalle ?? null,
+        record.createdAt,
+      ]
+    );
+    return;
+  }
+
+  const db = ensureLocalStore();
+  db.mpWebhookLogs = [record, ...(db.mpWebhookLogs || [])].slice(0, 150);
+  saveLocalStore(db);
+}
+
+export async function listMpWebhookLogs(limit = 50): Promise<MpWebhookLogRecord[]> {
+  const safeLimit = Math.max(1, Math.min(200, limit));
+  if (getDbMode() === "postgres") {
+    const pool = await ensurePgReady();
+    const res = await pool.query(
+      "select * from public.mp_webhook_logs order by created_at desc limit $1",
+      [safeLimit]
+    );
+    return res.rows.map((r) => ({
+      id: String(r.id),
+      topic: String(r.topic || ""),
+      dataId: String(r.data_id || ""),
+      paymentId: r.payment_id ? String(r.payment_id) : undefined,
+      externalReference: r.external_reference ? String(r.external_reference) : undefined,
+      status: r.status ? String(r.status) : undefined,
+      amount: r.amount !== null && r.amount !== undefined ? Number(r.amount) : undefined,
+      firmaOk: Boolean(r.firma_ok),
+      manifestUsed: r.manifest_used ? String(r.manifest_used) : undefined,
+      montoOk: Boolean(r.monto_ok),
+      resultado: String(r.resultado || ""),
+      detalle: r.detalle ? String(r.detalle) : undefined,
+      createdAt: new Date(String(r.created_at)).toISOString(),
+    }));
+  }
+  const db = ensureLocalStore();
+  return [...(db.mpWebhookLogs || [])]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, safeLimit);
 }
